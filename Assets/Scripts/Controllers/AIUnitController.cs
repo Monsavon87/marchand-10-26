@@ -5,6 +5,8 @@ using UnityEngine;
 /// and when the target is lost it checks the last seen position, looks around, then resumes its patrol.
 /// It drives the unit through UnitMover only, exactly like the player's commands do
 /// (the look-around only turns the stationary unit in place).
+/// With an order gate (the combat manager) its moves cost movement like the player's: the unit walks as far as
+/// its budget allows, waits for the next round, and carries on toward the same destination.
 /// Detection is visual only: a solid object between the eyes and the target blocks it
 /// (hearing will be a separate detection source).
 /// </summary>
@@ -30,6 +32,12 @@ public class AIUnitController : MonoBehaviour
 
     [SerializeField] private UnitMover mover;
     [SerializeField] private UnitTeam ownTeam;
+
+    [Header("Combat (optional)")]
+    [Tooltip("When set, every move is sent through it and costs movement. Without it the unit moves freely.")]
+    [SerializeField] private MoveOrderGate gate;
+    [Tooltip("Movement budget of this unit. Required when a gate is set.")]
+    [SerializeField] private CombatMovementBudget budget;
 
     [Header("Patrol")]
     [Tooltip("Points visited in order, in a loop. Without points the unit stays where it starts.")]
@@ -91,6 +99,13 @@ public class AIUnitController : MonoBehaviour
             return;
         }
 
+        if (gate != null && budget == null)
+        {
+            Debug.LogError("AIUnitController: a gate is set but the movement budget is not assigned.", this);
+            enabled = false;
+            return;
+        }
+
         if (abandonDistance <= detectionRadius)
         {
             Debug.LogWarning("AIUnitController: abandonDistance should be larger than detectionRadius to avoid flip-flopping.", this);
@@ -100,7 +115,7 @@ public class AIUnitController : MonoBehaviour
         state = AIState.Patrol;
         if (patrolPoints != null && patrolPoints.Length > 0)
         {
-            mover.MoveTo(patrolPoints[patrolIndex].position);
+            Order(patrolPoints[patrolIndex].position);
         }
     }
 
@@ -108,6 +123,14 @@ public class AIUnitController : MonoBehaviour
     {
         if (mover == null)
         {
+            return;
+        }
+
+        if (gate != null && budget != null)
+        {
+            // With a gate, an order spans several walking legs: only the budget knows when it really ended.
+            budget.OrderCompleted += OnArrived;
+            budget.OrderFailed += OnOrderFailed;
             return;
         }
 
@@ -120,6 +143,12 @@ public class AIUnitController : MonoBehaviour
         if (mover == null)
         {
             return;
+        }
+
+        if (budget != null)
+        {
+            budget.OrderCompleted -= OnArrived;
+            budget.OrderFailed -= OnOrderFailed;
         }
 
         mover.Arrived -= OnArrived;
@@ -146,6 +175,12 @@ public class AIUnitController : MonoBehaviour
                 break;
 
             case AIState.Investigate:
+                if (budget != null && budget.WaitingForBudget)
+                {
+                    // No movement left: waiting for the next round is not time lost looking for the target.
+                    investigateStartTime += Time.deltaTime;
+                }
+
                 if (now - investigateStartTime > investigateTimeout)
                 {
                     BeginScan(now);
@@ -250,9 +285,9 @@ public class AIUnitController : MonoBehaviour
         if (distance <= contactDistance)
         {
             // In contact: hold position (combat comes in a later step).
-            if (mover.IsMoving)
+            if (mover.IsMoving || (budget != null && budget.HasPending))
             {
-                mover.Stop();
+                Halt();
             }
 
             return;
@@ -261,7 +296,7 @@ public class AIUnitController : MonoBehaviour
         if (now >= nextRepathTime)
         {
             nextRepathTime = now + chaseRepathInterval;
-            mover.MoveTo(target.position);
+            Order(target.position);
         }
     }
 
@@ -272,7 +307,7 @@ public class AIUnitController : MonoBehaviour
         state = AIState.Investigate;
         investigateStartTime = now;
         // The state is set first: an unreachable position triggers OnPathFailed, which starts the scan.
-        mover.MoveTo(lastSeenPosition);
+        Order(lastSeenPosition);
     }
 
     private void BeginScan(float now)
@@ -283,7 +318,7 @@ public class AIUnitController : MonoBehaviour
         state = AIState.Scan;
         scanStartTime = now;
         scanBaseYaw = transform.eulerAngles.y;
-        mover.Stop();
+        Halt();
     }
 
     // Turns the stationary unit left, right, then back to the front, over searchDuration.
@@ -314,12 +349,12 @@ public class AIUnitController : MonoBehaviour
 
         if (patrolPoints == null || patrolPoints.Length == 0)
         {
-            mover.MoveTo(homePosition);
+            Order(homePosition);
             return;
         }
 
         // patrolIndex still holds the point the unit was heading to before the chase.
-        mover.MoveTo(patrolPoints[patrolIndex].position);
+        Order(patrolPoints[patrolIndex].position);
     }
 
     // True if no solid, non-unit object lies between this unit's eyes and the target.
@@ -353,7 +388,33 @@ public class AIUnitController : MonoBehaviour
         }
 
         patrolIndex = (patrolIndex + 1) % patrolPoints.Length;
-        mover.MoveTo(patrolPoints[patrolIndex].position);
+        Order(patrolPoints[patrolIndex].position);
+    }
+
+    // Sends the unit toward a point, through the gate when there is one. A refused order is a path failure.
+    private void Order(Vector3 destination)
+    {
+        if (gate == null)
+        {
+            mover.MoveTo(destination);
+        }
+        else if (!gate.RequestMove(mover, destination))
+        {
+            OnPathFailed(destination);
+        }
+    }
+
+    // Stops the unit and drops any order the gate was still carrying for it.
+    private void Halt()
+    {
+        if (gate != null)
+        {
+            gate.CancelOrder(mover);
+        }
+        else
+        {
+            mover.Stop();
+        }
     }
 
     private void OnArrived()
@@ -402,6 +463,8 @@ public class AIUnitController : MonoBehaviour
                 break;
         }
     }
+
+    private void OnOrderFailed() => OnPathFailed(budget.PendingDestination);
 
     private float FlatDistance(Vector3 point)
     {

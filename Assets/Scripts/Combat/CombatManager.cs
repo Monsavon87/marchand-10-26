@@ -79,14 +79,14 @@ public class CombatManager : MoveOrderGate
     }
 
     /// <summary>
-    /// Authorizes a move. Units without an enforced budget move freely. Otherwise the destination becomes the
+    /// Authorizes a move. Units without a movement budget move freely. Otherwise the destination becomes the
     /// unit's order: it walks as far as its movement allows now and carries on in the following rounds until it
     /// arrives. A new order replaces the previous one. Returns false only when there is no path at all.
     /// </summary>
     public override bool RequestMove(UnitMover mover, Vector3 destination)
     {
         CombatMovementBudget budget = FindBudget(mover);
-        if (budget == null || !budget.Enforced)
+        if (budget == null)
         {
             mover.MoveTo(destination);
             return true;
@@ -103,7 +103,7 @@ public class CombatManager : MoveOrderGate
     }
 
     /// <summary>Cancels the order in progress: the unit stops where it is.</summary>
-    public void CancelOrder(UnitMover mover)
+    public override void CancelOrder(UnitMover mover)
     {
         CombatMovementBudget budget = FindBudget(mover);
         if (budget != null)
@@ -177,11 +177,6 @@ public class CombatManager : MoveOrderGate
         for (int i = 0; i < all.Count; i++)
         {
             CombatMovementBudget budget = all[i];
-            if (!budget.Enforced)
-            {
-                continue;
-            }
-
             UnitMover mover = budget.Mover;
             Vector3 position = mover.transform.position;
             if (mover.IsMoving)
@@ -234,7 +229,7 @@ public class CombatManager : MoveOrderGate
             // The leg never started (no path): give the order up once the start-up frames are over.
             if (Time.frameCount > budget.LegFrame + LegStartFrames)
             {
-                budget.ClearPending();
+                budget.FailOrder();
             }
 
             return;
@@ -243,7 +238,7 @@ public class CombatManager : MoveOrderGate
         if (!mover.LastOrderTruncated && !budget.StoppedByBudget)
         {
             // The last leg was not cut and the unit was not stopped for lack of movement: it arrived.
-            budget.ClearPending();
+            budget.CompleteOrder();
             return;
         }
 

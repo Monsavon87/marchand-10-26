@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,8 +13,6 @@ public class CombatMovementBudget : MonoBehaviour
     [SerializeField] private UnitMover mover;
     [Tooltip("Maximum walking distance per round, in meters.")]
     [SerializeField] private float maxDistance = 8f;
-    [Tooltip("When off, the combat manager neither limits nor tracks this unit (AI units are free for now).")]
-    [SerializeField] private bool enforced = true;
 
     /// <summary>Every enabled budget in the scene.</summary>
     public static IReadOnlyList<CombatMovementBudget> All => AllBudgets;
@@ -21,7 +20,11 @@ public class CombatMovementBudget : MonoBehaviour
     public UnitMover Mover => mover;
     public float Max => maxDistance;
     public float Remaining { get; private set; }
-    public bool Enforced => enforced;
+
+    /// <summary>Raised when the order in progress ended because the unit got to its destination.</summary>
+    public event Action OrderCompleted = delegate { };
+    /// <summary>Raised when the order in progress was given up because the destination cannot be reached.</summary>
+    public event Action OrderFailed = delegate { };
 
     // Bookkeeping used by the combat manager to measure the distance actually walked.
     public Vector3 LastPosition { get; set; }
@@ -48,11 +51,25 @@ public class CombatMovementBudget : MonoBehaviour
         StoppedByBudget = false;
     }
 
-    /// <summary>Drops the order in progress.</summary>
+    /// <summary>Drops the order in progress without telling anyone (the owner of the order cancelled it).</summary>
     public void ClearPending()
     {
         HasPending = false;
         WaitingForBudget = false;
+    }
+
+    /// <summary>Ends the order in progress because the unit arrived.</summary>
+    public void CompleteOrder()
+    {
+        ClearPending();
+        OrderCompleted();
+    }
+
+    /// <summary>Ends the order in progress because it cannot be carried out.</summary>
+    public void FailOrder()
+    {
+        ClearPending();
+        OrderFailed();
     }
 
     private void Awake()

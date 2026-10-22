@@ -1879,6 +1879,10 @@ PrefabInstance:
       propertyPath: carveWhenIdle
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1188601273024878794, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
+      propertyPath: gate
+      value: 
+      objectReference: {fileID: 616431159}
     - target: {fileID: 3268627673032624065, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
       propertyPath: m_LocalPosition.x
       value: 11
@@ -3000,6 +3004,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1188601273024878794, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
+      propertyPath: gate
+      value: 
+      objectReference: {fileID: 616431159}
+    - target: {fileID: 1188601273024878794, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
       propertyPath: patrolPoints.Array.size
       value: 2
       objectReference: {fileID: 0}
@@ -3436,6 +3444,10 @@ PrefabInstance:
       propertyPath: carveWhenIdle
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 1188601273024878794, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
+      propertyPath: gate
+      value: 
+      objectReference: {fileID: 616431159}
     - target: {fileID: 1188601273024878794, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
       propertyPath: patrolPoints.Array.size
       value: 2

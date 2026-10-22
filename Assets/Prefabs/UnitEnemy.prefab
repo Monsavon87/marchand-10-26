@@ -96,6 +96,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0e3f76ddfd0d34042b3be29eba51d542, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnitMover
+--- !u!114 &1147845017007896559 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1847993490452819210, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
+  m_PrefabInstance: {fileID: 1605694619521751781}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4689141401254224031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31dd3fa3278eec94eaf840fae5fd58d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CombatMovementBudget
 --- !u!1 &4689141401254224031 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6294835999223347834, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
@@ -115,6 +126,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AIUnitController
   mover: {fileID: 975095057808525160}
   ownTeam: {fileID: 4870326745827608233}
+  gate: {fileID: 0}
+  budget: {fileID: 1147845017007896559}
   patrolPoints: []
   waitAtPoint: 1.5
   detectionRadius: 9

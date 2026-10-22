@@ -149,6 +149,15 @@ Projet Unity 6 (URP, 3D) : marchand-10-2026-mistral.
 - Vérifié (Play Mode, ordres par script) : ordre de 20 m = 8 m + 8 m + 4 m sur 3 manches, arrivée exacte à z = 10,00, ordre effacé à l'arrivée, budget restant 4,1 ; attente entre manches (reste 0,31 m < seuil) ; destination hors NavMesh refusée ; remplacement d'un ordre pris en compte ; en pause l'unité ne bouge pas et l'ordre est exécuté à la reprise ; ligne cyan visible sur la capture ; console sans erreur ; `ProjectSettings` inchangé (md5 identique).
 - Non vérifié par moi : le ressenti à la souris, l'aspect final de la ligne cyan dans le Game view, ordre annulé par `CancelOrder` (aucune commande ne l'appelle encore).
 
+### Étape 8 ter — Les ennemis ont aussi un budget de mouvement
+- Commit de sécurité préalable : `42cde0e` (étapes 8 et 8 bis).
+- Principe : toute action coûtera du budget ; le mouvement de l'IA passe désormais par le même mécanisme que celui des joueurs. La notion `enforced` est supprimée de `CombatMovementBudget` : toute unité qui a un budget est limitée (8 m par manche, réglable par unité).
+- `AIUnitController` : champs optionnels `gate` (`MoveOrderGate`) et `budget`. Avec un gate, tous ses déplacements passent par `RequestMove` (méthode privée `Order`) et ses arrêts par `CancelOrder` (`Halt`) ; sans gate, comportement inchangé (`Test_Terrain`). L'arrivée et l'échec ne viennent plus de `UnitMover` mais du budget : nouveaux événements `OrderCompleted` / `OrderFailed` (un ordre peut durer plusieurs tronçons). Le délai d'enquête (`investigateTimeout`) est suspendu quand l'unité attend la manche suivante.
+- `MoveOrderGate` : nouvelle méthode abstraite `CancelOrder(mover)` ; `CombatManager` la fournit (`override`) et appelle `CompleteOrder` / `FailOrder`.
+- Prefab `UnitEnemy` : `budget` assigné ; scène `Test_Combat` : `gate` = `CombatManager` sur les 3 ennemis. À l'arrêt faute de budget, l'ennemi regarde le point visé (comme les joueurs). Le scan sur place reste gratuit.
+- Vérifié (Play Mode) : patrouilles décomptées (4,4 à 6,9 m restants en cours de manche, rechargées à la suivante) ; poursuite jusqu'au contact (1,3 m) puis arrêt sans reprise ; poursuite d'une cible à 13 m : budget presque épuisé en fin de manche (0,47 m), puis reprise à la manche suivante et contact atteint ; `Test_Terrain` : patrouilles OK sans gate ; console sans erreur ; `ProjectSettings` inchangé.
+- Non vérifié par moi : enquête et scan sous budget (timeout suspendu) en situation réelle, ennemis bloqués longtemps sans budget, ressenti à l'écran.
+
 ## À faire / en attente
 - Tester `Test_Combat` dans le Game view : sélectionner une unité, survoler au-delà de la portée (rouge), cliquer, Espace pour la pause.
 - Regarder les gizmos de détection dans la Scene view (sélectionner `Enemy_1`).

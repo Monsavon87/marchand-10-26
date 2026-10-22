@@ -11,4 +11,7 @@ public abstract class MoveOrderGate : MonoBehaviour
     /// Returns false if the order was refused.
     /// </summary>
     public abstract bool RequestMove(UnitMover mover, Vector3 destination);
+
+    /// <summary>Drops the order the gate is carrying for this unit and stops the unit where it is.</summary>
+    public abstract void CancelOrder(UnitMover mover);
 }
