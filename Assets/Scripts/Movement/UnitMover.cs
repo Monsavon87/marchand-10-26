@@ -4,14 +4,24 @@ using UnityEngine.AI;
 
 /// <summary>
 /// Executes movement for one unit. The only script allowed to touch the NavMeshAgent.
-/// It knows nothing about the mouse, the player or the AI: controllers only call its public API.
+/// It knows nothing about the mouse, the player, the AI or the combat rules: controllers only call its public API.
+/// Optionally, a standing unit turns into a carving NavMeshObstacle so that other units walk around it.
 /// </summary>
 [RequireComponent(typeof(NavMeshAgent))]
 public class UnitMover : MonoBehaviour
 {
     private const int MaxCorners = 64;
+    private const int AreaCount = 32;
     // Max horizontal gap between the requested point and the path end to count as "reached".
     private const float ReachTolerance = 0.5f;
+    // Idle-obstacle mode: how far the NavMesh may be from the feet for the agent to be switched back on.
+    private const float WakeNavMeshTolerance = 0.35f;
+    private const float WakeFallbackRadius = 2f;
+    private const int WakeFramesBeforeFallback = 3;
+    private const float WakeTimeout = 1.5f;
+    private const float SettleTimeout = 1f;
+    // The unit may stand inside its own carved hole: the closest NavMesh point can be this far.
+    private const float OwnHoleSearchRadius = 3f;
 
     [SerializeField] private NavMeshAgent agent;
     [Tooltip("Max distance used to find the closest NavMesh point when the destination is off the NavMesh.")]
@@ -19,6 +29,17 @@ public class UnitMover : MonoBehaviour
     [Tooltip("Avoidance priority while the unit stands still (99 = lowest): idle units step aside for units still moving. " +
              "While moving, the unit uses the priority set on its NavMeshAgent.")]
     [SerializeField, Range(0, 99)] private int idleAvoidancePriority = 99;
+
+    [Header("Facing")]
+    [Tooltip("Speed, in degrees per second, at which the unit turns on the spot.")]
+    [SerializeField] private float turnSpeed = 360f;
+
+    [Header("Idle obstacle (optional)")]
+    [Tooltip("When on, the unit is a carving NavMeshObstacle while it stands still (other units walk around it) " +
+             "and a NavMeshAgent while it moves. Needs the Idle Obstacle below.")]
+    [SerializeField] private bool carveWhenIdle;
+    [Tooltip("Carving NavMeshObstacle on a CHILD object (never on the agent's own object). Kept disabled while the unit moves.")]
+    [SerializeField] private NavMeshObstacle idleObstacle;
 
     /// <summary>Raised each time a new move order is accepted (including orders that replace a running one).</summary>
     public event Action MoveStarted = delegate { };
@@ -31,16 +52,55 @@ public class UnitMover : MonoBehaviour
     private readonly Vector3[] corners = new Vector3[MaxCorners];
     // Corners of the order currently being executed, kept apart so previews cannot overwrite them.
     private readonly Vector3[] activeCorners = new Vector3[MaxCorners];
+    // Per-unit area costs, kept here because the agent forgets them while it is switched off.
+    private readonly float[] areaCosts = new float[AreaCount];
+    private readonly bool[] areaCostSet = new bool[AreaCount];
     private int activeCornerCount;
     private NavMeshPath path;
     private bool isMoving;
     private float baseSpeed;
     private int movingAvoidancePriority;
 
+    // Facing.
+    private bool hasFacingTarget;
+    private float targetYaw;
+    private bool hasArrivalFacing;
+    private Vector3 arrivalFacePoint;
+
+    // Idle-obstacle mode.
+    private bool isObstacleMode;
+    private bool isWakingUp;
+    private bool isSettling;
+    private float settleStartTime;
+    private int wakeStartFrame;
+    private float wakeStartTime;
+    private Vector3 pendingDestination;
+    private bool pendingHasFacing;
+    private Vector3 pendingFacePoint;
+    private float pendingMaxLength;
+
+    /// <summary>True while an order is being executed.</summary>
     public bool IsMoving => isMoving;
 
+    /// <summary>True while an accepted order is waiting for the agent to start (idle-obstacle mode wake-up).</summary>
+    public bool IsStarting => isWakingUp;
+
+    /// <summary>Counts the orders that really started. Lets a caller see whether its order began.</summary>
+    public int OrderSerial { get; private set; }
+
+    /// <summary>True if the last order that started was cut at its maximum path length (the unit stops short).</summary>
+    public bool LastOrderTruncated { get; private set; }
+
+    /// <summary>True while the unit turns on the spot toward a point.</summary>
+    public bool IsTurning => hasFacingTarget;
+
+    /// <summary>True while the unit is a carving obstacle (idle-obstacle mode, agent switched off).</summary>
+    public bool IsObstacle => isObstacleMode && !isWakingUp;
+
     /// <summary>Position of the unit on the NavMesh surface (feet level, unlike the transform).</summary>
-    public Vector3 GroundPosition => agent.nextPosition;
+    public Vector3 GroundPosition => FeetPosition();
+
+    private bool UsesIdleObstacle => carveWhenIdle && idleObstacle != null;
 
     private void Awake()
     {
@@ -56,10 +116,45 @@ public class UnitMover : MonoBehaviour
         // The priority set on the agent is the one used while moving; the unit starts idle.
         movingAvoidancePriority = agent.avoidancePriority;
         agent.avoidancePriority = idleAvoidancePriority;
+
+        for (int i = 0; i < AreaCount; i++)
+        {
+            areaCosts[i] = NavMesh.GetAreaCost(i);
+        }
+
+        if (idleObstacle != null)
+        {
+            idleObstacle.carving = true;
+            idleObstacle.carveOnlyStationary = false;
+            idleObstacle.enabled = false;
+        }
+    }
+
+    private void Start()
+    {
+        // The unit starts standing still: it becomes an obstacle right away (unless an order was already given).
+        if (UsesIdleObstacle && !isMoving && !isWakingUp)
+        {
+            EnterObstacleMode();
+        }
     }
 
     private void Update()
     {
+        UpdateTurning();
+
+        if (isWakingUp)
+        {
+            UpdateWakeUp();
+            return;
+        }
+
+        if (isSettling)
+        {
+            UpdateSettling();
+            return;
+        }
+
         if (!isMoving || agent.pathPending)
         {
             return;
@@ -67,9 +162,7 @@ public class UnitMover : MonoBehaviour
 
         if (agent.remainingDistance <= agent.stoppingDistance)
         {
-            isMoving = false;
-            agent.avoidancePriority = idleAvoidancePriority;
-            Arrived();
+            OnArrival();
         }
     }
 
@@ -79,17 +172,26 @@ public class UnitMover : MonoBehaviour
     /// </summary>
     public void MoveTo(Vector3 destination)
     {
-        if (!ComputePath(destination, out int count, out _) || !agent.SetPath(path))
-        {
-            PathFailed(destination);
-            return;
-        }
+        Order(destination, false, default, float.PositiveInfinity);
+    }
 
-        Array.Copy(corners, activeCorners, count);
-        activeCornerCount = count;
-        isMoving = true;
-        agent.avoidancePriority = movingAvoidancePriority;
-        MoveStarted();
+    /// <summary>
+    /// Same as MoveTo, and when the unit arrives it turns on the spot toward 'faceTowardsAtArrival'
+    /// (for example the point that was really asked for when the move was cut short).
+    /// </summary>
+    public void MoveTo(Vector3 destination, Vector3 faceTowardsAtArrival)
+    {
+        Order(destination, true, faceTowardsAtArrival, float.PositiveInfinity);
+    }
+
+    /// <summary>
+    /// Same as above, but the unit never walks farther than 'maxPathLength': a longer path is cut there and the
+    /// unit stops at the cut point. The cut is made when the unit actually starts, on its real path.
+    /// Who decides the limit (a combat manager, for example) is not this class's business.
+    /// </summary>
+    public void MoveTo(Vector3 destination, Vector3 faceTowardsAtArrival, float maxPathLength)
+    {
+        Order(destination, true, faceTowardsAtArrival, maxPathLength);
     }
 
     /// <summary>Stops the unit immediately. Does not raise Arrived.</summary>
@@ -100,9 +202,40 @@ public class UnitMover : MonoBehaviour
             return;
         }
 
-        agent.ResetPath();
+        if (isWakingUp)
+        {
+            // The order was given but the unit had not woken up yet: cancel it and stay an obstacle.
+            isWakingUp = false;
+            idleObstacle.enabled = true;
+            return;
+        }
+
+        if (agent.enabled && agent.isOnNavMesh)
+        {
+            agent.ResetPath();
+        }
+
         isMoving = false;
+        hasArrivalFacing = false;
         agent.avoidancePriority = idleAvoidancePriority;
+        BeginSettling();
+    }
+
+    /// <summary>
+    /// Turns the unit on the spot toward a point, without moving. Ignored while the unit moves
+    /// (it then faces its direction of travel) and when the point is right on the unit.
+    /// </summary>
+    public void FaceTowards(Vector3 point)
+    {
+        Vector3 direction = point - transform.position;
+        direction.y = 0f;
+        if (direction.sqrMagnitude < 0.01f)
+        {
+            return;
+        }
+
+        targetYaw = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+        hasFacingTarget = true;
     }
 
     /// <summary>
@@ -124,12 +257,17 @@ public class UnitMover : MonoBehaviour
     /// </summary>
     public void SetAreaCost(int areaIndex, float cost)
     {
-        if (agent == null)
+        if (agent == null || areaIndex < 0 || areaIndex >= AreaCount)
         {
             return;
         }
 
-        agent.SetAreaCost(areaIndex, cost);
+        areaCosts[areaIndex] = cost;
+        areaCostSet[areaIndex] = true;
+        if (agent.enabled && agent.isOnNavMesh)
+        {
+            agent.SetAreaCost(areaIndex, cost);
+        }
     }
 
     /// <summary>Same as SetAreaCost(int, float), using the area name defined in the NavMesh areas.</summary>
@@ -148,7 +286,7 @@ public class UnitMover : MonoBehaviour
     /// <summary>Returns the path cost of a NavMesh area for this unit.</summary>
     public float GetAreaCost(int areaIndex)
     {
-        return agent != null ? agent.GetAreaCost(areaIndex) : 1f;
+        return areaIndex >= 0 && areaIndex < AreaCount ? areaCosts[areaIndex] : 1f;
     }
 
     /// <summary>
@@ -234,6 +372,226 @@ public class UnitMover : MonoBehaviour
         return written;
     }
 
+    // Routes an order: directly when the agent is on, through a wake-up when the unit is an obstacle.
+    private void Order(Vector3 destination, bool hasFacing, Vector3 facePoint, float maxLength)
+    {
+        if (isObstacleMode || isWakingUp)
+        {
+            // The agent is off: validate the order with the static path query, then switch the agent on.
+            if (!ComputePath(destination, out _, out _))
+            {
+                PathFailed(destination);
+                return;
+            }
+
+            pendingDestination = destination;
+            pendingHasFacing = hasFacing;
+            pendingFacePoint = facePoint;
+            pendingMaxLength = maxLength;
+            if (!isWakingUp)
+            {
+                BeginWakeUp();
+            }
+
+            return;
+        }
+
+        isSettling = false;
+        ExecuteOrder(destination, hasFacing, facePoint, maxLength);
+    }
+
+    // The agent is on the NavMesh: compute the path (cut at maxLength if needed) and start walking.
+    private void ExecuteOrder(Vector3 destination, bool hasFacing, Vector3 facePoint, float maxLength)
+    {
+        if (!ComputePath(destination, out int count, out _))
+        {
+            PathFailed(destination);
+            return;
+        }
+
+        bool cut = false;
+        if (maxLength < float.PositiveInfinity && PathMath.Length(corners, count) > maxLength)
+        {
+            // Too long: walk only as far as allowed, along the same route.
+            cut = true;
+            count = PathMath.TruncateAt(corners, count, maxLength);
+            if (!agent.CalculatePath(corners[count - 1], path) || path.status == NavMeshPathStatus.PathInvalid)
+            {
+                PathFailed(destination);
+                return;
+            }
+
+            count = path.GetCornersNonAlloc(corners);
+        }
+
+        if (!agent.SetPath(path))
+        {
+            PathFailed(destination);
+            return;
+        }
+
+        Array.Copy(corners, activeCorners, count);
+        activeCornerCount = count;
+        hasFacingTarget = false;
+        hasArrivalFacing = hasFacing;
+        arrivalFacePoint = facePoint;
+        LastOrderTruncated = cut;
+        OrderSerial++;
+        isMoving = true;
+        agent.avoidancePriority = movingAvoidancePriority;
+        MoveStarted();
+    }
+
+    private void OnArrival()
+    {
+        isMoving = false;
+        agent.avoidancePriority = idleAvoidancePriority;
+
+        if (hasArrivalFacing)
+        {
+            hasArrivalFacing = false;
+            FaceTowards(arrivalFacePoint);
+        }
+
+        // Handlers may give a new order right away.
+        Arrived();
+        if (!isMoving && !isWakingUp)
+        {
+            BeginSettling();
+        }
+    }
+
+    // Turns on the spot once the agent has really stopped.
+    private void UpdateTurning()
+    {
+        if (!hasFacingTarget || isMoving || isWakingUp)
+        {
+            return;
+        }
+
+        if (agent.enabled && agent.velocity.sqrMagnitude > 0.01f)
+        {
+            return;
+        }
+
+        float yaw = transform.eulerAngles.y;
+        float next = Mathf.MoveTowardsAngle(yaw, targetYaw, turnSpeed * Time.deltaTime);
+        transform.rotation = Quaternion.Euler(0f, next, 0f);
+        if (Mathf.Abs(Mathf.DeltaAngle(next, targetYaw)) < 0.5f)
+        {
+            hasFacingTarget = false;
+        }
+    }
+
+    // ---- Idle-obstacle mode ----
+
+    // After a stop or an arrival, wait for the agent to stand still, then become an obstacle.
+    private void BeginSettling()
+    {
+        if (!UsesIdleObstacle || isObstacleMode)
+        {
+            return;
+        }
+
+        isSettling = true;
+        settleStartTime = Time.unscaledTime;
+    }
+
+    private void UpdateSettling()
+    {
+        if (isMoving)
+        {
+            isSettling = false;
+            return;
+        }
+
+        bool stopped = !agent.enabled || agent.velocity.sqrMagnitude < 0.04f;
+        if (stopped || Time.unscaledTime - settleStartTime > SettleTimeout)
+        {
+            isSettling = false;
+            EnterObstacleMode();
+        }
+    }
+
+    // Agent off, carving obstacle on: other units now path around this one.
+    private void EnterObstacleMode()
+    {
+        if (isObstacleMode)
+        {
+            return;
+        }
+
+        if (agent.enabled && agent.isOnNavMesh)
+        {
+            agent.ResetPath();
+        }
+
+        isObstacleMode = true;
+        isSettling = false;
+        agent.enabled = false;
+        idleObstacle.enabled = true;
+    }
+
+    // Obstacle off first: the NavMesh needs a few frames to fill the hole under the unit.
+    private void BeginWakeUp()
+    {
+        isWakingUp = true;
+        wakeStartFrame = Time.frameCount;
+        wakeStartTime = Time.unscaledTime;
+        idleObstacle.enabled = false;
+    }
+
+    private void UpdateWakeUp()
+    {
+        if (Time.frameCount <= wakeStartFrame + 1)
+        {
+            return;
+        }
+
+        Vector3 feet = FeetPosition();
+        NavMeshHit hit = default;
+        bool onMesh = NavMesh.SamplePosition(feet, out hit, WakeNavMeshTolerance, NavMesh.AllAreas);
+        // Standing inside a neighbour's hole: after a few frames, step out to the closest NavMesh point.
+        bool fallback = !onMesh && Time.frameCount > wakeStartFrame + WakeFramesBeforeFallback
+                        && NavMesh.SamplePosition(feet, out hit, WakeFallbackRadius, NavMesh.AllAreas);
+
+        if (onMesh || fallback)
+        {
+            agent.enabled = true;
+            isObstacleMode = false;
+            isWakingUp = false;
+            if (fallback)
+            {
+                agent.Warp(hit.position);
+            }
+
+            for (int i = 0; i < AreaCount; i++)
+            {
+                if (areaCostSet[i])
+                {
+                    agent.SetAreaCost(i, areaCosts[i]);
+                }
+            }
+
+            ExecuteOrder(pendingDestination, pendingHasFacing, pendingFacePoint, pendingMaxLength);
+            return;
+        }
+
+        if (Time.unscaledTime - wakeStartTime > WakeTimeout)
+        {
+            // The NavMesh never came back under the unit: stay an obstacle and report the failure.
+            isWakingUp = false;
+            idleObstacle.enabled = true;
+            PathFailed(pendingDestination);
+        }
+    }
+
+    // Feet level: the NavMesh position of the agent, or the transform minus the base offset when the agent is off.
+    private Vector3 FeetPosition()
+    {
+        return agent.enabled ? agent.nextPosition : transform.position - Vector3.up * agent.baseOffset;
+    }
+
     // Snaps the destination to the NavMesh, computes the path and fills the corners buffer.
     private bool ComputePath(Vector3 destination, out int cornerCount, out bool isComplete)
     {
@@ -242,12 +600,6 @@ public class UnitMover : MonoBehaviour
 
         if (agent == null)
         {
-            return false;
-        }
-
-        if (!agent.isOnNavMesh)
-        {
-            Debug.LogError("UnitMover: the unit is not on the NavMesh.", this);
             return false;
         }
 
@@ -261,8 +613,36 @@ public class UnitMover : MonoBehaviour
             return false;
         }
 
-        if (!agent.CalculatePath(hit.position, path) || path.status == NavMeshPathStatus.PathInvalid)
+        if (agent.enabled && agent.isOnNavMesh)
         {
+            if (!agent.CalculatePath(hit.position, path) || path.status == NavMeshPathStatus.PathInvalid)
+            {
+                return false;
+            }
+        }
+        else if (isObstacleMode || isWakingUp)
+        {
+            // The agent is off: use the static query with this unit's agent type and costs.
+            // The unit may stand inside its own carved hole, so the path starts at the closest NavMesh point
+            // (the unit will walk straight out of the hole once it wakes up: this estimate is unbiased).
+            if (!NavMesh.SamplePosition(FeetPosition(), out NavMeshHit start, OwnHoleSearchRadius, filter))
+            {
+                return false;
+            }
+
+            for (int i = 0; i < AreaCount; i++)
+            {
+                filter.SetAreaCost(i, areaCosts[i]);
+            }
+
+            if (!NavMesh.CalculatePath(start.position, hit.position, filter, path) || path.status == NavMeshPathStatus.PathInvalid)
+            {
+                return false;
+            }
+        }
+        else
+        {
+            Debug.LogError("UnitMover: the unit is not on the NavMesh.", this);
             return false;
         }
 

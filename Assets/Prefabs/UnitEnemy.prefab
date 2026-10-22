@@ -8,6 +8,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1847993490452819210, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
+      propertyPath: enforced
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4257288352082337060, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -118,6 +122,13 @@ MonoBehaviour:
   contactDistance: 1.5
   scanInterval: 0.2
   chaseRepathInterval: 0.3
+  eyeHeight: 0.5
+  sightBlockers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  searchDuration: 4
+  scanAngle: 90
+  investigateTimeout: 6
 --- !u!114 &4870326745827608233 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6187509247932767308, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}

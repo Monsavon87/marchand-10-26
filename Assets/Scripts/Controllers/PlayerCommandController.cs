@@ -8,6 +8,8 @@ using UnityEngine;
 public class PlayerCommandController : MonoBehaviour
 {
     [SerializeField] private SelectionManager selection;
+    [Tooltip("Optional: authorizes the orders (e.g. the combat manager that limits the walking distance). Empty = free orders.")]
+    [SerializeField] private MoveOrderGate gate;
     [Tooltip("Distance between two units of the formation, in meters.")]
     [SerializeField] private float formationSpacing = 1.6f;
 
@@ -51,7 +53,7 @@ public class PlayerCommandController : MonoBehaviour
 
         if (count == 1)
         {
-            units[0].Mover.MoveTo(point);
+            Order(units[0].Mover, point);
             return;
         }
 
@@ -98,7 +100,20 @@ public class PlayerCommandController : MonoBehaviour
             }
 
             slotTaken[best] = true;
-            units[unitIndex].Mover.MoveTo(slots[best]);
+            Order(units[unitIndex].Mover, slots[best]);
+        }
+    }
+
+    // Through the gate when there is one (it may shorten or refuse the move), straight to the mover otherwise.
+    private void Order(UnitMover mover, Vector3 destination)
+    {
+        if (gate != null)
+        {
+            gate.RequestMove(mover, destination);
+        }
+        else
+        {
+            mover.MoveTo(destination);
         }
     }
 }
