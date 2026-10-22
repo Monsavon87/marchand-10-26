@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// Shows the player where the unit will go: a preview line toward the hovered point,
 /// the remaining path while moving, and a marker at the destination.
-/// With a movement budget, the preview is green as far as the unit can walk and red beyond.
+/// With a movement budget, the preview is green as far as the unit walks before the round ends and red beyond.
 /// Read-only: it only queries UnitMover and never gives orders.
 /// </summary>
 public class PathPreview : MonoBehaviour
@@ -260,7 +260,7 @@ public class PathPreview : MonoBehaviour
         }
 
         // Green as far as the remaining movement allows, red beyond.
-        PathMath.SplitAt(points, count, budget.Remaining, inRangePoints, out int inRangeCount, outOfRangePoints, out int outOfRangeCount);
+        PathMath.SplitAt(points, count, budget.UsableDistance, inRangePoints, out int inRangeCount, outOfRangePoints, out int outOfRangeCount);
         if (inRangeCount >= 2)
         {
             DrawLine(hoverLine, inRangePoints, inRangeCount);

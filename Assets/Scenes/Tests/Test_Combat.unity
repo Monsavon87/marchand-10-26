@@ -1471,7 +1471,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CombatManager
   roundDuration: 6
   pauseKey: 1
-  minOrderDistance: 0.5
+  minOrderTime: 0.4
 --- !u!4 &616431160
 Transform:
   m_ObjectHideFlags: 0
@@ -1926,6 +1926,10 @@ PrefabInstance:
     - target: {fileID: 4689141401254224031, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
       propertyPath: m_Name
       value: Enemy_Guard
+      objectReference: {fileID: 0}
+    - target: {fileID: 6047603069020883078, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
+      propertyPath: m_Speed
+      value: 1.2
       objectReference: {fileID: 0}
     - target: {fileID: 6047603069020883078, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
       propertyPath: avoidancePriority
@@ -2648,6 +2652,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5018685970683581027, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
+      propertyPath: m_Speed
+      value: 1.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5018685970683581027, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
       propertyPath: avoidancePriority
       value: 50
       objectReference: {fileID: 0}
@@ -2979,6 +2987,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5018685970683581027, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
+      propertyPath: m_Speed
+      value: 1.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5018685970683581027, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
       propertyPath: avoidancePriority
       value: 45
       objectReference: {fileID: 0}
@@ -3062,6 +3074,10 @@ PrefabInstance:
     - target: {fileID: 4689141401254224031, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
       propertyPath: m_Name
       value: Enemy_Patrol_North
+      objectReference: {fileID: 0}
+    - target: {fileID: 6047603069020883078, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
+      propertyPath: m_Speed
+      value: 1.2
       objectReference: {fileID: 0}
     - target: {fileID: 6047603069020883078, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
       propertyPath: avoidancePriority
@@ -3199,6 +3215,10 @@ PrefabInstance:
     - target: {fileID: 4257288352082337060, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5018685970683581027, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
+      propertyPath: m_Speed
+      value: 1.4
       objectReference: {fileID: 0}
     - target: {fileID: 6294835999223347834, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
       propertyPath: m_Name
@@ -3503,6 +3523,10 @@ PrefabInstance:
     - target: {fileID: 4689141401254224031, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
       propertyPath: m_Name
       value: Enemy_Patrol_East
+      objectReference: {fileID: 0}
+    - target: {fileID: 6047603069020883078, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
+      propertyPath: m_Speed
+      value: 1.2
       objectReference: {fileID: 0}
     - target: {fileID: 6047603069020883078, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
       propertyPath: avoidancePriority

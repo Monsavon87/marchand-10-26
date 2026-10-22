@@ -158,6 +158,15 @@ Projet Unity 6 (URP, 3D) : marchand-10-2026-mistral.
 - Vérifié (Play Mode) : patrouilles décomptées (4,4 à 6,9 m restants en cours de manche, rechargées à la suivante) ; poursuite jusqu'au contact (1,3 m) puis arrêt sans reprise ; poursuite d'une cible à 13 m : budget presque épuisé en fin de manche (0,47 m), puis reprise à la manche suivante et contact atteint ; `Test_Terrain` : patrouilles OK sans gate ; console sans erreur ; `ProjectSettings` inchangé.
 - Non vérifié par moi : enquête et scan sous budget (timeout suspendu) en situation réelle, ennemis bloqués longtemps sans budget, ressenti à l'écran.
 
+### Étape 8 quater — Budget en temps d'action, vitesses réalistes
+- Commit de sécurité préalable : `cb2abe3` (étape 8 ter).
+- Le budget n'est plus une distance mais un **temps d'action** : 6 s par manche et par unité (`maxTime`). Marcher coûte le temps passé à marcher (donc un terrain lent coûte plus) ; rester immobile ne coûte rien ; les futures actions puiseront dans la même réserve. La vitesse redevient une donnée propre à l'unité (agent) : joueurs 1,4 m/s, ennemis 1,2 m/s (≈ 8,4 m / 7,2 m par manche), posées sur les instances de `Test_Combat` seulement (prefabs et autres scènes inchangés).
+- `CombatMovementBudget` : `Max` / `Remaining` en secondes, `RoundTimeLeft` (donné par le manager), `UsableTime`, `UsableDistance` (= temps utilisable × vitesse). `UnitMover` : propriété en lecture seule `Speed` (vitesse de base × multiplicateur de terrain), rien d'autre.
+- `CombatManager` : décompte le temps (pas la distance) quand l'unité se déplace vraiment ; plus de coupe du chemin en mètres : l'unité marche en continu d'une manche à l'autre. Elle ne s'arrête que si son temps est épuisé (sauf dans les 0,1 s avant la fin de manche, pour éviter un arrêt d'une image au rechargement), attend la manche suivante, puis repart (`minOrderTime` 0,4 s).
+- Aperçu : vert = ce que l'unité parcourt avant la fin de la manche en cours, rouge = la suite. HUD : « Temps : x / 6,0 s ». Ancien champ `maxDistance` des prefabs remplacé par `maxTime` (défaut 6).
+- Vérifié (Play Mode) : vitesse mesurée 1,40 m/s ; aperçu 3,5 s restantes → 4,9 m ; ordre de 24 m terminé sans pause entre les manches (z = 13,98 au point visé, ordre effacé) ; temps restant du budget = temps restant de la manche pendant la marche (pas de perte) ; budget épuisé artificiellement (1,5 s restantes) : marche de 2,1 m, arrêt, attente, reprise à la manche suivante ; console sans erreur ; `ProjectSettings` inchangé.
+- Non vérifié par moi : ennemis (patrouille/poursuite) sous le nouveau budget, terrain lent (boue absente de `Test_Combat`), `Test_Terrain` non rejoué (seul `UnitMover.Speed` y a été ajouté, en lecture seule), ressenti à l'écran. La classe garde le nom `CombatMovementBudget` (renommage au ménage final).
+
 ## À faire / en attente
 - Tester `Test_Combat` dans le Game view : sélectionner une unité, survoler au-delà de la portée (rouge), cliquer, Espace pour la pause.
 - Regarder les gizmos de détection dans la Scene view (sélectionner `Enemy_1`).

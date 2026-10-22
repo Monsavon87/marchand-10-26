@@ -59,6 +59,7 @@ public class UnitMover : MonoBehaviour
     private NavMeshPath path;
     private bool isMoving;
     private float baseSpeed;
+    private float speedMultiplier = 1f;
     private int movingAvoidancePriority;
 
     // Facing.
@@ -81,6 +82,9 @@ public class UnitMover : MonoBehaviour
 
     /// <summary>True while an order is being executed.</summary>
     public bool IsMoving => isMoving;
+
+    /// <summary>Walking speed now, in m/s: the speed set on the agent times the terrain multiplier.</summary>
+    public float Speed => baseSpeed * speedMultiplier;
 
     /// <summary>True while an accepted order is waiting for the agent to start (idle-obstacle mode wake-up).</summary>
     public bool IsStarting => isWakingUp;
@@ -248,7 +252,8 @@ public class UnitMover : MonoBehaviour
             return;
         }
 
-        agent.speed = baseSpeed * Mathf.Max(0.01f, multiplier);
+        speedMultiplier = Mathf.Max(0.01f, multiplier);
+        agent.speed = baseSpeed * speedMultiplier;
     }
 
     /// <summary>

@@ -6,8 +6,8 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// Real-time combat with pause. It owns the time mode (Space pauses), the action rounds that refill the movement
 /// budgets, and it authorizes move orders.
-/// A move longer than the movement left is walked in legs: the unit goes as far as its budget allows, then carries
-/// on toward the clicked point as soon as it has movement again (next round), until it gets there.
+/// Walking costs action time (the budget is in seconds, refilled every round). A unit walks continuously toward the
+/// clicked point; if its time runs out it stops, waits for the next round and carries on until it gets there.
 /// UnitMover only executes; this manager decides.
 /// While paused the game time is frozen: orders are accepted and the units start walking when play resumes.
 /// </summary>
@@ -15,12 +15,16 @@ public class CombatManager : MoveOrderGate
 {
     // After a leg is requested, the unit has this many frames to start; otherwise the order is given up (no path).
     private const int LegStartFrames = 3;
+    // A unit that moved less than this in a frame is standing still: standing still costs nothing.
+    private const float MinStepPerFrame = 0.001f;
+    // Out of time this close to the end of the round: the refill comes next frame, so the unit is not stopped.
+    private const float RoundEndTolerance = 0.1f;
 
     [Tooltip("Length of an action round in game seconds. Every movement budget is refilled at the start of a round.")]
     [SerializeField] private float roundDuration = 6f;
     [SerializeField] private Key pauseKey = Key.Space;
-    [Tooltip("A walking leg shorter than this is not started: the unit waits for the next round instead.")]
-    [SerializeField] private float minOrderDistance = 0.5f;
+    [Tooltip("A walking leg is not started with less action time than this (seconds): the unit waits for the next round.")]
+    [SerializeField] private float minOrderTime = 0.4f;
 
     private float roundElapsed;
 
@@ -133,9 +137,9 @@ public class CombatManager : MoveOrderGate
     private void BeginLeg(CombatMovementBudget budget)
     {
         UnitMover mover = budget.Mover;
-        if (budget.Remaining < minOrderDistance)
+        if (budget.Remaining < minOrderTime)
         {
-            // No movement left: the order waits for the next round and the unit stops where it is.
+            // No action time left: the order waits for the next round and the unit stops where it is.
             budget.WaitingForBudget = true;
             if (mover.IsMoving)
             {
@@ -152,7 +156,7 @@ public class CombatManager : MoveOrderGate
         budget.LastPosition = mover.transform.position;
         budget.LegSerial = mover.OrderSerial;
         budget.LegFrame = Time.frameCount;
-        mover.MoveTo(budget.PendingDestination, budget.PendingDestination, budget.Remaining);
+        mover.MoveTo(budget.PendingDestination, budget.PendingDestination);
     }
 
     private void StartNewRound()
@@ -169,7 +173,7 @@ public class CombatManager : MoveOrderGate
         RoundStarted();
     }
 
-    // Spends the budget with the distance really walked, stops a unit that used it all up,
+    // Spends the budget with the time spent walking, stops a unit that used it all up,
     // and chains the walking legs of the orders that need several rounds.
     private void TrackMovement()
     {
@@ -179,13 +183,17 @@ public class CombatManager : MoveOrderGate
             CombatMovementBudget budget = all[i];
             UnitMover mover = budget.Mover;
             Vector3 position = mover.transform.position;
+            budget.RoundTimeLeft = RoundTimeRemaining;
             if (mover.IsMoving)
             {
                 Vector3 step = position - budget.LastPosition;
                 step.y = 0f;
-                budget.Spend(step.magnitude);
+                if (step.sqrMagnitude > MinStepPerFrame * MinStepPerFrame)
+                {
+                    budget.Spend(Time.deltaTime);
+                }
 
-                if (budget.Remaining <= 0f)
+                if (budget.Remaining <= 0f && RoundTimeRemaining > RoundEndTolerance)
                 {
                     mover.Stop();
                     budget.StoppedByBudget = true;
@@ -216,7 +224,7 @@ public class CombatManager : MoveOrderGate
 
         if (budget.WaitingForBudget)
         {
-            if (budget.Remaining >= minOrderDistance)
+            if (budget.Remaining >= minOrderTime)
             {
                 BeginLeg(budget);
             }
@@ -242,8 +250,8 @@ public class CombatManager : MoveOrderGate
             return;
         }
 
-        // The unit stopped short: carry on if it still has movement, otherwise wait for the next round.
-        if (budget.Remaining >= minOrderDistance)
+        // The unit stopped short: carry on if it still has action time, otherwise wait for the next round.
+        if (budget.Remaining >= minOrderTime)
         {
             BeginLeg(budget);
         }

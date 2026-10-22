@@ -1,7 +1,7 @@
 using UnityEngine;
 
 /// <summary>
-/// Minimal combat readout: PAUSE banner, round timer, and the movement left for the first selected unit.
+/// Minimal combat readout: PAUSE banner, round timer, and the action time left for the first selected unit.
 /// Uses the built-in legacy Text (no font import needed). Read-only.
 /// </summary>
 public class CombatHud : MonoBehaviour
@@ -62,7 +62,7 @@ public class CombatHud : MonoBehaviour
             CombatMovementBudget budget = combat.FindBudget(selection.Selected[0].Mover);
             if (budget != null)
             {
-                budgetText = "Mouvement : " + budget.Remaining.ToString("F1") + " / " + budget.Max.ToString("F1") + " m";
+                budgetText = "Temps : " + budget.Remaining.ToString("F1") + " / " + budget.Max.ToString("F1") + " s";
             }
         }
 
