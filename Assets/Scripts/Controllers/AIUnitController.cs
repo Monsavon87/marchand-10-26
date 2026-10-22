@@ -86,9 +86,51 @@ public class AIUnitController : MonoBehaviour
     private float investigateStartTime;
     private float scanStartTime;
     private float scanBaseYaw;
+    private bool interrupted;
 
     /// <summary>Current behavior, for debugging.</summary>
     public AIState State => state;
+
+    /// <summary>
+    /// Freezes the brain and stops the unit (for example during an encounter on the campaign map).
+    /// The behavior is kept: Resume carries on with it.
+    /// </summary>
+    public void Interrupt()
+    {
+        interrupted = true;
+        Halt();
+    }
+
+    /// <summary>Ends an Interrupt: the unit goes back to whatever it was doing.</summary>
+    public void Resume()
+    {
+        if (!interrupted)
+        {
+            return;
+        }
+
+        interrupted = false;
+        bool hasRoute = patrolPoints != null && patrolPoints.Length > 0;
+        switch (state)
+        {
+            case AIState.Patrol:
+                // While waiting at a point, the normal timer sends the unit on.
+                if (!isWaiting && hasRoute)
+                {
+                    Order(patrolPoints[patrolIndex].position);
+                }
+
+                break;
+
+            case AIState.Investigate:
+                Order(lastSeenPosition);
+                break;
+
+            case AIState.ReturnToPatrol:
+                Order(hasRoute ? patrolPoints[patrolIndex].position : homePosition);
+                break;
+        }
+    }
 
     private void Start()
     {
@@ -157,6 +199,11 @@ public class AIUnitController : MonoBehaviour
 
     private void Update()
     {
+        if (interrupted)
+        {
+            return;
+        }
+
         float now = Time.time;
         switch (state)
         {
