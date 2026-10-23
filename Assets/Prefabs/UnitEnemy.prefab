@@ -89,28 +89,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1188601273024878794}
   m_SourcePrefab: {fileID: 100100000, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
---- !u!114 &975095057808525160 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1999784559506562445, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
-  m_PrefabInstance: {fileID: 1605694619521751781}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4689141401254224031}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0e3f76ddfd0d34042b3be29eba51d542, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UnitMover
---- !u!114 &1147845017007896559 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1847993490452819210, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
-  m_PrefabInstance: {fileID: 1605694619521751781}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4689141401254224031}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 31dd3fa3278eec94eaf840fae5fd58d1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CombatMovementBudget
 --- !u!1 &4689141401254224031 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6294835999223347834, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
@@ -128,10 +106,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1c99c9a17addd948955cb0a3dd624d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AIUnitController
-  mover: {fileID: 975095057808525160}
+  actions: {fileID: 6764932271480760997}
   ownTeam: {fileID: 4870326745827608233}
-  gate: {fileID: 0}
-  budget: {fileID: 1147845017007896559}
   patrolPoints: []
   waitAtPoint: 1.5
   detectionRadius: 9
@@ -157,3 +133,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d71cb4dcc2ae8c64aafcec62dc947984, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnitTeam
+--- !u!114 &6764932271480760997 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5451973146153742400, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
+  m_PrefabInstance: {fileID: 1605694619521751781}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4689141401254224031}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bf4b868588304b4e9bcd347ff057c17, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ActionController

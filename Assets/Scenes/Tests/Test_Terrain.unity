@@ -3158,7 +3158,7 @@ MonoBehaviour:
   strategyCamera: {fileID: 156459002}
   selectionCanvas: {fileID: 2074684371}
   selectionBox: {fileID: 1512056285}
-  dragThreshold: 8
+  dragThreshold: 16
 --- !u!4 &1899806017
 Transform:
   m_ObjectHideFlags: 0

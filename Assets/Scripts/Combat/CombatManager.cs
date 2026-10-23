@@ -28,6 +28,8 @@ public class CombatManager : MoveOrderGate
 
     private float roundElapsed;
 
+    public override bool ReportsThroughBudget => true;
+
     public bool IsPaused { get; private set; }
     public int RoundNumber { get; private set; } = 1;
     public float RoundTimeRemaining => Mathf.Max(0f, roundDuration - roundElapsed);

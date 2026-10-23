@@ -3,13 +3,12 @@ using UnityEngine;
 /// <summary>
 /// Turns a ground click into move orders for the selected units.
 /// One unit goes exactly to the clicked point; several units spread into a small formation around it.
-/// Only talks to UnitMover (through SelectableUnit); it does not read the mouse itself.
+/// It never moves a unit itself: it asks the unit's ActionController (the same entry point the AI uses).
+/// It does not read the mouse itself.
 /// </summary>
 public class PlayerCommandController : MonoBehaviour
 {
     [SerializeField] private SelectionManager selection;
-    [Tooltip("Optional: authorizes the orders (e.g. the combat manager that limits the walking distance). Empty = free orders.")]
-    [SerializeField] private MoveOrderGate gate;
     [Tooltip("Distance between two units of the formation, in meters.")]
     [SerializeField] private float formationSpacing = 1.6f;
 
@@ -53,7 +52,7 @@ public class PlayerCommandController : MonoBehaviour
 
         if (count == 1)
         {
-            Order(units[0].Mover, point);
+            Order(units[0], point);
             return;
         }
 
@@ -100,20 +99,20 @@ public class PlayerCommandController : MonoBehaviour
             }
 
             slotTaken[best] = true;
-            Order(units[unitIndex].Mover, slots[best]);
+            Order(units[unitIndex], slots[best]);
         }
     }
 
-    // Through the gate when there is one (it may shorten or refuse the move), straight to the mover otherwise.
-    private void Order(UnitMover mover, Vector3 destination)
+    // The action controller validates the request, may refuse it (and says why in the console), and runs it.
+    private void Order(SelectableUnit unit, Vector3 destination)
     {
-        if (gate != null)
+        ActionController actions = unit.GetComponent<ActionController>();
+        if (actions == null)
         {
-            gate.RequestMove(mover, destination);
+            Debug.LogError("PlayerCommandController: " + unit.name + " has no ActionController.", unit);
+            return;
         }
-        else
-        {
-            mover.MoveTo(destination);
-        }
+
+        actions.RequestMove(destination);
     }
 }

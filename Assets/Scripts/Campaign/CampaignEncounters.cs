@@ -11,6 +11,7 @@ public class CampaignEncounters : MonoBehaviour
 {
     [SerializeField] private UnitTeam caravanTeam;
     [SerializeField] private UnitMover caravan;
+    [SerializeField] private ActionController caravanActions;
     [Tooltip("The two units touch when they are this close, in meters.")]
     [SerializeField] private float encounterDistance = 2.5f;
     [Tooltip("Seconds the enemy stays stopped after an encounter.")]
@@ -31,9 +32,9 @@ public class CampaignEncounters : MonoBehaviour
 
     private void Start()
     {
-        if (caravanTeam == null || caravan == null)
+        if (caravanTeam == null || caravan == null || caravanActions == null)
         {
-            Debug.LogError("CampaignEncounters: caravanTeam or caravan is not assigned.", this);
+            Debug.LogError("CampaignEncounters: caravanTeam, caravan or caravanActions is not assigned.", this);
             enabled = false;
         }
     }
@@ -93,8 +94,9 @@ public class CampaignEncounters : MonoBehaviour
         heldEnemy = enemy;
         releaseTime = Time.time + holdSeconds;
 
-        caravan.Stop();
-        enemy.GetComponent<UnitMover>().Stop();
+        // Both stop by cancelling their action, so no action is left running for a unit that stands still.
+        caravanActions.Cancel();
+        enemy.GetComponent<ActionController>().Cancel();
         heldAi = enemy.GetComponent<AIUnitController>();
         if (heldAi != null)
         {

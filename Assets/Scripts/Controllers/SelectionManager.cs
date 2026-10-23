@@ -17,8 +17,9 @@ public class SelectionManager : MonoBehaviour
     [SerializeField] private Canvas selectionCanvas;
     [Tooltip("Image (bottom-left anchor and pivot) drawn while dragging the selection rectangle.")]
     [SerializeField] private RectTransform selectionBox;
-    [Tooltip("Mouse movement in pixels before a click becomes a rectangle drag.")]
-    [SerializeField] private float dragThreshold = 8f;
+    [Tooltip("Mouse movement in pixels before a click becomes a rectangle drag. Large enough that the hand's jitter " +
+             "while clicking never turns an order click into a rectangle.")]
+    [SerializeField] private float dragThreshold = 16f;
 
     private readonly List<SelectableUnit> selected = new List<SelectableUnit>();
     private bool isPressing;
@@ -51,6 +52,11 @@ public class SelectionManager : MonoBehaviour
 
         if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
         {
+            if (selected.Count > 0)
+            {
+                Debug.Log("[Sélection] vidée : touche Échap.");
+            }
+
             ClearSelection();
         }
 
@@ -165,6 +171,21 @@ public class SelectionManager : MonoBehaviour
             Mathf.Min(pressPosition.x, releasePosition.x), Mathf.Min(pressPosition.y, releasePosition.y),
             Mathf.Max(pressPosition.x, releasePosition.x), Mathf.Max(pressPosition.y, releasePosition.y));
 
+        // A rectangle around nothing changes nothing: a slip of the hand while clicking must not lose the selection.
+        // (Escape clears it on purpose.)
+        IReadOnlyList<SelectableUnit> all = SelectableUnit.All;
+        bool anyInside = false;
+        for (int i = 0; i < all.Count && !anyInside; i++)
+        {
+            Vector3 screenPoint = viewCamera.WorldToScreenPoint(all[i].transform.position);
+            anyInside = screenPoint.z > 0f && rectangle.Contains(screenPoint);
+        }
+
+        if (!anyInside)
+        {
+            return;
+        }
+
         if (!additive)
         {
             for (int i = selected.Count - 1; i >= 0; i--)
@@ -173,7 +194,6 @@ public class SelectionManager : MonoBehaviour
             }
         }
 
-        IReadOnlyList<SelectableUnit> all = SelectableUnit.All;
         for (int i = 0; i < all.Count; i++)
         {
             Vector3 screenPoint = viewCamera.WorldToScreenPoint(all[i].transform.position);
@@ -215,6 +235,8 @@ public class SelectionManager : MonoBehaviour
     {
         if (!isSelected && selected.Remove(unit))
         {
+            // Not one of our own Deselect calls (those unsubscribe first): the unit was disabled or destroyed.
+            Debug.Log("[Sélection] " + unit.name + " retirée de la sélection : unité désactivée ou détruite.");
             unit.SelectionChanged -= OnUnitSelectionChanged;
             NotifyChanged();
         }

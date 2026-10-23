@@ -39,6 +39,12 @@ public class CampaignTravel : MoveOrderGate
         }
     }
 
+    public override Vector3 ResolveDestination(Vector3 requested)
+    {
+        PointOfInterest town = FindTown(requested);
+        return town != null ? town.Entrance : requested;
+    }
+
     public override bool RequestMove(UnitMover mover, Vector3 destination)
     {
         if (mover != caravan)

@@ -1765,6 +1765,8 @@ MonoBehaviour:
   viewCamera: {fileID: 0}
   damageKey: 25
   damage: 10
+  waitKey: 34
+  waitSeconds: 2
 --- !u!4 &935169568
 Transform:
   m_ObjectHideFlags: 0
@@ -1983,6 +1985,10 @@ PrefabInstance:
       propertyPath: avoidancePriority
       value: 80
       objectReference: {fileID: 0}
+    - target: {fileID: 6764932271480760997, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
+      propertyPath: gate
+      value: 
+      objectReference: {fileID: 616431159}
     - target: {fileID: 7838235911648211243, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
       propertyPath: definition
       value: 
@@ -2711,6 +2717,10 @@ PrefabInstance:
       propertyPath: avoidancePriority
       value: 50
       objectReference: {fileID: 0}
+    - target: {fileID: 5451973146153742400, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
+      propertyPath: gate
+      value: 
+      objectReference: {fileID: 616431159}
     - target: {fileID: 6294835999223347834, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
       propertyPath: m_Name
       value: Player_3
@@ -3050,6 +3060,10 @@ PrefabInstance:
       propertyPath: avoidancePriority
       value: 45
       objectReference: {fileID: 0}
+    - target: {fileID: 5451973146153742400, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
+      propertyPath: gate
+      value: 
+      objectReference: {fileID: 616431159}
     - target: {fileID: 6294835999223347834, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
       propertyPath: m_Name
       value: Player_2
@@ -3139,6 +3153,10 @@ PrefabInstance:
       propertyPath: avoidancePriority
       value: 75
       objectReference: {fileID: 0}
+    - target: {fileID: 6764932271480760997, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
+      propertyPath: gate
+      value: 
+      objectReference: {fileID: 616431159}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3276,6 +3294,10 @@ PrefabInstance:
       propertyPath: m_Speed
       value: 1.4
       objectReference: {fileID: 0}
+    - target: {fileID: 5451973146153742400, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
+      propertyPath: gate
+      value: 
+      objectReference: {fileID: 616431159}
     - target: {fileID: 6294835999223347834, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
       propertyPath: m_Name
       value: Player_1
@@ -3443,7 +3465,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCommandController
   selection: {fileID: 1897075322}
-  gate: {fileID: 616431159}
   formationSpacing: 1.6
 --- !u!114 &1897075322
 MonoBehaviour:
@@ -3461,7 +3482,7 @@ MonoBehaviour:
   strategyCamera: {fileID: 119547057}
   selectionCanvas: {fileID: 271696636}
   selectionBox: {fileID: 424716471}
-  dragThreshold: 8
+  dragThreshold: 16
 --- !u!4 &1897075323
 Transform:
   m_ObjectHideFlags: 0
@@ -3588,6 +3609,10 @@ PrefabInstance:
       propertyPath: avoidancePriority
       value: 70
       objectReference: {fileID: 0}
+    - target: {fileID: 6764932271480760997, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
+      propertyPath: gate
+      value: 
+      objectReference: {fileID: 616431159}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

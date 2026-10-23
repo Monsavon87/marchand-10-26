@@ -3,10 +3,9 @@ using UnityEngine;
 /// <summary>
 /// Basic enemy brain: patrols between points, chases a player unit it can SEE come close,
 /// and when the target is lost it checks the last seen position, looks around, then resumes its patrol.
-/// It drives the unit through UnitMover only, exactly like the player's commands do
+/// It acts through the unit's ActionController only, exactly like the player's commands do, so whatever limits
+/// the player's actions (the combat manager's action time, for example) limits the AI the same way
 /// (the look-around only turns the stationary unit in place).
-/// With an order gate (the combat manager) its moves cost movement like the player's: the unit walks as far as
-/// its budget allows, waits for the next round, and carries on toward the same destination.
 /// Detection is visual only: a solid object between the eyes and the target blocks it
 /// (hearing will be a separate detection source).
 /// </summary>
@@ -30,14 +29,8 @@ public class AIUnitController : MonoBehaviour
     // Head sweep: front -> one side -> other side -> front, each leg smoothed.
     private static readonly float[] SweepKeys = { 0f, 1f, -1f, 0f };
 
-    [SerializeField] private UnitMover mover;
+    [SerializeField] private ActionController actions;
     [SerializeField] private UnitTeam ownTeam;
-
-    [Header("Combat (optional)")]
-    [Tooltip("When set, every move is sent through it and costs movement. Without it the unit moves freely.")]
-    [SerializeField] private MoveOrderGate gate;
-    [Tooltip("Movement budget of this unit. Required when a gate is set.")]
-    [SerializeField] private CombatMovementBudget budget;
 
     [Header("Patrol")]
     [Tooltip("Points visited in order, in a loop. Without points the unit stays where it starts.")]
@@ -134,16 +127,9 @@ public class AIUnitController : MonoBehaviour
 
     private void Start()
     {
-        if (mover == null || ownTeam == null)
+        if (actions == null || ownTeam == null)
         {
-            Debug.LogError("AIUnitController: mover or ownTeam is not assigned.", this);
-            enabled = false;
-            return;
-        }
-
-        if (gate != null && budget == null)
-        {
-            Debug.LogError("AIUnitController: a gate is set but the movement budget is not assigned.", this);
+            Debug.LogError("AIUnitController: actions or ownTeam is not assigned.", this);
             enabled = false;
             return;
         }
@@ -163,38 +149,18 @@ public class AIUnitController : MonoBehaviour
 
     private void OnEnable()
     {
-        if (mover == null)
+        if (actions != null)
         {
-            return;
+            actions.ActionFinished += OnActionFinished;
         }
-
-        if (gate != null && budget != null)
-        {
-            // With a gate, an order spans several walking legs: only the budget knows when it really ended.
-            budget.OrderCompleted += OnArrived;
-            budget.OrderFailed += OnOrderFailed;
-            return;
-        }
-
-        mover.Arrived += OnArrived;
-        mover.PathFailed += OnPathFailed;
     }
 
     private void OnDisable()
     {
-        if (mover == null)
+        if (actions != null)
         {
-            return;
+            actions.ActionFinished -= OnActionFinished;
         }
-
-        if (budget != null)
-        {
-            budget.OrderCompleted -= OnArrived;
-            budget.OrderFailed -= OnOrderFailed;
-        }
-
-        mover.Arrived -= OnArrived;
-        mover.PathFailed -= OnPathFailed;
     }
 
     private void Update()
@@ -222,7 +188,7 @@ public class AIUnitController : MonoBehaviour
                 break;
 
             case AIState.Investigate:
-                if (budget != null && budget.WaitingForBudget)
+                if (actions.WaitingForTime)
                 {
                     // No movement left: waiting for the next round is not time lost looking for the target.
                     investigateStartTime += Time.deltaTime;
@@ -332,7 +298,7 @@ public class AIUnitController : MonoBehaviour
         if (distance <= contactDistance)
         {
             // In contact: hold position (combat comes in a later step).
-            if (mover.IsMoving || (budget != null && budget.HasPending))
+            if (actions.IsBusy)
             {
                 Halt();
             }
@@ -438,29 +404,37 @@ public class AIUnitController : MonoBehaviour
         Order(patrolPoints[patrolIndex].position);
     }
 
-    // Sends the unit toward a point, through the gate when there is one. A refused order is a path failure.
+    // Asks the unit to walk to a point. A refused request is treated like an unreachable point.
     private void Order(Vector3 destination)
     {
-        if (gate == null)
-        {
-            mover.MoveTo(destination);
-        }
-        else if (!gate.RequestMove(mover, destination))
+        if (!actions.RequestMove(destination))
         {
             OnPathFailed(destination);
         }
     }
 
-    // Stops the unit and drops any order the gate was still carrying for it.
+    // Stops the unit and drops the action in progress.
     private void Halt()
     {
-        if (gate != null)
+        actions.Cancel();
+    }
+
+    // A walk that ends: arriving is the old "Arrived", an impossible one is the old "path failed".
+    // A cancelled one was our own doing (a new state, a stop): nothing to react to.
+    private void OnActionFinished(UnitAction action, ActionResult result)
+    {
+        if (!(action is MoveAction))
         {
-            gate.CancelOrder(mover);
+            return;
         }
-        else
+
+        if (result == ActionResult.Succeeded)
         {
-            mover.Stop();
+            OnArrived();
+        }
+        else if (result == ActionResult.Impossible)
+        {
+            OnPathFailed(((MoveAction)action).Destination);
         }
     }
 
@@ -510,8 +484,6 @@ public class AIUnitController : MonoBehaviour
                 break;
         }
     }
-
-    private void OnOrderFailed() => OnPathFailed(budget.PendingDestination);
 
     private float FlatDistance(Vector3 point)
     {

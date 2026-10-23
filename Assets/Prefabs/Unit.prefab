@@ -712,6 +712,7 @@ GameObject:
   - component: {fileID: 8831436512866986958}
   - component: {fileID: 4511564987767383823}
   - component: {fileID: 8825606173863430420}
+  - component: {fileID: 5451973146153742400}
   m_Layer: 0
   m_Name: Unit
   m_TagString: Untagged
@@ -985,9 +986,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnitDeath
   health: {fileID: 4511564987767383823}
-  mover: {fileID: 1999784559506562445}
-  budget: {fileID: 1847993490452819210}
+  actions: {fileID: 5451973146153742400}
   ai: {fileID: 0}
+--- !u!114 &5451973146153742400
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6294835999223347834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bf4b868588304b4e9bcd347ff057c17, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ActionController
+  mover: {fileID: 1999784559506562445}
+  health: {fileID: 4511564987767383823}
+  budget: {fileID: 1847993490452819210}
+  gate: {fileID: 0}
+  logActions: 1
 --- !u!1 &6520645836577663083
 GameObject:
   m_ObjectHideFlags: 0
