@@ -63,7 +63,7 @@ Dernière mise à jour : 2026-10-23 (gestion du combat).
 
 ### 6.3 bis Gestion du combat
 - Un combat **commence** avec les unités présentes et **se termine** quand un camp n'a plus d'unité vivante (victoire du camp restant, ou match nul si les deux tombent ensemble). Événements : début de combat, pause/reprise (avec la raison), fin de combat avec le vainqueur.
-- **Espace** met en pause (temps de jeu suspendu, interface utilisable, ordres possibles). **Pauses automatiques** (réglables, activées par défaut) : quand une unité alliée meurt, et quand un ennemi **entre en vue** d'une unité du joueur (rayon de vue 9 m en 360°, avec ligne de vue ; un ennemi déjà visible au début ne déclenche pas de pause). Le jeu affiche la raison.
+- **Espace** met en pause (temps de jeu suspendu, interface utilisable, ordres possibles). **Pauses automatiques** (réglables, activées par défaut) : quand une unité alliée meurt, et quand **une unité ennemie repère** une unité du joueur (décision du 2026-10-23, elle remplace « un ennemi entre en vue du joueur ») : c'est l'IA ennemie qui détecte (vue de l'ennemi, ligne de vue, ou attaque reçue), une seule pause par unité ennemie, la première fois. Le jeu affiche la raison (« un ennemi vous a repéré ») sous la bannière PAUSE ; à la fin du combat, la bannière PAUSE disparaît pour laisser place au résultat.
 - La mort d'une unité vide sa file et annule son action ; les ordres des autres qui la visaient s'arrêtent ou sont ignorés quand leur tour vient.
 
 ### 6.4 Unités
@@ -126,6 +126,15 @@ Dernière mise à jour : 2026-10-23 (gestion du combat).
 - **Message de refus** (sous la bannière) : « Player_2 : la ligne de tir est bloquée », « la cible est trop proche », « aucun chemin... », visible 3 s. Seuls les refus du camp du joueur s'affichent.
 - **Écran de fin** : « Victoire ! », « Défaite » ou « Match nul », bouton **Continuer** : recharge la scène de combat (champ « scène suivante » prévu pour la campagne plus tard).
 - Scène de validation : `Test_Combat_2v2` (Fantassin + Archer de chaque côté, ennemis pilotés par l'IA : Fantassin Agressif, Archer Prudent).
+
+### 6.8 De la carte au combat et retour (étape C9)
+- Sur la carte, chaque pion est un **groupe** (`PartyRoster`) : la caravane du joueur (au départ Fantassin + Archer) et chaque bande ennemie (ex. 2 Fantassins, ou Fantassin + Archer), avec les PV de chacun, le profil d'IA des ennemis et le **butin** de la bande (valeur fixe en pièces, sans lien avec l'économie pour l'instant).
+- Quand la caravane touche une bande, après 1 s, la **carte est mise en veille** (tout reste figé : position, heure, patrouilles, caméra) et l'**arène** `Combat_Arena` est chargée par-dessus. Une seule arène pour le prototype (champ « arène » prévu pour en choisir d'autres).
+- Les unités de combat sont créées à partir de l'`EncounterData` (types, PV actuels, profils), avec les mêmes prefabs que partout : le joueur d'un côté, l'ennemi de l'autre, en ligne. L'interface et les règles sont celles du combat normal.
+- **Fin du combat** : écran « Victoire » / « Défaite » avec les pertes des deux camps et, en cas de victoire, le butin. « Continuer » ramène à la carte.
+- **Victoire** : la caravane retrouve sa position, les survivants gardent leurs PV, les morts quittent le groupe, la bande vaincue disparaît, le butin est ajouté au total (affiché en bas de l'écran de la carte avec le groupe).
+- **Défaite** (décision du 2026-10-23, provisoire) : écran **« Fin de partie »** avec un bouton « Recommencer » qui recharge la carte.
+- Il n'y a pas encore de soin : les PV perdus le restent d'un combat à l'autre.
 
 ## 7. Méthode de travail (rappel)
 

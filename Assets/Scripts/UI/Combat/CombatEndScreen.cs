@@ -3,10 +3,10 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
-/// The end-of-combat screen: "Victoire", "Défaite" or "Match nul", with a Continue button. It appears when the
-/// combat manager says the combat ended. Continue loads the scene named in 'nextScene', or reloads the current
-/// scene when it is empty (until the campaign is linked to the combat). Loading a scene by name needs it in the
-/// build settings; in the editor the current scene is reloaded directly.
+/// The end-of-combat screen: "Victoire", "Défaite" or "Match nul", the losses of both sides and the loot, with a
+/// Continue button. It appears when the combat manager says the combat ended. When the fight came from the campaign
+/// map, Continue asks to go back there (through the encounter channel). Otherwise (a test arena) it loads the scene
+/// named in 'nextScene', or reloads the current scene when it is empty.
 /// </summary>
 public class CombatEndScreen : MonoBehaviour
 {
@@ -15,11 +15,17 @@ public class CombatEndScreen : MonoBehaviour
     [SerializeField] private GameObject root;
     [SerializeField] private Text titleText;
     [SerializeField] private Button continueButton;
+    [Tooltip("Optional: the losses and the loot. Needs the encounter channel.")]
+    [SerializeField] private Text detailsText;
+    [Tooltip("Optional: the link with the campaign map.")]
+    [SerializeField] private EncounterChannel channel;
     [Tooltip("Scene to load when Continue is pressed. Empty = reload this scene.")]
     [SerializeField] private string nextScene;
     [SerializeField] private Color victoryColor = new Color(0.55f, 0.95f, 0.55f);
     [SerializeField] private Color defeatColor = new Color(1f, 0.45f, 0.4f);
     [SerializeField] private Color drawColor = new Color(0.9f, 0.9f, 0.9f);
+
+    private bool detailsShown;
 
     private void Start()
     {
@@ -31,6 +37,35 @@ public class CombatEndScreen : MonoBehaviour
         }
 
         root.SetActive(false);
+        if (detailsText != null)
+        {
+            detailsText.text = string.Empty;
+        }
+    }
+
+    // The result of the encounter is written by whoever listens to the same end of combat; it may come after us.
+    private void Update()
+    {
+        if (detailsShown || detailsText == null || channel == null || !root.activeSelf)
+        {
+            return;
+        }
+
+        EncounterData encounter = channel.Current;
+        if (encounter == null || !encounter.HasResult)
+        {
+            return;
+        }
+
+        detailsShown = true;
+        string text = "Vos pertes : " + (encounter.PlayerLosses.Count == 0 ? "aucune" : string.Join(", ", encounter.PlayerLosses))
+            + "\nPertes ennemies : " + (encounter.EnemyLosses.Count == 0 ? "aucune" : string.Join(", ", encounter.EnemyLosses));
+        if (encounter.Winner == Team.Player && encounter.Loot > 0)
+        {
+            text += "\nButin : " + encounter.Loot + " pièces";
+        }
+
+        detailsText.text = text;
     }
 
     private void OnEnable()
@@ -82,6 +117,13 @@ public class CombatEndScreen : MonoBehaviour
     private void Continue()
     {
         Time.timeScale = 1f;
+        if (channel != null && channel.Current != null && channel.Current.ReturnToMap)
+        {
+            continueButton.interactable = false;
+            channel.RequestReturn();
+            return;
+        }
+
         string target = string.IsNullOrEmpty(nextScene) ? gameObject.scene.name : nextScene;
 #if UNITY_EDITOR
         // The prototype's scenes are not in the build settings: load by path, which works in the editor.

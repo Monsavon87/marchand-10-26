@@ -85,9 +85,9 @@ public class CombatLog : MonoBehaviour
         {
             Add("- Pause automatique : un allié est tombé -", eventColor);
         }
-        else if (paused && combat.PauseCause == PauseCause.EnemySighted)
+        else if (paused && combat.PauseCause == PauseCause.EnemyDetected)
         {
-            Add("- Pause automatique : un ennemi est en vue -", eventColor);
+            Add("- Pause automatique : un ennemi vous a repéré -", eventColor);
         }
     }
 

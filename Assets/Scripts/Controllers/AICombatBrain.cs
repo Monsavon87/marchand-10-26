@@ -44,6 +44,8 @@ public class AICombatBrain : MonoBehaviour
     [SerializeField] private bool showDecisions;
 
     private readonly List<UnitTeam> known = new List<UnitTeam>(MaxKnown);
+    // Every enemy this unit has noticed at least once: a new one is announced (it may pause the game).
+    private readonly List<UnitTeam> noticed = new List<UnitTeam>(MaxKnown);
     private readonly Dictionary<Transform, float> blockedUntil = new Dictionary<Transform, float>();
     private System.Func<Vector3, float> riskFunction;
     private bool active;
@@ -64,6 +66,25 @@ public class AICombatBrain : MonoBehaviour
 
     /// <summary>The last decision taken, written in French (empty until the unit decides something).</summary>
     public string LastDecision => lastDecision;
+
+    /// <summary>
+    /// Sets everything up for a brain added by a script (a combat spawner) to a unit made at runtime. Before the
+    /// unit wakes up.
+    /// </summary>
+    public void Configure(AIUnitController unitController, ActionController unitActions, UnitStats unitStats,
+        UnitTeam unitTeam, Health unitHealth, UnitMover unitMover, AIProfile behavior, CombatManager sceneCombat,
+        CombatRulesProvider sceneRules)
+    {
+        controller = unitController;
+        actions = unitActions;
+        stats = unitStats;
+        team = unitTeam;
+        health = unitHealth;
+        mover = unitMover;
+        profile = behavior;
+        combat = sceneCombat;
+        rulesProvider = sceneRules;
+    }
 
     private void Start()
     {
@@ -235,6 +256,15 @@ public class AICombatBrain : MonoBehaviour
             if (focusTeam != null && focusTeam.Team != team.Team && !known.Contains(focusTeam) && known.Count < MaxKnown)
             {
                 known.Add(focusTeam);
+            }
+        }
+
+        for (int i = 0; i < known.Count; i++)
+        {
+            if (!noticed.Contains(known[i]))
+            {
+                noticed.Add(known[i]);
+                CombatEvents.RaiseUnitDetected(team, known[i]);
             }
         }
     }

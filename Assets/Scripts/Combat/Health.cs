@@ -11,6 +11,7 @@ public class Health : MonoBehaviour
     [SerializeField] private UnitStats stats;
 
     private bool initialized;
+    private int startingHealth;
 
     /// <summary>Hit points left.</summary>
     public int Current { get; private set; }
@@ -49,6 +50,21 @@ public class Health : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// The hit points the unit starts with instead of its maximum (a wounded unit coming from the campaign map).
+    /// Only before its hit points are first used.
+    /// </summary>
+    public void SetStartingHealth(int hitPoints)
+    {
+        if (initialized)
+        {
+            Debug.LogError("Health: SetStartingHealth must be called before the unit starts.", this);
+            return;
+        }
+
+        startingHealth = hitPoints;
+    }
+
     /// <summary>Restores hit points up to the maximum. Dead units cannot be healed.</summary>
     public void Heal(int amount)
     {
@@ -83,6 +99,6 @@ public class Health : MonoBehaviour
         }
 
         initialized = true;
-        Current = stats.MaxHealth;
+        Current = startingHealth > 0 ? Mathf.Min(startingHealth, stats.MaxHealth) : stats.MaxHealth;
     }
 }

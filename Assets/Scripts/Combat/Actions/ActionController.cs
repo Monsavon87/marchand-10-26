@@ -77,6 +77,22 @@ public class ActionController : MonoBehaviour
     /// <summary>Raised when a request was refused, with the reason.</summary>
     public event Action<UnitAction, string> ActionRefused = delegate { };
 
+    /// <summary>
+    /// Gives a unit made by a script (a combat spawner) the scene's rules and combat manager, which a prefab cannot
+    /// hold. Only before the unit wakes up: the actions are built with them at that moment.
+    /// </summary>
+    public void BindScene(CombatRulesProvider sceneRules, CombatManager sceneCombat)
+    {
+        if (moveAction != null)
+        {
+            Debug.LogError("ActionController: BindScene must be called before the unit wakes up.", this);
+            return;
+        }
+
+        rulesProvider = sceneRules;
+        combat = sceneCombat;
+    }
+
     private void Awake()
     {
         if (mover == null)

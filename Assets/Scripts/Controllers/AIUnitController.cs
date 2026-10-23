@@ -266,6 +266,12 @@ public class AIUnitController : MonoBehaviour
 
     private void StartChase(Transform newTarget, float now)
     {
+        UnitTeam detected = newTarget.GetComponentInParent<UnitTeam>();
+        if (detected != null)
+        {
+            CombatEvents.RaiseUnitDetected(ownTeam, detected);
+        }
+
         target = newTarget;
         state = AIState.Chase;
         isWaiting = false;

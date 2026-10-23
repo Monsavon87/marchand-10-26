@@ -57,8 +57,8 @@ public class CombatHud : MonoBehaviour
             case PauseCause.AllyDied:
                 bannerLabel.text = "Pause automatique : un allié est tombé";
                 break;
-            case PauseCause.EnemySighted:
-                bannerLabel.text = "Pause automatique : un ennemi est en vue";
+            case PauseCause.EnemyDetected:
+                bannerLabel.text = "Pause automatique : un ennemi vous a repéré";
                 break;
             default:
                 bannerLabel.text = string.Empty;
@@ -68,6 +68,8 @@ public class CombatHud : MonoBehaviour
 
     private void OnCombatEnded(Team? winner)
     {
+        // The end-of-combat screen takes over: the PAUSE banner must not sit on top of the result.
+        pauseGroup.SetActive(false);
         bannerLabel.text = winner.HasValue
             ? (winner.Value == Team.Player ? "Victoire !" : "Défaite...")
             : "Match nul";

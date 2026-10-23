@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -18,14 +19,15 @@ public enum PauseCause
     Manual,
     /// <summary>A unit of the player's side died.</summary>
     AllyDied,
-    /// <summary>An enemy came into view of one of the player's units.</summary>
-    EnemySighted
+    /// <summary>An enemy unit has noticed one of the player's units.</summary>
+    EnemyDetected
 }
 
 /// <summary>
 /// Runs a combat in real time with pause. It starts with the units present, follows who is still alive, ends the
 /// combat when a side has nobody left, pauses the game on the player's request (Space) or by itself on the events
-/// the settings ask for, and tells the rest of the game through events.
+/// the settings ask for (an ally died, an enemy unit noticed one of the player's units), and tells the rest of the
+/// game through events.
 /// It never moves a unit: UnitMover executes, the action system decides what a unit does.
 /// There are no rounds; the pace of actions comes from the actions' own durations and recoveries.
 /// </summary>
@@ -46,9 +48,8 @@ public class CombatManager : MonoBehaviour
 
     private Tracked[] players = Array.Empty<Tracked>();
     private Tracked[] enemies = Array.Empty<Tracked>();
-    private bool[,] seen = new bool[0, 0];
-    private bool sightInitialized;
-    private float nextSightCheckTime;
+    // The enemy units that have already noticed the player: each one pauses the game once, the first time.
+    private readonly List<UnitTeam> enemiesThatNoticed = new List<UnitTeam>();
 
     public CombatState State { get; private set; }
     public bool IsPaused { get; private set; }
@@ -85,10 +86,12 @@ public class CombatManager : MonoBehaviour
     private void OnEnable()
     {
         Time.timeScale = 1f;
+        CombatEvents.UnitDetected += OnUnitDetected;
     }
 
     private void OnDisable()
     {
+        CombatEvents.UnitDetected -= OnUnitDetected;
         // Never leave the game frozen.
         Time.timeScale = 1f;
         IsPaused = false;
@@ -116,10 +119,6 @@ public class CombatManager : MonoBehaviour
         }
 
         CheckDeaths();
-        if (State == CombatState.Running && !IsPaused)
-        {
-            CheckSightings();
-        }
     }
 
     /// <summary>Starts a combat with the units of both sides that are in the scene now.</summary>
@@ -156,8 +155,7 @@ public class CombatManager : MonoBehaviour
 
         players = playerList.ToArray();
         enemies = enemyList.ToArray();
-        seen = new bool[players.Length, enemies.Length];
-        sightInitialized = false;
+        enemiesThatNoticed.Clear();
         PlayersAlive = players.Length;
         EnemiesAlive = enemies.Length;
         Winner = null;
@@ -226,55 +224,20 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-    // Who sees whom: a player unit sees an enemy within the view radius with a clear line of sight.
-    // The first pass only learns what is already visible; afterwards a new sighting can pause the game.
-    private void CheckSightings()
+    // An enemy unit noticed one of the player's units (its AI says so): the first time for that enemy, the game
+    // pauses if the settings ask for it, so the player can react.
+    private void OnUnitDetected(UnitTeam detector, UnitTeam detected)
     {
-        if (Time.unscaledTime < nextSightCheckTime)
+        if (State != CombatState.Running || detector == null || detected == null
+            || detector.Team != Team.Enemy || detected.Team != Team.Player || enemiesThatNoticed.Contains(detector))
         {
             return;
         }
 
-        nextSightCheckTime = Time.unscaledTime + settings.SightCheckInterval;
-        float radiusSquared = settings.ViewRadius * settings.ViewRadius;
-        Vector3 eye = Vector3.up * settings.EyeHeight;
-        bool newSighting = false;
-
-        for (int p = 0; p < players.Length; p++)
+        enemiesThatNoticed.Add(detector);
+        if (settings.AutoPauseOnEnemyDetection && !IsPaused)
         {
-            if (!players[p].Alive)
-            {
-                continue;
-            }
-
-            Vector3 playerPosition = players[p].Unit.transform.position;
-            for (int e = 0; e < enemies.Length; e++)
-            {
-                if (!enemies[e].Alive)
-                {
-                    seen[p, e] = false;
-                    continue;
-                }
-
-                Vector3 enemyPosition = enemies[e].Unit.transform.position;
-                Vector3 flat = enemyPosition - playerPosition;
-                flat.y = 0f;
-                bool visible = flat.sqrMagnitude <= radiusSquared
-                    && LineOfSight.IsClear(playerPosition + eye, enemyPosition + eye, settings.SightBlockers);
-
-                if (visible && !seen[p, e] && sightInitialized)
-                {
-                    newSighting = true;
-                }
-
-                seen[p, e] = visible;
-            }
-        }
-
-        sightInitialized = true;
-        if (newSighting && settings.AutoPauseOnEnemySighted)
-        {
-            SetPaused(true, PauseCause.EnemySighted);
+            SetPaused(true, PauseCause.EnemyDetected);
         }
     }
 

@@ -42,6 +42,14 @@ public static class CombatEvents
     /// <summary>An order was refused or could not be carried out: (side of the unit, unit name, reason).</summary>
     public static event Action<Team, string, string> OrderRefused = delegate { };
 
+    /// <summary>A unit has just noticed an enemy unit for the first time: (the one who noticed, the one noticed).</summary>
+    public static event Action<UnitTeam, UnitTeam> UnitDetected = delegate { };
+
+    public static void RaiseUnitDetected(UnitTeam detector, UnitTeam detected)
+    {
+        UnitDetected(detector, detected);
+    }
+
     public static void RaiseOrderRefused(Team side, string unitName, string reason)
     {
         OrderRefused(side, unitName, reason);

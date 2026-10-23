@@ -24,8 +24,26 @@ public class UnitStats : MonoBehaviour
 
     public bool IsRanged => MaxRange > 0f;
 
+    private bool awake;
+
+    /// <summary>
+    /// Sets the unit's type, for a unit made by a script (a combat spawner). Only before the unit wakes up: the
+    /// numbers are copied from the definition at that moment.
+    /// </summary>
+    public void SetDefinition(UnitDefinition unitDefinition)
+    {
+        if (awake)
+        {
+            Debug.LogError("UnitStats: SetDefinition must be called before the unit wakes up.", this);
+            return;
+        }
+
+        definition = unitDefinition;
+    }
+
     private void Awake()
     {
+        awake = true;
         if (definition == null)
         {
             Debug.LogError("UnitStats: definition is not assigned.", this);
