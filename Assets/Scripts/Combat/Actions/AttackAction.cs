@@ -3,7 +3,8 @@ using UnityEngine;
 /// <summary>
 /// "Attaquer": a melee fight against one enemy until it dies (or the action is replaced or cancelled).
 /// Out of reach, the unit walks toward the target with the "Déplacer" action; in reach, it turns to the target and
-/// strikes. A strike takes the weapon's attack time, which is also what keeps the strikes from coming in a
+/// strikes. A target that keeps backing away does not escape forever: while it stays within a short lunge beyond
+/// the reach, the unit keeps preparing its strike as it runs, and a strike made on the move takes a hit penalty. A strike takes the weapon's attack time, which is also what keeps the strikes from coming in a
 /// burst. Each strike is resolved by the combat rules and announced through CombatEvents.
 /// </summary>
 public sealed class AttackAction : UnitAction
@@ -32,6 +33,7 @@ public sealed class AttackAction : UnitAction
     private UnitMover targetMover;
     private ActionController targetActions;
     private bool striking;
+    private bool movedWhileStriking;
     private float strikeElapsed;
     private float repathTimer;
     private float faceTimer;
@@ -105,15 +107,29 @@ public sealed class AttackAction : UnitAction
 
         float reach = stats.Reach;
         bool inReach = distance <= (striking ? reach + ReachTolerance : reach);
+        bool inLunge = distance <= reach + rulesProvider.Rules.LungeExtraReach;
         if (!inReach)
         {
-            striking = false;
-            strikeElapsed = 0f;
-            Approach(myPosition, targetPosition, deltaTime);
-            return;
-        }
+            if (!inLunge || recoveryLeft > 0f)
+            {
+                // Too far even for a strike on the move: just run after the target.
+                striking = false;
+                movedWhileStriking = false;
+                strikeElapsed = 0f;
+                Approach(myPosition, targetPosition, deltaTime);
+                return;
+            }
 
-        if (move.IsRunning)
+            // Just out of reach: keep running after the target while preparing the strike (it will take a penalty).
+            Approach(myPosition, targetPosition, deltaTime);
+            if (!IsRunning)
+            {
+                return;
+            }
+
+            movedWhileStriking = true;
+        }
+        else if (move.IsRunning)
         {
             // In reach: stop walking.
             move.Cancel();
@@ -129,6 +145,7 @@ public sealed class AttackAction : UnitAction
         if (!striking)
         {
             striking = true;
+            movedWhileStriking = !inReach;
             strikeElapsed = 0f;
             faceTimer = 0f;
         }
@@ -172,6 +189,7 @@ public sealed class AttackAction : UnitAction
         targetActions = targetHealth != null ? targetHealth.GetComponent<ActionController>() : null;
         targetTransform = targetHealth != null ? targetHealth.transform : null;
         striking = false;
+        movedWhileStriking = false;
         strikeElapsed = 0f;
         repathTimer = 0f;
         recoveryLeft = 0f;
@@ -216,7 +234,8 @@ public sealed class AttackAction : UnitAction
         ICombatRules rules = rulesProvider.Rules;
         // The zone is the one the attacker stands in when the blow lands.
         AttackZone zone = rules.DetermineZone(mover.transform.position, targetTransform);
-        AttackResult result = rules.ResolveAttack(stats, targetStats, zone, rules.RollDie());
+        int movingModifier = movedWhileStriking ? rules.MovingAttackModifier : 0;
+        AttackResult result = rules.ResolveAttack(stats, targetStats, zone, rules.RollDie(), 0, 0f, movingModifier);
         if (result.Damage > 0)
         {
             targetHealth.TakeDamage(result.Damage);
@@ -228,6 +247,7 @@ public sealed class AttackAction : UnitAction
             targetHealth.Current, targetStats.MaxHealth, killed));
 
         striking = false;
+        movedWhileStriking = false;
         strikeElapsed = 0f;
         recoveryLeft = timing != null ? timing.RecoveryAfter(ActionKind.Attack) : 0f;
         if (killed)

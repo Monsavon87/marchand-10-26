@@ -31,6 +31,7 @@ Dernière mise à jour : 2026-10-23 (gestion du combat).
 - Le temps de jeu avance **uniquement quand la caravane se déplace** : la distance parcourue est convertie en temps (réglage : 10 minutes de jeu par mètre en terrain normal ; le terrain lent allonge, la route raccourcit). Objectif : 1 à 2 jours entre deux villes.
 - Les villes sont des cubes ; un clic sur une ville envoie la caravane à son entrée ; l'arrivée déclenche un événement « Arrivé à … ».
 - Rencontre : quand la caravane et un ennemi se touchent, les deux s'arrêtent et un événement « rencontre » est déclenché. Ce sera plus tard la boîte de dialogue avant combat.
+- (2026-10-23) La caravane est **toujours sélectionnée** sur la carte (on ne joue qu'elle). Un **clic sur une bande ennemie** lance une **poursuite** : la caravane suit la bande jusqu'au contact. Au survol, la bande est entourée d'un anneau rouge et une étiquette donne sa composition et son butin. **Espace met la carte en pause** (bandeau « PAUSE ») ; la fenêtre de ville met aussi la carte en pause.
 
 ## 5. Contrôles et caméra
 
@@ -78,6 +79,7 @@ Dernière mise à jour : 2026-10-23 (gestion du combat).
 ### 6.5 bis Attaque au corps à corps (étape C3)
 - Une attaque **dure `attackTime` secondes** (2 s par défaut) : c'est ce qui empêche les attaques en rafale (un coup toutes les 2 s).
 - Une demande « Attaquer » **dure jusqu'à la mort de la cible** (ou jusqu'à un nouvel ordre) : l'unité se rapproche seule, se tourne, frappe, recommence.
+- **Coup en mouvement** (2026-10-23) : un combattant de mêlée continue de préparer son coup en courant derrière une cible qui recule, tant qu'elle reste à portée de fente (allonge + 1 m). Si l'attaquant a dû bouger pendant la préparation, le coup prend un **malus de −15 au toucher** (réglages dans `CombatRulesSettings`). Valable pour le joueur et l'IA ; le journal l'indique (« en mouvement »).
 - Le coup touche si **jet + bonus d'attaque ≥ défense** ; dégâts = dégâts de l'arme − armure, minimum 0. Valeurs de test : Fantassin attaque 25 / défense 50 (76 % de toucher contre un Fantassin), Archer attaque 20 / défense 35.
 - L'**allonge** se mesure de **centre à centre**. Une unité qui s'approche s'arrête à 85 % de son allonge.
 - Un clic gauche sur un ennemi = ordre d'attaque (dans la scène de combat) ; sur la carte de campagne, c'est un simple déplacement. L'IA attaque par **le même chemin** que le joueur.

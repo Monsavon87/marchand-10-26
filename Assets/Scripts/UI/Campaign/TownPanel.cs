@@ -29,6 +29,8 @@ public class TownPanel : MonoBehaviour
     [Tooltip("Where the rows are put (it should have a vertical layout group).")]
     [SerializeField] private RectTransform offerContainer;
     [SerializeField] private Button leaveButton;
+    [Tooltip("Optional: the map's pause, held while the window is open. Without it the window sets the time scale itself.")]
+    [SerializeField] private CampaignPause pause;
 
     private readonly List<Row> rows = new List<Row>();
     private readonly System.Text.StringBuilder text = new System.Text.StringBuilder(256);
@@ -94,14 +96,29 @@ public class TownPanel : MonoBehaviour
     {
         titleText.text = town.DisplayName;
         root.SetActive(true);
-        Time.timeScale = 0f;
+        if (pause != null)
+        {
+            pause.SetHeld(true);
+        }
+        else
+        {
+            Time.timeScale = 0f;
+        }
+
         Refresh();
     }
 
     private void Close()
     {
         root.SetActive(false);
-        Time.timeScale = 1f;
+        if (pause != null)
+        {
+            pause.SetHeld(false);
+        }
+        else
+        {
+            Time.timeScale = 1f;
+        }
     }
 
     private void OnRecruitClicked(RecruitOffer offer)

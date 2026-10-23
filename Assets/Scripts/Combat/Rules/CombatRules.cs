@@ -33,6 +33,10 @@ public class CombatRules : ICombatRules
         return zoneSettings.Get(zone);
     }
 
+    public float LungeExtraReach => settings.LungeExtraReach;
+
+    public int MovingAttackModifier => settings.MovingAttackModifier;
+
     public int EstimateDamage(UnitStats attacker, UnitStats defender, AttackZone zone)
     {
         return Mathf.Max(settings.MinimumDamage, attacker.WeaponDamage + zoneSettings.Get(zone).damageBonus - defender.Armor);
@@ -53,14 +57,14 @@ public class CombatRules : ICombatRules
     }
 
     public AttackResult ResolveAttack(UnitStats attacker, UnitStats defender, AttackZone zone, int roll,
-        int rangeModifier = 0, float distance = 0f)
+        int rangeModifier = 0, float distance = 0f, int movingModifier = 0)
     {
         ZoneModifier modifier = zoneSettings.Get(zone);
-        bool hit = roll + attacker.AttackBonus + modifier.hitBonus + rangeModifier >= defender.Defense;
+        bool hit = roll + attacker.AttackBonus + modifier.hitBonus + rangeModifier + movingModifier >= defender.Defense;
         int damage = hit
             ? Mathf.Max(settings.MinimumDamage, attacker.WeaponDamage + modifier.damageBonus - defender.Armor)
             : 0;
         return new AttackResult(roll, attacker.AttackBonus, zone, modifier, defender.Defense, hit,
-            attacker.WeaponDamage, defender.Armor, damage, rangeModifier, distance);
+            attacker.WeaponDamage, defender.Armor, damage, rangeModifier, distance, movingModifier);
     }
 }

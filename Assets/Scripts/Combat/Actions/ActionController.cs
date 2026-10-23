@@ -42,6 +42,7 @@ public class ActionController : MonoBehaviour
     private WaitAction waitAction;
     private AttackAction attackAction;
     private ShootAction shootAction;
+    private ChaseAction chaseAction;
     private UnitAction current;
     private float recoveryRemaining;
     private Transform focus;
@@ -104,6 +105,7 @@ public class ActionController : MonoBehaviour
 
         moveAction = new MoveAction(mover, gate);
         waitAction = new WaitAction();
+        chaseAction = new ChaseAction(moveAction);
         if (stats != null && team != null)
         {
             attackAction = new AttackAction(stats, team, mover, moveAction, rulesProvider,
@@ -141,6 +143,12 @@ public class ActionController : MonoBehaviour
     public bool RequestMove(Vector3 destination, out string reason)
     {
         return Request(moveAction, new ActionTarget(destination), out reason);
+    }
+
+    /// <summary>Asks the unit to walk after a moving unit, following it. When refused, 'reason' says why.</summary>
+    public bool RequestChase(Transform target, out string reason)
+    {
+        return Request(chaseAction, new ActionTarget(target != null ? target.position : transform.position, target), out reason);
     }
 
     /// <summary>Asks the unit to stand still for some seconds.</summary>

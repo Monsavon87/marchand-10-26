@@ -6,7 +6,7 @@ using UnityEngine;
 public readonly struct AttackResult
 {
     public AttackResult(int roll, int attackBonus, AttackZone zone, ZoneModifier zoneModifier, int threshold, bool hit,
-        int weaponDamage, int armor, int damage, int rangeHitModifier = 0, float distance = 0f)
+        int weaponDamage, int armor, int damage, int rangeHitModifier = 0, float distance = 0f, int movingHitModifier = 0)
     {
         Roll = roll;
         AttackBonus = attackBonus;
@@ -20,6 +20,7 @@ public readonly struct AttackResult
         Damage = damage;
         RangeHitModifier = rangeHitModifier;
         Distance = distance;
+        MovingHitModifier = movingHitModifier;
     }
 
     /// <summary>What the die showed.</summary>
@@ -35,10 +36,12 @@ public readonly struct AttackResult
     public int RangeHitModifier { get; }
     /// <summary>How far the target was, in meters, for a ranged attack. 0 in melee.</summary>
     public float Distance { get; }
+    /// <summary>Modifier to the total because the attacker struck on the move (0 when it stood still, negative otherwise).</summary>
+    public int MovingHitModifier { get; }
     /// <summary>True for an attack made from a distance.</summary>
     public bool IsRanged => Distance > 0f;
-    /// <summary>Roll plus attack bonus plus zone bonus plus distance modifier.</summary>
-    public int Total => Roll + AttackBonus + ZoneHitBonus + RangeHitModifier;
+    /// <summary>Roll plus attack bonus plus zone bonus plus distance modifier plus moving modifier.</summary>
+    public int Total => Roll + AttackBonus + ZoneHitBonus + RangeHitModifier + MovingHitModifier;
     /// <summary>What the total had to reach: the target's defense.</summary>
     public int Threshold { get; }
     public bool Hit { get; }
@@ -64,6 +67,12 @@ public interface ICombatRules
     /// <summary>What attacking this zone is worth.</summary>
     ZoneModifier GetZoneModifier(AttackZone zone);
 
+    /// <summary>How far (m) beyond its reach a melee unit can still strike while running after its target.</summary>
+    float LungeExtraReach { get; }
+
+    /// <summary>Modifier to the attack total for a melee strike made on the move (negative).</summary>
+    int MovingAttackModifier { get; }
+
     /// <summary>The damage a hit would deal in this zone, after the zone bonus and the armor (for previews).</summary>
     int EstimateDamage(UnitStats attacker, UnitStats defender, AttackZone zone);
 
@@ -78,8 +87,9 @@ public interface ICombatRules
 
     /// <summary>
     /// Resolves one attack in this zone with the given roll. For a ranged attack, 'distance' is how far the target
-    /// was and 'rangeModifier' the distance modifier; both stay 0 in melee.
+    /// was and 'rangeModifier' the distance modifier; both stay 0 in melee. 'movingModifier' is the modifier of a
+    /// strike made on the move (0 otherwise).
     /// </summary>
     AttackResult ResolveAttack(UnitStats attacker, UnitStats defender, AttackZone zone, int roll,
-        int rangeModifier = 0, float distance = 0f);
+        int rangeModifier = 0, float distance = 0f, int movingModifier = 0);
 }

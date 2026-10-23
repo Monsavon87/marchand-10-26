@@ -100,7 +100,9 @@ public class CombatLog : MonoBehaviour
     public void Add(string line, Color color)
     {
         // The view follows the latest line only if it was already at the bottom (the player may be reading above).
-        followLatest = scrollRect == null || scrollRect.verticalNormalizedPosition <= 0.02f;
+        // While the text still fits in the view there is nothing to scroll: it counts as "at the bottom".
+        followLatest = scrollRect == null || scrollRect.verticalNormalizedPosition <= 0.02f
+            || scrollRect.content.rect.height <= scrollRect.viewport.rect.height + 1f;
         lines.Add("<color=#" + ColorUtility.ToHtmlStringRGB(color) + ">" + line + "</color>");
         while (lines.Count > maxLines)
         {
@@ -136,6 +138,11 @@ public class CombatLog : MonoBehaviour
         if (r.RangeHitModifier != 0)
         {
             line += (r.RangeHitModifier > 0 ? " + " : " - ") + Mathf.Abs(r.RangeHitModifier) + " (distance)";
+        }
+
+        if (r.MovingHitModifier != 0)
+        {
+            line += (r.MovingHitModifier > 0 ? " + " : " - ") + Mathf.Abs(r.MovingHitModifier) + " (en mouvement)";
         }
 
         line += " = " + r.Total + " contre " + r.Threshold;

@@ -13,6 +13,8 @@ public class PlayerCommandController : MonoBehaviour
     [SerializeField] private SelectionManager selection;
     [Tooltip("When on, clicking an enemy unit orders the selected units to attack it. When off, it is a plain move to that point.")]
     [SerializeField] private bool attackEnemiesOnClick;
+    [Tooltip("When on (campaign map), clicking an enemy makes the selected units chase it until they meet it.")]
+    [SerializeField] private bool chaseEnemiesOnClick;
     [Tooltip("Cancels the current order and the queue of the selected units.")]
     [SerializeField] private Key cancelKey = Key.X;
     [Tooltip("Distance between two units of the formation, in meters.")]
@@ -102,6 +104,11 @@ public class PlayerCommandController : MonoBehaviour
     private void OnUnitClicked(UnitTeam clicked, Vector3 point)
     {
         System.Collections.Generic.IReadOnlyList<SelectableUnit> units = selection.Selected;
+        if (chaseEnemiesOnClick && TryChase(clicked, units))
+        {
+            return;
+        }
+
         if ((!attackEnemiesOnClick && !targetingMode) || units.Count == 0)
         {
             OnGroundClicked(point);
@@ -144,6 +151,25 @@ public class PlayerCommandController : MonoBehaviour
         {
             OnGroundClicked(point);
         }
+    }
+
+    // Campaign map: the selected units walk after the clicked enemy, wherever it goes.
+    private static bool TryChase(UnitTeam clicked, System.Collections.Generic.IReadOnlyList<SelectableUnit> units)
+    {
+        bool anyChase = false;
+        for (int i = 0; i < units.Count; i++)
+        {
+            UnitTeam own = units[i].GetComponent<UnitTeam>();
+            ActionController actions = units[i].GetComponent<ActionController>();
+            if (own == null || own.Team == clicked.Team || actions == null)
+            {
+                continue;
+            }
+
+            anyChase |= actions.RequestChase(clicked.transform, out _);
+        }
+
+        return anyChase;
     }
 
     private void OnGroundClicked(Vector3 point)

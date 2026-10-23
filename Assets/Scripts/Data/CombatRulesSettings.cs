@@ -24,6 +24,12 @@ public class CombatRulesSettings : ScriptableObject
     [Tooltip("Damage of a hit never goes below this, after the target's armor is subtracted.")]
     [Min(0)] [SerializeField] private int minimumDamage;
 
+    [Header("Melee on the move")]
+    [Tooltip("A melee unit keeps preparing its strike while running after a target that stays this far (m) beyond its reach.")]
+    [Min(0f)] [SerializeField] private float lungeExtraReach = 1f;
+    [Tooltip("Added to the attack total when the attacker had to move while preparing its strike (use a negative number).")]
+    [SerializeField] private int movingAttackModifier = -15;
+
     [Header("Ranged attacks")]
     [Tooltip("Distance penalty, from the nearest tier to the farthest. A target beyond the last tier gets the last penalty.")]
     [SerializeField] private RangeTier[] rangeTiers =
@@ -35,6 +41,8 @@ public class CombatRulesSettings : ScriptableObject
 
     public int DieSides => dieSides;
     public int MinimumDamage => minimumDamage;
+    public float LungeExtraReach => lungeExtraReach;
+    public int MovingAttackModifier => movingAttackModifier;
 
     /// <summary>The modifier to the attack total for a target at this fraction of the weapon's maximum range.</summary>
     public int GetRangeModifier(float rangeFraction)
