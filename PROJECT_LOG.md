@@ -342,3 +342,8 @@ Projet Unity 6 (URP, 3D) : marchand-10-2026-mistral.
 - Journal : suit la dernière ligne aussi tant que le texte tient dans la fenêtre (avant, il croyait que le joueur avait remonté et ne suivait plus jamais).
 - Vérifié en Play (Demo_Campaign) : caravane resélectionnée après une sélection vidée ; Espace : pause (temps figé, bandeau) puis reprise ; survol d'Enemy_6 : anneau + « Bande ennemie / 1 Fantassin / Butin : 15 pièces » ; clic : « Poursuivre Enemy_6 », la caravane rattrape la bande et l'arène se charge ; Fantassin contre un Déserteur qui fuit à 2,5 m : « ... + 20 (dos) - 15 (en mouvement) = 105 contre 50 > touché » ; journal resté en bas quand le texte est passé de 17 à 901 px. Console sans erreur. Page d'aide mise à jour.
 - Remarques : la poursuite ne rattrape une bande que si elle ralentit ou fait demi-tour (même vitesse de marche) ; pendant la récupération après un coup, le fantassin ne prépare pas de coup en courant (il court seulement).
+
+## Version 0.1.0 de la démo
+- Première version numérotée (décision : chaque démo a un numéro de version, pour rattacher les bugs et retours des bêta-testeurs). Commit 485d3f2. Build Windows réussi (128 Mo, 0 erreur ; les 510 avertissements viennent des shaders du package Sentis `com.unity.ai.inference`). L'exécutable démarre et tourne 12 s sans erreur.
+- Archive : `Builds/Marchand_Demo_Windows_v0.1.0.zip` (49 Mo). Effets de bord du build annulés.
+- Écran d'accueil : la version du jeu (`Application.version`, via `VersionLabel`) est affichée en bas à droite (« Version 0.1.0 »). Pas encore dans le zip v0.1 (ajout fait après le build).
