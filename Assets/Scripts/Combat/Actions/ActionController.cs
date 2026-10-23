@@ -6,6 +6,7 @@ using UnityEngine;
 /// It validates a request, runs one action at a time (a new request replaces the current one), lets it be
 /// cancelled, and writes a short journal to the console (requested / accepted / refused / ended).
 /// It only drives UnitMover through the actions; nobody else needs to.
+/// Besides moving and waiting, a unit can attack another one (melee for now).
 /// </summary>
 public class ActionController : MonoBehaviour
 {
@@ -16,10 +17,16 @@ public class ActionController : MonoBehaviour
     [SerializeField] private CombatMovementBudget budget;
     [Tooltip("Optional: authorizes and limits the moves (combat manager, campaign travel). Empty = free moves.")]
     [SerializeField] private MoveOrderGate gate;
+    [Header("Fighting (optional)")]
+    [SerializeField] private UnitStats stats;
+    [SerializeField] private UnitTeam team;
+    [Tooltip("The scene's combat rules. Without them the unit cannot attack.")]
+    [SerializeField] private CombatRulesProvider rulesProvider;
     [SerializeField] private bool logActions = true;
 
     private MoveAction moveAction;
     private WaitAction waitAction;
+    private AttackAction attackAction;
     private UnitAction current;
 
     /// <summary>The action running now, or null.</summary>
@@ -50,6 +57,10 @@ public class ActionController : MonoBehaviour
 
         moveAction = new MoveAction(mover, gate, ActiveBudget);
         waitAction = new WaitAction(ActiveBudget);
+        if (stats != null && team != null)
+        {
+            attackAction = new AttackAction(stats, team, mover, moveAction, ActiveBudget, rulesProvider);
+        }
     }
 
     private void Update()
@@ -77,6 +88,31 @@ public class ActionController : MonoBehaviour
     {
         waitAction.Duration = seconds;
         return Request(waitAction, new ActionTarget(transform.position), out _);
+    }
+
+    /// <summary>Asks the unit to fight an enemy unit until it dies. When refused, 'reason' says why.</summary>
+    public bool RequestAttack(Transform target, out string reason)
+    {
+        if (attackAction == null)
+        {
+            reason = "cette unité n'a pas de statistiques de combat";
+            Debug.Log("[Action] " + name + " · Attaquer refusée : " + reason, this);
+            return false;
+        }
+
+        return Request(attackAction, new ActionTarget(target != null ? target.position : transform.position, target), out reason);
+    }
+
+    /// <summary>Asks the unit to fight an enemy unit until it dies.</summary>
+    public bool RequestAttack(Transform target)
+    {
+        return RequestAttack(target, out _);
+    }
+
+    /// <summary>True when the unit is currently fighting this target.</summary>
+    public bool IsAttacking(Transform target)
+    {
+        return attackAction != null && current == attackAction && attackAction.Target == target;
     }
 
     /// <summary>

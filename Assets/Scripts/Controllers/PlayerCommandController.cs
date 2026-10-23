@@ -9,6 +9,8 @@ using UnityEngine;
 public class PlayerCommandController : MonoBehaviour
 {
     [SerializeField] private SelectionManager selection;
+    [Tooltip("When on, clicking an enemy unit orders the selected units to attack it. When off, it is a plain move to that point.")]
+    [SerializeField] private bool attackEnemiesOnClick;
     [Tooltip("Distance between two units of the formation, in meters.")]
     [SerializeField] private float formationSpacing = 1.6f;
 
@@ -30,6 +32,7 @@ public class PlayerCommandController : MonoBehaviour
         if (selection != null)
         {
             selection.GroundClicked += OnGroundClicked;
+            selection.UnitClicked += OnUnitClicked;
         }
     }
 
@@ -38,6 +41,43 @@ public class PlayerCommandController : MonoBehaviour
         if (selection != null)
         {
             selection.GroundClicked -= OnGroundClicked;
+            selection.UnitClicked -= OnUnitClicked;
+        }
+    }
+
+    // A click on a unit that cannot be selected: an attack order on an enemy if the scene wants it, a plain move otherwise.
+    private void OnUnitClicked(UnitTeam clicked, Vector3 point)
+    {
+        System.Collections.Generic.IReadOnlyList<SelectableUnit> units = selection.Selected;
+        if (!attackEnemiesOnClick || units.Count == 0)
+        {
+            OnGroundClicked(point);
+            return;
+        }
+
+        bool anyAttack = false;
+        for (int i = 0; i < units.Count; i++)
+        {
+            UnitTeam own = units[i].GetComponent<UnitTeam>();
+            if (own == null || own.Team == clicked.Team)
+            {
+                continue;
+            }
+
+            ActionController actions = units[i].GetComponent<ActionController>();
+            if (actions == null)
+            {
+                Debug.LogError("PlayerCommandController: " + units[i].name + " has no ActionController.", units[i]);
+                continue;
+            }
+
+            actions.RequestAttack(clicked.transform);
+            anyAttack = true;
+        }
+
+        if (!anyAttack)
+        {
+            OnGroundClicked(point);
         }
     }
 

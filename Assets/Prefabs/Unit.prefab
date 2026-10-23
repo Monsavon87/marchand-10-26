@@ -1004,6 +1004,9 @@ MonoBehaviour:
   health: {fileID: 4511564987767383823}
   budget: {fileID: 1847993490452819210}
   gate: {fileID: 0}
+  stats: {fileID: 8831436512866986958}
+  team: {fileID: 6187509247932767308}
+  rulesProvider: {fileID: 0}
   logActions: 1
 --- !u!1 &6520645836577663083
 GameObject:

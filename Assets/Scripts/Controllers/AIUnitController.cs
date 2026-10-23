@@ -31,6 +31,8 @@ public class AIUnitController : MonoBehaviour
 
     [SerializeField] private ActionController actions;
     [SerializeField] private UnitTeam ownTeam;
+    [Tooltip("When on, a chaser fights the unit it chases (the same Attack action as the player). When off, it just closes in.")]
+    [SerializeField] private bool attackTargets;
 
     [Header("Patrol")]
     [Tooltip("Points visited in order, in a loop. Without points the unit stays where it starts.")]
@@ -292,6 +294,18 @@ public class AIUnitController : MonoBehaviour
         {
             // Too far to follow: look around here, then resume.
             BeginScan(now);
+            return;
+        }
+
+        if (attackTargets)
+        {
+            // The attack action walks to the target and fights it; only (re)start it, never interrupt it.
+            if (now >= nextRepathTime && !actions.IsAttacking(target))
+            {
+                nextRepathTime = now + chaseRepathInterval;
+                actions.RequestAttack(target);
+            }
+
             return;
         }
 

@@ -28,6 +28,8 @@ public class UnitDefinition : ScriptableObject
     [Min(0f)] [SerializeField] private float deadZone;
     [Tooltip("Ranged weapons: farthest target the weapon can hit, in meters. 0 = melee unit.")]
     [Min(0f)] [SerializeField] private float maxRange;
+    [Tooltip("How long one attack takes, in seconds. It is spent from the unit's action time, so it also limits how fast a unit can strike.")]
+    [Min(0.1f)] [SerializeField] private float attackTime = 2f;
 
     [Header("Movement and actions")]
     [Tooltip("Walking speed, in meters per second.")]
@@ -44,6 +46,7 @@ public class UnitDefinition : ScriptableObject
     public float Reach => reach;
     public float DeadZone => deadZone;
     public float MaxRange => maxRange;
+    public float AttackTime => attackTime;
     public float MoveSpeed => moveSpeed;
     public float ActionTime => actionTime;
 

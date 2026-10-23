@@ -16,10 +16,11 @@ MonoBehaviour:
   maxHealth: 25
   armor: 1
   defense: 35
-  attackBonus: 55
+  attackBonus: 20
   weaponDamage: 10
   reach: 0
   deadZone: 2
   maxRange: 20
+  attackTime: 2
   moveSpeed: 1.4
   actionTime: 6

@@ -30,6 +30,8 @@ public class SelectionManager : MonoBehaviour
     public event Action SelectionChanged = delegate { };
     /// <summary>Raised on a simple click on the ground (not on a unit, not a drag).</summary>
     public event Action<Vector3> GroundClicked = delegate { };
+    /// <summary>Raised on a simple click on a unit that cannot be selected (an enemy, for example), with the point hit.</summary>
+    public event Action<UnitTeam, Vector3> UnitClicked = delegate { };
 
     public IReadOnlyList<SelectableUnit> Selected => selected;
 
@@ -136,7 +138,16 @@ public class SelectionManager : MonoBehaviour
         SelectableUnit unit = hit.collider.GetComponentInParent<SelectableUnit>();
         if (unit == null)
         {
-            GroundClicked(hit.point);
+            UnitTeam clickedUnit = hit.collider.GetComponentInParent<UnitTeam>();
+            if (clickedUnit != null)
+            {
+                UnitClicked(clickedUnit, hit.point);
+            }
+            else
+            {
+                GroundClicked(hit.point);
+            }
+
             return;
         }
 
