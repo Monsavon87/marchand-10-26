@@ -3,8 +3,9 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
-/// The "Fin de partie" screen of the campaign map: it appears when the caravan lost a fight, and its button starts
-/// the campaign again (the map scene is reloaded). Provisional, until defeats have real consequences.
+/// The "Fin de partie" screen of the campaign map: it appears when the caravan lost a fight; one button starts the
+/// campaign again (the map scene is reloaded), the other goes back to the title screen. Provisional, until defeats
+/// have real consequences.
 /// </summary>
 public class GameOverScreen : MonoBehaviour
 {
@@ -12,6 +13,9 @@ public class GameOverScreen : MonoBehaviour
     [Tooltip("The whole screen: hidden until the game is over.")]
     [SerializeField] private GameObject root;
     [SerializeField] private Button restartButton;
+    [Tooltip("Optional: back to the title screen.")]
+    [SerializeField] private Button menuButton;
+    [SerializeField] private string menuScene = "MainMenu";
 
     private void Start()
     {
@@ -36,6 +40,11 @@ public class GameOverScreen : MonoBehaviour
         {
             restartButton.onClick.AddListener(Restart);
         }
+
+        if (menuButton != null)
+        {
+            menuButton.onClick.AddListener(BackToMenu);
+        }
     }
 
     private void OnDisable()
@@ -49,11 +58,22 @@ public class GameOverScreen : MonoBehaviour
         {
             restartButton.onClick.RemoveListener(Restart);
         }
+
+        if (menuButton != null)
+        {
+            menuButton.onClick.RemoveListener(BackToMenu);
+        }
     }
 
     private void OnGameOver()
     {
         root.SetActive(true);
+    }
+
+    private void BackToMenu()
+    {
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(menuScene);
     }
 
     private void Restart()

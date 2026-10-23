@@ -6,14 +6,26 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+    path: Assets/Scenes/MainMenu.unity
+    guid: 35ab495f5a69b9d4ca3cb59ef9629de8
   - enabled: 1
-    path: Assets/Scenes/Tests/Test_Campaign.unity
-    guid: 74aa1855bc881554fa02121cded6f46f
+    path: Assets/Scenes/Demo_Campaign.unity
+    guid: 32b3a42b85456394ab421cbfe666c843
   - enabled: 1
     path: Assets/Scenes/Combat_Arena.unity
     guid: a184a30d9110e8b47826e286b66cd780
+  - enabled: 1
+    path: Assets/Scenes/Arena_Foret.unity
+    guid: 7759dcc97fb9e924cbf92c9f9fdc7c79
+  - enabled: 1
+    path: Assets/Scenes/Arena_Fort.unity
+    guid: fd9317ceab40e6448a08a8bb4701a1d9
+  - enabled: 1
+    path: Assets/Scenes/Tests/Test_Campaign.unity
+    guid: 74aa1855bc881554fa02121cded6f46f
+  - enabled: 0
+    path: Assets/Scenes/SampleScene.unity
+    guid: 99c9720ab356a0642a771bea13969a05
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

@@ -10,30 +10,34 @@ using UnityEngine.SceneManagement;
 /// scene is switched off, so its camera, light, NavMesh and units stay exactly as they are) and loads the arena on
 /// top. When the arena asks to go back, it unloads it, wakes the map up and applies the result: the survivors keep
 /// their hit points, the dead leave the caravan, the beaten band disappears and its loot is gathered. A defeat
-/// raises GameOver. This object must stay a root object of its own, outside what it puts to sleep.
+/// raises GameOver, and beating the last band raises AllBandsDefeated. The arena is drawn at random from a list
+/// for each encounter. This object must stay a root object of its own, outside what it puts to sleep.
 /// </summary>
 public class CampaignEncounterFlow : MonoBehaviour
 {
     [SerializeField] private CampaignEncounters encounters;
     [SerializeField] private PartyRoster caravanParty;
     [SerializeField] private EncounterChannel channel;
-    [Tooltip("The combat scene to load (it must be in the build settings).")]
-    [SerializeField] private string arenaScene = "Combat_Arena";
+    [Tooltip("The combat scenes, one drawn at random for each encounter (they must be in the build settings).")]
+    [SerializeField] private string[] arenaScenes = { "Combat_Arena" };
     [Tooltip("Seconds of real time between the encounter and the combat, so the player sees what happens.")]
     [Min(0f)] [SerializeField] private float delayBeforeCombat = 1f;
 
     private readonly List<GameObject> asleep = new List<GameObject>();
     private UnitTeam enemy;
     private bool inCombat;
+    private string arenaScene;
 
     /// <summary>Raised when the caravan lost a fight: the campaign is over.</summary>
     public event Action GameOver = delegate { };
+    /// <summary>Raised when the last enemy band of the map has been beaten.</summary>
+    public event Action AllBandsDefeated = delegate { };
     /// <summary>Raised once the map is back, with the result of the fight.</summary>
     public event Action<EncounterData> EncounterResolved = delegate { };
 
     private void Awake()
     {
-        if (encounters == null || caravanParty == null || channel == null)
+        if (encounters == null || caravanParty == null || channel == null || arenaScenes == null || arenaScenes.Length == 0)
         {
             Debug.LogError("CampaignEncounterFlow: a serialized reference is not assigned.", this);
             enabled = false;
@@ -86,6 +90,7 @@ public class CampaignEncounterFlow : MonoBehaviour
             return;
         }
 
+        arenaScene = arenaScenes[UnityEngine.Random.Range(0, arenaScenes.Length)];
         var encounter = new EncounterData(arenaScene, enemyParty.Loot, true);
         for (int i = 0; i < caravanParty.Members.Count; i++)
         {
@@ -147,10 +152,12 @@ public class CampaignEncounterFlow : MonoBehaviour
         WakeMapUp();
         Time.timeScale = 1f;
 
+        bool lastBand = false;
         if (encounter != null && encounter.HasResult && encounter.Winner == Team.Player)
         {
             caravanParty.ApplyHealth(encounter.PlayerHealthAfter);
             caravanParty.AddLoot(encounter.Loot);
+            lastBand = CountOtherBands(enemy) == 0;
             if (enemy != null)
             {
                 Destroy(enemy.gameObject);
@@ -165,6 +172,26 @@ public class CampaignEncounterFlow : MonoBehaviour
         inCombat = false;
         channel.Clear();
         EncounterResolved(encounter);
+        if (lastBand)
+        {
+            AllBandsDefeated();
+        }
+    }
+
+    // The enemy bands still on the map, apart from the one just beaten.
+    private static int CountOtherBands(UnitTeam beaten)
+    {
+        int count = 0;
+        IReadOnlyList<UnitTeam> units = UnitTeam.All;
+        for (int i = 0; i < units.Count; i++)
+        {
+            if (units[i] != beaten && units[i].Team == Team.Enemy && units[i].GetComponent<PartyRoster>() != null)
+            {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     private void WakeMapUp()

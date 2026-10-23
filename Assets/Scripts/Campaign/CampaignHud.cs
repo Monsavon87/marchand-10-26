@@ -11,7 +11,9 @@ public class CampaignHud : MonoBehaviour
     [SerializeField] private CampaignEncounters encounters;
     [SerializeField] private UnityEngine.UI.Text clockLabel;
     [SerializeField] private UnityEngine.UI.Text messageLabel;
-    [Tooltip("Optional: shows the caravan's group (units and hit points) and the loot gathered.")]
+    [Tooltip("Optional: says so when the group rests in a town.")]
+    [SerializeField] private TownRest townRest;
+    [Tooltip("Optional: shows the caravan's group (units and hit points) and its coins.")]
     [SerializeField] private PartyRoster party;
     [SerializeField] private UnityEngine.UI.Text partyLabel;
     [Tooltip("Seconds a message stays on screen.")]
@@ -46,6 +48,11 @@ public class CampaignHud : MonoBehaviour
         {
             encounters.EncounterStarted += OnEncounterStarted;
         }
+
+        if (townRest != null)
+        {
+            townRest.Rested += OnRested;
+        }
     }
 
     private void OnDisable()
@@ -58,6 +65,11 @@ public class CampaignHud : MonoBehaviour
         if (encounters != null)
         {
             encounters.EncounterStarted -= OnEncounterStarted;
+        }
+
+        if (townRest != null)
+        {
+            townRest.Rested -= OnRested;
         }
     }
 
@@ -104,13 +116,18 @@ public class CampaignHud : MonoBehaviour
             text.Append("personne");
         }
 
-        text.Append("     Butin : ").Append(party.Gathered).Append(" pièces");
+        text.Append("     Pièces : ").Append(party.Coins);
         partyLabel.text = text.ToString();
     }
 
     private void OnTownReached(PointOfInterest town)
     {
         ShowMessage("Arrivé à " + town.DisplayName);
+    }
+
+    private void OnRested(PointOfInterest town)
+    {
+        ShowMessage("Arrivé à " + town.DisplayName + " : votre groupe se repose et récupère tous ses PV.");
     }
 
     private void OnEncounterStarted(UnitTeam enemy)

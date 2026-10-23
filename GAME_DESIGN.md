@@ -134,7 +134,18 @@ Dernière mise à jour : 2026-10-23 (gestion du combat).
 - **Fin du combat** : écran « Victoire » / « Défaite » avec les pertes des deux camps et, en cas de victoire, le butin. « Continuer » ramène à la carte.
 - **Victoire** : la caravane retrouve sa position, les survivants gardent leurs PV, les morts quittent le groupe, la bande vaincue disparaît, le butin est ajouté au total (affiché en bas de l'écran de la carte avec le groupe).
 - **Défaite** (décision du 2026-10-23, provisoire) : écran **« Fin de partie »** avec un bouton « Recommencer » qui recharge la carte.
-- Il n'y a pas encore de soin : les PV perdus le restent d'un combat à l'autre.
+- **Repos en ville** (décision du 2026-10-23) : quand la caravane arrive dans une ville, tout le groupe récupère tous ses PV (« votre groupe se repose »). C'est le seul soin pour l'instant.
+- Les blessures restent d'un combat à l'autre tant que la caravane ne s'est pas reposée.
+- **Recrutement en ville** (décision du 2026-10-23) : après le repos, une fenêtre de ville s'ouvre (la carte est en pause pendant la visite). On y recrute, contre des **pièces** (le butin gagné, qu'on peut dépenser), une unité neuve à pleins PV : Fantassin 30 pièces, Archer 40 pièces (offres communes à toutes les villes, dans `RecruitmentSettings`). Les recrues sont nommées automatiquement (« Fantassin 2 »). Un bouton grisé dit pourquoi : « pas assez de pièces » ou « groupe complet ».
+- **Taille maximale du groupe** : 4 unités pour l'instant. Elle est lue à un seul endroit (`PartyCapacity`), qui dépendra plus tard des statistiques du joueur.
+- Les unités tombées ne reviennent jamais : on les remplace en recrutant. La carte affiche les pièces actuelles ; l'écran de fin de démo affiche le butin total gagné.
+
+### 6.9 Démo jouable (2026-10-23)
+- Parcours : **écran d'accueil** (« Marchand - Démo » : Jouer, Principe et contrôles, Quitter) > **carte de démo** > combats > carte. La page « Principe et contrôles » est la même au menu et en jeu (bouton Aide) ; ses textes sont dans l'asset `GameHelp`.
+- Carte de démo : 5 villes (Bourg-Val, Aubeterre, Port-Brume, Hautmont, Carrefour), noms affichés au-dessus, et 6 bandes qui patrouillent : Déserteur (1, 15 pièces), 2 Brigands (25), Pillards (archer + fantassin, 30), Brigands (fantassin + archer, 40), 2 Chasseurs archers (45), 3 Mercenaires (70). Boutons Menu et Aide en haut à droite.
+- **Trois arènes**, tirées au hasard à chaque combat : Ruines (piliers et murets), Forêt (troncs qui bloquent les tirs, buissons qui ne les bloquent pas), Fort (salle centrale à portes, murs et caisses).
+- **Fin de la démo** : quand toutes les bandes sont vaincues, écran « Démo terminée » avec le butin total et un retour au menu. La défaite garde l'écran « Fin de partie » (Recommencer ou Menu principal).
+- La touche de debug K est désactivée dans les arènes de démo. Distribution : exécutable Windows compressé, pour itch.io.
 
 ## 7. Méthode de travail (rappel)
 

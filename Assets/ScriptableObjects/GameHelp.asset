@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e34c1c926b68bc847ac8aed4aac6dcb2, type: 3}
+  m_Name: GameHelp
+  m_EditorClassIdentifier: Assembly-CSharp::GameHelp
+  title: "Principe et contr\xF4les"
+  principle: "Vous \xEAtes un marchand qui voyage de ville en ville avec sa caravane (un Fantassin et un Archer).\nDes bandes de brigands patrouillent sur la carte : si l'une d'elles touche votre caravane, un combat tactique commence dans une ar\xE8ne.\nLe combat se joue en temps r\xE9el, et vous pouvez le mettre en pause \xE0 tout moment pour donner vos ordres. Frapper un ennemi de flanc ou de dos est plus efficace. Les archers ont besoin d'une ligne de tir d\xE9gag\xE9e et touchent moins bien de loin.\nLes blessures restent d'un combat \xE0 l'autre : arr\xEAtez-vous dans une ville pour vous reposer et r\xE9cup\xE9rer tous vos PV. Les unit\xE9s tomb\xE9es ne reviennent pas, mais en ville vous pouvez recruter de nouvelles unit\xE9s avec les pi\xE8ces gagn\xE9es (4 unit\xE9s au maximum).\nBut de la d\xE9mo : vaincre toutes les bandes de brigands."
+  mapControls: "Clic gauche sur le sol : d\xE9placer la caravane\nClic gauche sur une ville : y aller, s'y reposer et recruter\nZ Q S D, fl\xE8ches ou bords de l'\xE9cran : d\xE9placer la vue\nClic droit maintenu : faire glisser la vue\nA / E ou bouton du milieu maintenu : tourner la vue\nMolette : zoom\nF : centrer la vue sur l'unit\xE9 s\xE9lectionn\xE9e"
+  combatControls: "Clic gauche sur une de vos unit\xE9s : la s\xE9lectionner (Maj : en ajouter) ; glisser : rectangle de s\xE9lection\nClic gauche sur le sol : se d\xE9placer\nClic gauche sur un ennemi : l'attaquer (au contact ou en tirant, selon l'arme)\nMaj + clic : ajouter l'ordre \xE0 la file (jusqu'\xE0 4 ordres)\nC : choisir une cible \xE0 attaquer ;  T : attendre 2 s ;  X : annuler les ordres\nEspace : pause / reprendre (les ordres restent possibles en pause)\n\xC9chap : tout d\xE9s\xE9lectionner\nSurvolez un ennemi : chance de toucher, d\xE9g\xE2ts estim\xE9s, zone vis\xE9e (face, flanc, dos) et ligne de tir."
