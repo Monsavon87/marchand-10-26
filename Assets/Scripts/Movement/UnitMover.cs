@@ -343,6 +343,58 @@ public class UnitMover : MonoBehaviour
     }
 
     /// <summary>
+    /// Same as TryGetPathCorners, but the path starts at 'start' instead of at the unit (for example the end of
+    /// the orders the unit has lined up). It uses this unit's agent type and area costs; the unit itself does not
+    /// move and the agent is not touched.
+    /// </summary>
+    public bool TryGetPathCornersFrom(Vector3 start, Vector3 destination, Vector3[] buffer, out int cornerCount, out bool reachesDestination)
+    {
+        cornerCount = 0;
+        reachesDestination = false;
+        if (agent == null)
+        {
+            return false;
+        }
+
+        NavMeshQueryFilter filter = new NavMeshQueryFilter
+        {
+            agentTypeID = agent.agentTypeID,
+            areaMask = agent.areaMask
+        };
+        if (!NavMesh.SamplePosition(start, out NavMeshHit startHit, snapRadius, filter)
+            || !NavMesh.SamplePosition(destination, out NavMeshHit destinationHit, snapRadius, filter))
+        {
+            return false;
+        }
+
+        for (int i = 0; i < AreaCount; i++)
+        {
+            filter.SetAreaCost(i, areaCosts[i]);
+        }
+
+        if (!NavMesh.CalculatePath(startHit.position, destinationHit.position, filter, path)
+            || path.status == NavMeshPathStatus.PathInvalid)
+        {
+            return false;
+        }
+
+        int count = path.GetCornersNonAlloc(corners);
+        if (count <= 0)
+        {
+            return false;
+        }
+
+        cornerCount = Mathf.Min(count, buffer.Length);
+        Array.Copy(corners, buffer, cornerCount);
+
+        Vector3 end = corners[count - 1];
+        float dx = end.x - destination.x;
+        float dz = end.z - destination.z;
+        reachesDestination = path.status == NavMeshPathStatus.PathComplete && dx * dx + dz * dz <= ReachTolerance * ReachTolerance;
+        return true;
+    }
+
+    /// <summary>
     /// Fills the buffer with the unit's current position followed by the corners still to reach.
     /// Returns the number of points written (0 if the unit is not moving). No allocation.
     /// </summary>

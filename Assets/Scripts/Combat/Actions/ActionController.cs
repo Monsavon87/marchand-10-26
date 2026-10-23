@@ -208,6 +208,48 @@ public class ActionController : MonoBehaviour
         CancelCurrent();
     }
 
+    /// <summary>
+    /// Where the unit will be once it has carried out everything it was told (the current action and the queue):
+    /// the end of the last walk, or the position of the last target to attack. A wait changes nothing.
+    /// False when it has nothing lined up, or outside combat where there is no queue.
+    /// </summary>
+    public bool TryGetLastOrderPoint(out Vector3 point)
+    {
+        point = default;
+        if (MaxQueuedOrders <= 0)
+        {
+            return false;
+        }
+
+        bool found = false;
+        if (current is MoveAction move)
+        {
+            point = move.Destination;
+            found = true;
+        }
+        else if (current is AttackAction attack && attack.Target != null)
+        {
+            point = attack.Target.position;
+            found = true;
+        }
+
+        for (int i = 0; i < queue.Count; i++)
+        {
+            if (queue[i].Kind == ActionKind.Move)
+            {
+                point = queue[i].Point;
+                found = true;
+            }
+            else if (queue[i].Kind == ActionKind.Attack && queue[i].Target != null)
+            {
+                point = queue[i].Target.position;
+                found = true;
+            }
+        }
+
+        return found;
+    }
+
     /// <summary>The current action and the queued orders, in one line, for the interface.</summary>
     public string DescribeOrders()
     {

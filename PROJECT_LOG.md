@@ -251,6 +251,14 @@ Projet Unity 6 (URP, 3D) : marchand-10-2026-mistral.
 - Vérifié (Play Mode) : combat 2 contre 2 du début (« Début du combat : 2 contre 2 ») à la fin (« victoire du camp du joueur », bannière « Victoire ! », 2 ennemis morts, plus aucun ordre bloqué) ; pause manuelle avec 5 ordres donnés en pause (cinquième refusé : file de 4), unités immobiles pendant la pause, exécution dans l'ordre à la reprise ; Maj + clic réel puis X réel : file vidée ; pause automatique « un ennemi est en vue » (plusieurs fois, journal et bannière) ; pause automatique « un allié est tombé » ; mort d'une unité qui avait une file (file vidée) et d'une cible visée par un ordre en file d'un autre (ordre ignoré) ; attaque en file sur la deuxième cible après la mort de la première ; `Test_Combat`, `Test_Combat_2v2` et `Test_Campaign` rejouées ; console sans erreur ; `ProjectSettings` propre.
 - Non vérifié par moi : l'apparence des nouveaux textes à l'écran ; un combat entièrement à la souris ; `Test_Terrain` et `Test_Movement` non rejoués. Les ennemis ne se mettent pas en pause à la vue d'un joueur (seule l'IA voit, comme avant).
 
+### Aperçu d'un ordre en file (Maj)
+- Demande : avec Maj enfoncée, la ligne du nouvel ordre part du dernier point enregistré, pas de l'unité. Commit de sécurité préalable : `b9d6da9` (C5, poussé).
+- `UnitMover` (modification justifiée et validée avant) : nouvelle méthode `TryGetPathCornersFrom(start, destination, ...)` : même calcul que `TryGetPathCorners` mais depuis un point donné, avec le type d'agent et les coûts de terrain de l'unité (requête statique, l'agent n'est pas touché). Rien d'existant modifié.
+- `ActionController.TryGetLastOrderPoint(out point)` : fin du dernier déplacement (en cours puis en file) ou position de la dernière cible à attaquer ; faux sans ordre ou hors combat. `PathPreview` : champ optionnel `actions` (câblé dans le prefab `Unit`) ; avec Maj et un point disponible, le survol part de ce point (le cache de survol tient compte de Maj et du point de départ).
+- Vérifié (Play Mode, en pause, unité avec 3 déplacements en file) : sans Maj, ligne de (-12, -10) à (2, -2) ; avec Maj, de (-6, 2,17) (fin de la file : (-6, 2)) à (2, -2) ; Maj relâchée : retour à l'unité ; `Test_Terrain` (hors combat) : pas de file, comportement inchangé ; console sans erreur ; `ProjectSettings` propre.
+- Note de test : un appel de script lancé tout de suite à l'entrée en Play peut passer avant l'initialisation des objets (une exception sans suite, non reproductible ensuite).
+- Non vérifié par moi : l'apparence de la ligne à l'écran ; l'aperçu quand l'ordre précédent est une attaque (le point utilisé est la position de la cible).
+
 ## À faire / en attente
 - Tester `Test_Combat` dans le Game view : sélectionner une unité, survoler au-delà de la portée (rouge), cliquer, Espace pour la pause.
 - Regarder les gizmos de détection dans la Scene view (sélectionner `Enemy_1`).

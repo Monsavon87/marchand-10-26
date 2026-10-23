@@ -882,11 +882,9 @@ MonoBehaviour:
   remainingLine: {fileID: 5738193060788453210}
   destinationMarker: {fileID: 4241814011152417077}
   selectable: {fileID: 2715301513733906901}
+  actions: {fileID: 5451973146153742400}
   validMaterial: {fileID: 2100000, guid: daf0296db92810b4999adf6e04eb70bc, type: 2}
   partialMaterial: {fileID: 2100000, guid: 07938cb1a80266b478fec76b6ac1e1be, type: 2}
-  budget: {fileID: 1847993490452819210}
-  outOfRangeLine: {fileID: 2105286588089873629}
-  pendingLine: {fileID: 4123711348566999186}
   selectedAtStart: 0
   refreshInterval: 0.1
   minHoverMove: 0.05
@@ -1002,11 +1000,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ActionController
   mover: {fileID: 1999784559506562445}
   health: {fileID: 4511564987767383823}
-  budget: {fileID: 1847993490452819210}
   gate: {fileID: 0}
   stats: {fileID: 8831436512866986958}
   team: {fileID: 6187509247932767308}
   rulesProvider: {fileID: 0}
+  combat: {fileID: 0}
   logActions: 1
 --- !u!1 &6520645836577663083
 GameObject:

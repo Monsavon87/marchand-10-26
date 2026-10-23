@@ -4,6 +4,8 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// Shows the player where the unit will go: a preview line toward the hovered point,
 /// the remaining path while moving, and a marker at the destination.
+/// With Shift held (the order would be lined up, not replace the current one), the preview starts from where the
+/// unit will be after the orders it already has, not from where it stands.
 /// Read-only: it only queries UnitMover and never gives orders.
 /// </summary>
 public class PathPreview : MonoBehaviour
@@ -19,6 +21,8 @@ public class PathPreview : MonoBehaviour
     [SerializeField] private GameObject destinationMarker;
     [Tooltip("Optional: the hover preview is only shown while this unit is selected.")]
     [SerializeField] private SelectableUnit selectable;
+    [Tooltip("Optional: with Shift held, the hover preview starts at the end of the unit's queued orders.")]
+    [SerializeField] private ActionController actions;
     [Tooltip("Hover line material when the hovered point is reached exactly.")]
     [SerializeField] private Material validMaterial;
     [Tooltip("Hover line material when the unit would stop at the closest reachable point instead.")]
@@ -39,6 +43,8 @@ public class PathPreview : MonoBehaviour
     private bool wasMoving;
     private bool hasHoverPoint;
     private Vector3 lastHoverPoint;
+    private bool lastHoverQueueing;
+    private Vector3 lastHoverQueueStart;
     private float nextRefreshTime;
 
     private void Start()
@@ -192,8 +198,13 @@ public class PathPreview : MonoBehaviour
             return;
         }
 
-        // While the unit is idle and the cursor has not moved, the preview is still valid.
-        if (hasHoverPoint && !mover.IsMoving
+        // Shift held: the new order would be lined up, so the path starts where the last order ends.
+        Vector3 queueStart = Vector3.zero;
+        bool queueing = IsShiftHeld() && actions != null && actions.TryGetLastOrderPoint(out queueStart);
+
+        // While the unit is idle and nothing changed (cursor, Shift, end of the queue), the preview is still valid.
+        if (hasHoverPoint && !mover.IsMoving && queueing == lastHoverQueueing
+            && (!queueing || (queueStart - lastHoverQueueStart).sqrMagnitude < minHoverMove * minHoverMove)
             && (hit.point - lastHoverPoint).sqrMagnitude < minHoverMove * minHoverMove)
         {
             return;
@@ -201,8 +212,15 @@ public class PathPreview : MonoBehaviour
 
         hasHoverPoint = true;
         lastHoverPoint = hit.point;
+        lastHoverQueueing = queueing;
+        lastHoverQueueStart = queueStart;
 
-        if (!mover.TryGetPathCorners(hit.point, points, out int count, out bool reachesDestination) || count < 2)
+        int count;
+        bool reachesDestination;
+        bool found = queueing
+            ? mover.TryGetPathCornersFrom(queueStart, hit.point, points, out count, out reachesDestination)
+            : mover.TryGetPathCorners(hit.point, points, out count, out reachesDestination);
+        if (!found || count < 2)
         {
             HideHover();
             return;
@@ -215,6 +233,12 @@ public class PathPreview : MonoBehaviour
         }
 
         DrawLine(hoverLine, points, count);
+    }
+
+    private static bool IsShiftHeld()
+    {
+        Keyboard keyboard = Keyboard.current;
+        return keyboard != null && (keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed);
     }
 
     // Writes the first 'count' points of the buffer into the line, slightly above the ground.
