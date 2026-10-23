@@ -1,19 +1,12 @@
 using UnityEngine;
 
 /// <summary>
-/// "Attendre": the unit stands still for a given time. It costs exactly that time of the unit's action time,
-/// spent as the time passes (so it is frozen by the pause like everything else).
+/// "Attendre": the unit stands still for a given time. It lasts exactly that long, in game time
+/// (so it is frozen by the pause like everything else).
 /// </summary>
 public sealed class WaitAction : UnitAction
 {
-    // Not null when the combat manager hands out action time to this unit.
-    private readonly CombatMovementBudget budget;
     private float elapsed;
-
-    public WaitAction(CombatMovementBudget budget)
-    {
-        this.budget = budget;
-    }
 
     public override string Name => "Attendre";
 
@@ -25,12 +18,6 @@ public sealed class WaitAction : UnitAction
         if (Duration <= 0f || float.IsNaN(Duration))
         {
             reason = "durée invalide (" + Duration.ToString("F1") + " s)";
-            return false;
-        }
-
-        if (budget != null && budget.Remaining < Duration)
-        {
-            reason = "temps d'action insuffisant (reste " + budget.Remaining.ToString("F1") + " s, coût " + Duration.ToString("F1") + " s)";
             return false;
         }
 
@@ -53,11 +40,6 @@ public sealed class WaitAction : UnitAction
     public override void Tick(float deltaTime)
     {
         elapsed += deltaTime;
-        if (budget != null)
-        {
-            budget.Spend(deltaTime);
-        }
-
         if (elapsed >= Duration)
         {
             End(ActionResult.Succeeded);

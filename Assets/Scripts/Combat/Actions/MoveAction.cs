@@ -3,21 +3,17 @@ using UnityEngine;
 /// <summary>
 /// "Déplacer": walks the unit to a point and ends when it gets there. It only gives the order (through the unit's
 /// order gate when there is one, straight to UnitMover otherwise) and waits for the arrival.
-/// The action time a walk costs is counted by whoever limits the walk (the combat manager), not here:
-/// Cost is only an estimate (path length divided by speed).
+/// A walk costs the time it takes; Cost is an estimate (path length divided by speed).
 /// </summary>
 public sealed class MoveAction : UnitAction
 {
     private readonly UnitMover mover;
     private readonly MoveOrderGate gate;
-    // Not null when the combat manager follows this unit's orders: it then tells when an order really ended.
-    private readonly CombatMovementBudget budget;
 
-    public MoveAction(UnitMover mover, MoveOrderGate gate, CombatMovementBudget budget)
+    public MoveAction(UnitMover mover, MoveOrderGate gate)
     {
         this.mover = mover;
         this.gate = gate;
-        this.budget = budget;
     }
 
     public override string Name => "Déplacer";
@@ -52,17 +48,8 @@ public sealed class MoveAction : UnitAction
 
     protected override void OnBegin(ActionTarget target)
     {
-        if (budget != null)
-        {
-            budget.OrderCompleted += OnArrived;
-            budget.OrderFailed += OnFailed;
-        }
-        else
-        {
-            mover.Arrived += OnArrived;
-            mover.PathFailed += OnPathFailed;
-        }
-
+        mover.Arrived += OnArrived;
+        mover.PathFailed += OnPathFailed;
         IssueOrder(target.Point);
     }
 
@@ -85,12 +72,6 @@ public sealed class MoveAction : UnitAction
 
     protected override void OnEnd()
     {
-        if (budget != null)
-        {
-            budget.OrderCompleted -= OnArrived;
-            budget.OrderFailed -= OnFailed;
-        }
-
         mover.Arrived -= OnArrived;
         mover.PathFailed -= OnPathFailed;
     }
@@ -111,11 +92,6 @@ public sealed class MoveAction : UnitAction
     private void OnArrived()
     {
         End(ActionResult.Succeeded);
-    }
-
-    private void OnFailed()
-    {
-        End(ActionResult.Impossible);
     }
 
     private void OnPathFailed(Vector3 destination)

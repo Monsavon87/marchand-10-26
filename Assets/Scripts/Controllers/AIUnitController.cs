@@ -190,12 +190,6 @@ public class AIUnitController : MonoBehaviour
                 break;
 
             case AIState.Investigate:
-                if (actions.WaitingForTime)
-                {
-                    // No movement left: waiting for the next round is not time lost looking for the target.
-                    investigateStartTime += Time.deltaTime;
-                }
-
                 if (now - investigateStartTime > investigateTimeout)
                 {
                     BeginScan(now);

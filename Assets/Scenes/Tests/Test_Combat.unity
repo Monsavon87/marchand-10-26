@@ -664,11 +664,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CombatHud
   combat: {fileID: 616431159}
-  selection: {fileID: 1897075322}
-  roundLabel: {fileID: 731349568}
-  budgetLabel: {fileID: 1123993805}
   pauseGroup: {fileID: 1455259055}
-  refreshInterval: 0.1
 --- !u!114 &271696638
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1639,9 +1635,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1213cfee401027429e362da11c3dcaa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CombatManager
-  roundDuration: 6
   pauseKey: 1
-  minOrderTime: 0.4
 --- !u!4 &616431160
 Transform:
   m_ObjectHideFlags: 0
@@ -1705,7 +1699,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &731349567
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2361,7 +2355,7 @@ PrefabInstance:
     - target: {fileID: 6764932271480760997, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
       propertyPath: gate
       value: 
-      objectReference: {fileID: 616431159}
+      objectReference: {fileID: 0}
     - target: {fileID: 6764932271480760997, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
       propertyPath: rulesProvider
       value: 
@@ -2392,7 +2386,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1123993804
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3142,7 +3136,7 @@ PrefabInstance:
     - target: {fileID: 5451973146153742400, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
       propertyPath: gate
       value: 
-      objectReference: {fileID: 616431159}
+      objectReference: {fileID: 0}
     - target: {fileID: 5451973146153742400, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
       propertyPath: rulesProvider
       value: 
@@ -3489,7 +3483,7 @@ PrefabInstance:
     - target: {fileID: 5451973146153742400, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
       propertyPath: gate
       value: 
-      objectReference: {fileID: 616431159}
+      objectReference: {fileID: 0}
     - target: {fileID: 5451973146153742400, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
       propertyPath: rulesProvider
       value: 
@@ -3590,7 +3584,7 @@ PrefabInstance:
     - target: {fileID: 6764932271480760997, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
       propertyPath: gate
       value: 
-      objectReference: {fileID: 616431159}
+      objectReference: {fileID: 0}
     - target: {fileID: 6764932271480760997, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
       propertyPath: rulesProvider
       value: 
@@ -3735,7 +3729,7 @@ PrefabInstance:
     - target: {fileID: 5451973146153742400, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
       propertyPath: gate
       value: 
-      objectReference: {fileID: 616431159}
+      objectReference: {fileID: 0}
     - target: {fileID: 5451973146153742400, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
       propertyPath: rulesProvider
       value: 
@@ -4402,7 +4396,7 @@ PrefabInstance:
     - target: {fileID: 6764932271480760997, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
       propertyPath: gate
       value: 
-      objectReference: {fileID: 616431159}
+      objectReference: {fileID: 0}
     - target: {fileID: 6764932271480760997, guid: fad3c6369a65084459dc1b830d97c0d9, type: 3}
       propertyPath: rulesProvider
       value: 

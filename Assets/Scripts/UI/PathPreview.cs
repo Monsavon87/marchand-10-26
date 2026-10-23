@@ -4,7 +4,6 @@ using UnityEngine.InputSystem;
 /// <summary>
 /// Shows the player where the unit will go: a preview line toward the hovered point,
 /// the remaining path while moving, and a marker at the destination.
-/// With a movement budget, the preview is green as far as the unit walks before the round ends and red beyond.
 /// Read-only: it only queries UnitMover and never gives orders.
 /// </summary>
 public class PathPreview : MonoBehaviour
@@ -24,13 +23,6 @@ public class PathPreview : MonoBehaviour
     [SerializeField] private Material validMaterial;
     [Tooltip("Hover line material when the unit would stop at the closest reachable point instead.")]
     [SerializeField] private Material partialMaterial;
-    [Header("Movement budget (optional)")]
-    [Tooltip("When set, the hover preview is cut at the remaining movement: green inside, red beyond.")]
-    [SerializeField] private CombatMovementBudget budget;
-    [Tooltip("Line drawn for the part of the path that is out of range (red material).")]
-    [SerializeField] private LineRenderer outOfRangeLine;
-    [Tooltip("Thin line showing the whole route of an order that takes several rounds; the marker then sits on its final destination.")]
-    [SerializeField] private LineRenderer pendingLine;
     [Header("Behavior")]
     [Tooltip("Temporary: until a real selection system exists, the unit counts as selected at start.")]
     [SerializeField] private bool selectedAtStart = true;
@@ -43,9 +35,6 @@ public class PathPreview : MonoBehaviour
 
     // Reused buffers: no allocation while refreshing.
     private readonly Vector3[] points = new Vector3[MaxPoints];
-    private readonly Vector3[] inRangePoints = new Vector3[MaxPoints];
-    private readonly Vector3[] outOfRangePoints = new Vector3[MaxPoints];
-    private readonly Vector3[] planPoints = new Vector3[MaxPoints];
     private bool isSelected;
     private bool wasMoving;
     private bool hasHoverPoint;
@@ -151,18 +140,10 @@ public class PathPreview : MonoBehaviour
     private void OnArrived()
     {
         remainingLine.enabled = false;
-        // An order that goes on over several rounds keeps its marker on the final destination.
-        if (!HasPlan)
-        {
-            destinationMarker.SetActive(false);
-        }
-
+        destinationMarker.SetActive(false);
         hasHoverPoint = false;
         wasMoving = false;
     }
-
-    // True while the unit has an order in progress that it will carry on in the next rounds.
-    private bool HasPlan => budget != null && pendingLine != null && budget.HasPending;
 
     private void RefreshRemainingPath()
     {
@@ -176,36 +157,16 @@ public class PathPreview : MonoBehaviour
 
         // Also covers Stop(), which raises no event.
         int count = moving ? mover.GetRemainingPath(points) : 0;
-        bool drawingLeg = count >= 2;
-        if (drawingLeg)
-        {
-            destinationMarker.transform.position = points[count - 1] + Vector3.up * MarkerHeight;
-            destinationMarker.SetActive(true);
-            DrawLine(remainingLine, points, count);
-        }
-        else
+        if (count < 2)
         {
             remainingLine.enabled = false;
-        }
-
-        // The whole route to the clicked point, until the unit gets there.
-        bool drawingPlan = false;
-        if (HasPlan && mover.TryGetPathCorners(budget.PendingDestination, planPoints, out int planCount, out _) && planCount >= 2)
-        {
-            DrawLine(pendingLine, planPoints, planCount);
-            destinationMarker.transform.position = planPoints[planCount - 1] + Vector3.up * MarkerHeight;
-            destinationMarker.SetActive(true);
-            drawingPlan = true;
-        }
-        else if (pendingLine != null)
-        {
-            pendingLine.enabled = false;
-        }
-
-        if (!drawingLeg && !drawingPlan)
-        {
             destinationMarker.SetActive(false);
+            return;
         }
+
+        destinationMarker.transform.position = points[count - 1] + Vector3.up * MarkerHeight;
+        destinationMarker.SetActive(true);
+        DrawLine(remainingLine, points, count);
     }
 
     private void RefreshHoverPreview()
@@ -253,31 +214,7 @@ public class PathPreview : MonoBehaviour
             hoverLine.sharedMaterial = wanted;
         }
 
-        if (budget == null || outOfRangeLine == null)
-        {
-            DrawLine(hoverLine, points, count);
-            return;
-        }
-
-        // Green as far as the remaining movement allows, red beyond.
-        PathMath.SplitAt(points, count, budget.UsableDistance, inRangePoints, out int inRangeCount, outOfRangePoints, out int outOfRangeCount);
-        if (inRangeCount >= 2)
-        {
-            DrawLine(hoverLine, inRangePoints, inRangeCount);
-        }
-        else
-        {
-            hoverLine.enabled = false;
-        }
-
-        if (outOfRangeCount >= 2)
-        {
-            DrawLine(outOfRangeLine, outOfRangePoints, outOfRangeCount);
-        }
-        else
-        {
-            outOfRangeLine.enabled = false;
-        }
+        DrawLine(hoverLine, points, count);
     }
 
     // Writes the first 'count' points of the buffer into the line, slightly above the ground.
@@ -296,21 +233,12 @@ public class PathPreview : MonoBehaviour
     private void HideHover()
     {
         hoverLine.enabled = false;
-        if (outOfRangeLine != null)
-        {
-            outOfRangeLine.enabled = false;
-        }
     }
 
     private void HideAll()
     {
         HideHover();
         remainingLine.enabled = false;
-        if (pendingLine != null)
-        {
-            pendingLine.enabled = false;
-        }
-
         destinationMarker.SetActive(false);
     }
 }

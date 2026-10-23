@@ -3,9 +3,8 @@ using UnityEngine;
 /// <summary>
 /// "Attaquer": a melee fight against one enemy until it dies (or the action is replaced or cancelled).
 /// Out of reach, the unit walks toward the target with the "Déplacer" action; in reach, it turns to the target and
-/// strikes. A strike takes the weapon's attack time, spent from the unit's action time like any other action,
-/// which is also what keeps the strikes from coming in a burst. Each strike is resolved by the combat rules and
-/// announced through CombatEvents.
+/// strikes. A strike takes the weapon's attack time, which is also what keeps the strikes from coming in a
+/// burst. Each strike is resolved by the combat rules and announced through CombatEvents.
 /// </summary>
 public sealed class AttackAction : UnitAction
 {
@@ -18,16 +17,11 @@ public sealed class AttackAction : UnitAction
     // A unit that is striking only gives up when the target is this much (m) beyond its reach.
     private const float ReachTolerance = 0.2f;
     private const float FaceInterval = 0.25f;
-    // Spending is counted frame by frame and slightly overshoots; without this, three 2 s strikes would never
-    // fit in a 6 s round (the third would find 1.98 s left and wait for the next round).
-    private const float BudgetTolerance = 0.1f;
 
     private readonly UnitStats stats;
     private readonly UnitTeam team;
     private readonly UnitMover mover;
     private readonly MoveAction move;
-    // Not null when the combat manager hands out action time to this unit.
-    private readonly CombatMovementBudget budget;
     private readonly CombatRulesProvider rulesProvider;
 
     private Transform targetTransform;
@@ -40,13 +34,12 @@ public sealed class AttackAction : UnitAction
     private Vector3 lastDestination;
 
     public AttackAction(UnitStats stats, UnitTeam team, UnitMover mover, MoveAction move,
-        CombatMovementBudget budget, CombatRulesProvider rulesProvider)
+        CombatRulesProvider rulesProvider)
     {
         this.stats = stats;
         this.team = team;
         this.mover = mover;
         this.move = move;
-        this.budget = budget;
         this.rulesProvider = rulesProvider;
     }
 
@@ -71,12 +64,6 @@ public sealed class AttackAction : UnitAction
         if (rulesProvider == null || rulesProvider.Rules == null)
         {
             reason = "les règles de combat sont absentes de la scène";
-            return false;
-        }
-
-        if (budget != null && stats.AttackTime > budget.Max)
-        {
-            reason = "l'attaque dure plus que le temps d'action d'une manche";
             return false;
         }
 
@@ -132,12 +119,6 @@ public sealed class AttackAction : UnitAction
 
         if (!striking)
         {
-            // Not enough action time left for a whole strike: stand still until the next round.
-            if (budget != null && budget.Remaining + BudgetTolerance < stats.AttackTime)
-            {
-                return;
-            }
-
             striking = true;
             strikeElapsed = 0f;
             faceTimer = 0f;
@@ -151,10 +132,6 @@ public sealed class AttackAction : UnitAction
         }
 
         strikeElapsed += deltaTime;
-        if (budget != null)
-        {
-            budget.Spend(deltaTime);
-        }
 
         if (strikeElapsed >= stats.AttackTime)
         {

@@ -21,10 +21,8 @@ public class UnitStats : MonoBehaviour
     public float MaxRange { get; private set; }
     public float AttackTime { get; private set; }
     public float MoveSpeed { get; private set; }
-    public float ActionTime { get; private set; }
 
     public bool IsRanged => MaxRange > 0f;
-    public float MoveDistancePerRound => MoveSpeed * ActionTime;
 
     private void Awake()
     {
@@ -46,6 +44,5 @@ public class UnitStats : MonoBehaviour
         MaxRange = definition.MaxRange;
         AttackTime = definition.AttackTime;
         MoveSpeed = definition.MoveSpeed;
-        ActionTime = definition.ActionTime;
     }
 }

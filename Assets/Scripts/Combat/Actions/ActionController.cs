@@ -13,8 +13,6 @@ public class ActionController : MonoBehaviour
     [SerializeField] private UnitMover mover;
     [Tooltip("Optional: dead units refuse every action.")]
     [SerializeField] private Health health;
-    [Tooltip("Optional: the unit's action time. Used only when the gate below follows the budgets.")]
-    [SerializeField] private CombatMovementBudget budget;
     [Tooltip("Optional: authorizes and limits the moves (combat manager, campaign travel). Empty = free moves.")]
     [SerializeField] private MoveOrderGate gate;
     [Header("Fighting (optional)")]
@@ -33,12 +31,6 @@ public class ActionController : MonoBehaviour
     public UnitAction Current => current;
     public bool IsBusy => current != null;
 
-    /// <summary>True when the unit is stopped because it has no action time left and waits for the next round.</summary>
-    public bool WaitingForTime => ActiveBudget != null && ActiveBudget.WaitingForBudget;
-
-    // The budget counts only when the gate hands out action time (otherwise it is never refilled or tracked).
-    private CombatMovementBudget ActiveBudget => budget != null && gate != null && gate.ReportsThroughBudget ? budget : null;
-
     /// <summary>Raised when a request was accepted and the action starts.</summary>
     public event Action<UnitAction> ActionStarted = delegate { };
     /// <summary>Raised when an action ends, with how it ended. The controller is already free when this is raised.</summary>
@@ -55,11 +47,11 @@ public class ActionController : MonoBehaviour
             return;
         }
 
-        moveAction = new MoveAction(mover, gate, ActiveBudget);
-        waitAction = new WaitAction(ActiveBudget);
+        moveAction = new MoveAction(mover, gate);
+        waitAction = new WaitAction();
         if (stats != null && team != null)
         {
-            attackAction = new AttackAction(stats, team, mover, moveAction, ActiveBudget, rulesProvider);
+            attackAction = new AttackAction(stats, team, mover, moveAction, rulesProvider);
         }
     }
 

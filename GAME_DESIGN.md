@@ -4,7 +4,7 @@ Ce fichier regroupe les décisions de conception **prises et validées**, pour n
 Il ne décrit pas le code (voir `PROJECT_LOG.md` pour l'historique des étapes, `CLAUDE.md` pour les règles de travail).
 Quand une décision change, on modifie la ligne concernée et on note la date. Les points non tranchés sont à la fin.
 
-Dernière mise à jour : 2026-10-23.
+Dernière mise à jour : 2026-10-23 (fin des manches).
 
 ## 1. Le jeu
 
@@ -45,21 +45,19 @@ Dernière mise à jour : 2026-10-23.
 - **Temps réel avec pause.** On peut donner des ordres pendant la pause ; ils s'exécutent à la reprise.
 - Périmètre du prototype : 2 camps (Joueur, Ennemi), 2 types d'unités (mêlée et distance), une arène extérieure et une arène intérieure.
 
-### 6.2 Manches et temps d'action
-- Le temps est découpé en **manches de 6 secondes** de jeu.
-- Chaque unité dispose de **6 secondes de temps d'action par manche**, rechargées au début de la manche suivante. **Toute action a un coût en secondes** (marcher coûte le temps de marche, attendre coûte sa durée, les futures actions auront leur durée).
-- Les ennemis sont soumis au **même budget** que le joueur.
-- Les vitesses sont réalistes : marche **1,4 m/s** pour les joueurs, **1,2 m/s** pour les ennemis (environ 8,4 m et 7,2 m par manche). La course et le sprint viendront plus tard.
-- Pas de « pause » en milieu de manche : une unité marche en continu d'une manche à l'autre. Elle ne s'arrête que si son temps d'action est épuisé ; elle attend alors la manche suivante et reprend.
+### 6.2 Temps d'action (pas de manches)
+- **Il n'y a plus de manches** ni de réserve de temps par unité (décision du 2026-10-23). Chaque action a simplement **un coût en temps** : marcher dure le temps de marche, attendre dure sa durée, une attaque dure `attackTime`.
+- Une unité fait **une seule action à la fois** ; rien d'autre ne la plafonne. Les ennemis suivent exactement les mêmes règles que le joueur.
+- Un **système d'initiative** viendra plus tard pour décider qui agit quand ; il est à définir.
+- Les vitesses sont réalistes : marche **1,4 m/s** pour les joueurs, **1,2 m/s** pour les ennemis. La course et le sprint viendront plus tard.
 
 ### 6.3 Ordres
-- Une unité exécute **une seule action à la fois** ; une nouvelle demande **remplace** l'action en cours (pas de file d'attente).
-- Un ordre de déplacement plus long que ce qui reste dans la manche **continue sur les manches suivantes** jusqu'au point cliqué (programmable aussi en pause).
-- Aperçu du trajet : vert = ce que l'unité parcourt avant la fin de la manche en cours, rouge = la suite, ligne fine cyan = trajet complet vers la destination finale.
-- À l'arrêt, une unité fait face au point visé (et un fantassin immobile est un obstacle : les autres le contournent).
+- Une nouvelle demande **remplace** l'action en cours (pas de file d'attente). Les ordres peuvent être donnés pendant la pause ; ils s'exécutent à la reprise.
+- Un ordre de déplacement, même très long, est exécuté jusqu'au bout. L'aperçu du trajet est un seul trait vers le point visé (pas d'aperçu de durée).
+- À l'arrêt, une unité fait face au point visé (et une unité immobile est un obstacle : les autres la contournent).
 
 ### 6.4 Unités
-- Deux unités de départ : **Fantassin** (mêlée) et **Archer** (distance). Chaque type est décrit par une `UnitDefinition` : PV max, armure, bonus d'attaque, défense, dégâts de l'arme, allonge, zone morte, portée maximale (0 = mêlée), vitesse, temps d'action par manche.
+- Deux unités de départ : **Fantassin** (mêlée) et **Archer** (distance). Chaque type est décrit par une `UnitDefinition` : PV max, armure, bonus d'attaque, défense, dégâts de l'arme, allonge, zone morte, portée maximale (0 = mêlée), temps d'une attaque, vitesse.
 - Une unité a **une seule arme** : mêlée si portée maximale = 0 (c'est l'allonge qui compte), à distance sinon (portée maximale, avec une zone morte minimale éventuelle).
 - À 0 PV, l'unité arrête tout, est retirée du jeu et libère sa place sur le NavMesh.
 
@@ -68,7 +66,7 @@ Dernière mise à jour : 2026-10-23.
 - Toutes les valeurs sont dans des données. Les règles sont **isolées** (`CombatRules`) pour pouvoir remplacer le système plus tard sans toucher au reste.
 
 ### 6.5 bis Attaque au corps à corps (étape C3)
-- Une attaque **dure `attackTime` secondes** (2 s par défaut) et **dépense du temps d'action** de la manche : c'est ce qui empêche les attaques en rafale (3 coups par manche au maximum). Il faut le temps d'une attaque complète pour la commencer, sinon on attend la manche suivante.
+- Une attaque **dure `attackTime` secondes** (2 s par défaut) : c'est ce qui empêche les attaques en rafale (un coup toutes les 2 s).
 - Une demande « Attaquer » **dure jusqu'à la mort de la cible** (ou jusqu'à un nouvel ordre) : l'unité se rapproche seule, se tourne, frappe, recommence.
 - Le coup touche si **jet + bonus d'attaque ≥ défense** ; dégâts = dégâts de l'arme − armure, minimum 0. Valeurs de test : Fantassin attaque 25 / défense 50 (76 % de toucher contre un Fantassin), Archer attaque 20 / défense 35.
 - L'**allonge** se mesure de **centre à centre**. Une unité qui s'approche s'arrête à 85 % de son allonge.
@@ -87,6 +85,7 @@ Dernière mise à jour : 2026-10-23.
 
 ## 8. Points non tranchés (à décider quand le sujet arrive)
 
+- Système d'initiative : qui agit quand (à définir ; remplace l'ancien découpage en manches).
 - Course / sprint : coût, vitesse, durée.
 - Ouïe (détection par le bruit) pour l'IA.
 - Valeurs d'équilibrage définitives des deux unités (les chiffres actuels sont des valeurs de test).
