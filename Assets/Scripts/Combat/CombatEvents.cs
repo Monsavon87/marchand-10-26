@@ -39,6 +39,14 @@ public static class CombatEvents
     /// <summary>A line for the combat journal that is not an attack (a shot that cannot be taken, an arrow lost...).</summary>
     public static event Action<string> Note = delegate { };
 
+    /// <summary>An order was refused or could not be carried out: (side of the unit, unit name, reason).</summary>
+    public static event Action<Team, string, string> OrderRefused = delegate { };
+
+    public static void RaiseOrderRefused(Team side, string unitName, string reason)
+    {
+        OrderRefused(side, unitName, reason);
+    }
+
     public static void RaiseAttackResolved(AttackReport report)
     {
         AttackResolved(report);

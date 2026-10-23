@@ -210,7 +210,8 @@ public class StrategyCamera : MonoBehaviour
         }
 
         // Zoom: mouse wheel, multiplicative so each notch feels the same at any distance.
-        if (mouse != null)
+        // Not while the cursor is over the interface: the wheel scrolls the journal there.
+        if (mouse != null && !UiPointerGuard.IsPointerOverUi)
         {
             float scroll = mouse.scroll.ReadValue().y;
             if (scroll != 0f)

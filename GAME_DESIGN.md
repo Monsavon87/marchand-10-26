@@ -115,6 +115,18 @@ Dernière mise à jour : 2026-10-23 (gestion du combat).
 - **Profils** (`AIProfile`, ScriptableObject) : **Agressif** (ne se replie jamais, la plus proche) et **Prudent** (se replie sous 35 % de PV, la plus faible, évite les positions exposées : flanc ou dos d'un ennemi proche). Tous les seuils et poids sont des paramètres.
 - **Debug** : la case « Show Decisions » du cerveau écrit chaque décision dans la console (« Enemy_Guard · nouvelle cible Player_3 (la plus faible, 12 PV, point faible exposé) »). La dernière décision est lisible (`LastDecision`).
 
+### 6.7 Interface de combat (étape C8)
+- Principe : l'interface **lit** l'état et les événements du jeu et **demande** les ordres par `ActionController` ; elle ne contient aucune règle, et le jeu ne dépend pas d'elle. Textes en `Text` Unity de base (pas de TextMeshPro pour l'instant), sans habillage graphique.
+- **Panneau d'unité** (en haut à gauche, unité sélectionnée) : nom et type, barre et valeur de PV, armure, défense, attaque, arme (mêlée : dégâts, allonge, temps du coup ; distance : dégâts, portée, zone morte, temps du tir), ordres en cours. Il n'y a pas de budget de temps : ce sont les ordres qui sont affichés.
+- **Barre de vie** au-dessus de chaque unité, tournée vers la caméra : bleue pour le joueur, rouge pour l'ennemi.
+- **Cartes des unités du joueur** (en bas, au centre) : nom, PV ; la sélectionnée est en surbrillance ; un clic sélectionne l'unité. **Barre d'ordres** (au-dessus des boutons) : l'action en cours (en couleur) puis la file.
+- **Journal défilant** (en bas à gauche, molette) : coloré (touché du joueur en vert, touché ennemi en rouge, raté en gris, notes en jaune, grands moments en bleu) ; il suit la dernière ligne sauf si le joueur remonte pour lire.
+- **Aperçu au survol** : chance de toucher, **dégâts estimés** (« Dégâts : 8 (PV 40 > 32) », calculés par les règles), zone, distance et malus, ligne de tir, portée au sol.
+- **Boutons et raccourcis** : **Attaquer (C)** active un mode « choisir une cible » (le prochain clic sur un ennemi attaque, un clic au sol ne donne aucun ordre, Échap annule) ; **Attendre (T)** 2 s ; **Annuler (X)** ; **Pause / Reprendre (Espace)**. La touche A reste à la caméra (déplacement). Un clic sur l'interface n'est jamais pris comme un clic dans le monde.
+- **Message de refus** (sous la bannière) : « Player_2 : la ligne de tir est bloquée », « la cible est trop proche », « aucun chemin... », visible 3 s. Seuls les refus du camp du joueur s'affichent.
+- **Écran de fin** : « Victoire ! », « Défaite » ou « Match nul », bouton **Continuer** : recharge la scène de combat (champ « scène suivante » prévu pour la campagne plus tard).
+- Scène de validation : `Test_Combat_2v2` (Fantassin + Archer de chaque côté, ennemis pilotés par l'IA : Fantassin Agressif, Archer Prudent).
+
 ## 7. Méthode de travail (rappel)
 
 - Une étape à la fois, plan validé avant de coder, vérifications à trois niveaux, rapport honnête. Détails dans `CLAUDE.md`.

@@ -68,7 +68,7 @@ public class SelectionManager : MonoBehaviour
         }
 
         Vector2 position = mouse.position.ReadValue();
-        if (mouse.leftButton.wasPressedThisFrame)
+        if (mouse.leftButton.wasPressedThisFrame && !UiPointerGuard.IsPointerOverUi)
         {
             isPressing = true;
             isBoxSelecting = false;
@@ -109,6 +109,22 @@ public class SelectionManager : MonoBehaviour
         {
             HandleClick(position, additive);
         }
+    }
+
+    /// <summary>Selects this unit alone (null just empties the selection).</summary>
+    public void SelectOnly(SelectableUnit unit)
+    {
+        for (int i = selected.Count - 1; i >= 0; i--)
+        {
+            Deselect(i);
+        }
+
+        if (unit != null)
+        {
+            Select(unit);
+        }
+
+        NotifyChanged();
     }
 
     /// <summary>Deselects every unit.</summary>

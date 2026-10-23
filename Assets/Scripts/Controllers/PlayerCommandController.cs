@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -18,8 +19,31 @@ public class PlayerCommandController : MonoBehaviour
     [SerializeField] private float formationSpacing = 1.6f;
 
     // Reused buffers: orders are rare, but there is no reason to allocate each time.
+    private bool targetingMode;
     private Vector3[] slots = new Vector3[16];
     private bool[] slotTaken = new bool[16];
+
+    /// <summary>
+    /// While on, the next click on an enemy orders the attack, and a click on the ground gives no order. It ends by
+    /// itself once an attack was ordered. Set by the interface (the Attack button).
+    /// </summary>
+    public bool TargetingMode
+    {
+        get => targetingMode;
+        set
+        {
+            if (targetingMode == value)
+            {
+                return;
+            }
+
+            targetingMode = value;
+            TargetingModeChanged(targetingMode);
+        }
+    }
+
+    /// <summary>Raised when the targeting mode starts or ends.</summary>
+    public event Action<bool> TargetingModeChanged = delegate { };
 
     private void Start()
     {
@@ -78,7 +102,7 @@ public class PlayerCommandController : MonoBehaviour
     private void OnUnitClicked(UnitTeam clicked, Vector3 point)
     {
         System.Collections.Generic.IReadOnlyList<SelectableUnit> units = selection.Selected;
-        if (!attackEnemiesOnClick || units.Count == 0)
+        if ((!attackEnemiesOnClick && !targetingMode) || units.Count == 0)
         {
             OnGroundClicked(point);
             return;
@@ -112,7 +136,11 @@ public class PlayerCommandController : MonoBehaviour
             anyAttack = true;
         }
 
-        if (!anyAttack)
+        if (anyAttack)
+        {
+            TargetingMode = false;
+        }
+        else
         {
             OnGroundClicked(point);
         }
@@ -120,6 +148,12 @@ public class PlayerCommandController : MonoBehaviour
 
     private void OnGroundClicked(Vector3 point)
     {
+        // Choosing a target: a click that misses an enemy is not a move order.
+        if (targetingMode)
+        {
+            return;
+        }
+
         System.Collections.Generic.IReadOnlyList<SelectableUnit> units = selection.Selected;
         int count = units.Count;
         if (count == 0)

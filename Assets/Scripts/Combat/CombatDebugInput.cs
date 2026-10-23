@@ -3,8 +3,8 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// Debug only: keys to test units. The damage key hurts the selected units; Shift + the key hurts the unit under
-/// the mouse cursor (enemies cannot be selected). The wait key asks the selected units to wait, through their
-/// ActionController like any other request. Remove or disable it once real controls exist.
+/// the mouse cursor (enemies cannot be selected). (Waiting is a button of the combat interface now.)
+/// Remove or disable it once real controls exist.
 /// </summary>
 public class CombatDebugInput : MonoBehaviour
 {
@@ -14,9 +14,6 @@ public class CombatDebugInput : MonoBehaviour
     [Tooltip("Keys are physical positions (US layout).")]
     [SerializeField] private Key damageKey = Key.K;
     [SerializeField] private int damage = 10;
-    [SerializeField] private Key waitKey = Key.T;
-    [Tooltip("Action time, in seconds, that the wait key asks the selected units to spend waiting.")]
-    [SerializeField] private float waitSeconds = 2f;
 
     private void Start()
     {
@@ -40,11 +37,6 @@ public class CombatDebugInput : MonoBehaviour
             return;
         }
 
-        if (keyboard[waitKey].wasPressedThisFrame)
-        {
-            WaitSelected();
-        }
-
         if (!keyboard[damageKey].wasPressedThisFrame)
         {
             return;
@@ -62,15 +54,6 @@ public class CombatDebugInput : MonoBehaviour
         for (int i = 0; i < selected.Count; i++)
         {
             Hurt(selected[i].GetComponent<Health>());
-        }
-    }
-
-    private void WaitSelected()
-    {
-        System.Collections.Generic.IReadOnlyList<SelectableUnit> selected = selection.Selected;
-        for (int i = 0; i < selected.Count; i++)
-        {
-            selected[i].GetComponent<ActionController>().RequestWait(waitSeconds);
         }
     }
 

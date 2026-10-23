@@ -260,6 +260,7 @@ public sealed class ShootAction : UnitAction
         }
 
         CombatEvents.RaiseNote(who + " ne peut pas tirer sur " + AttackTargets.Describe(targetStats) + " : " + problem);
+        CombatEvents.RaiseOrderRefused(team.Team, mover.name, problem);
         End(ActionResult.Impossible);
     }
 

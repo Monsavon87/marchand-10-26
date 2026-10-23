@@ -35,6 +35,7 @@ public class CombatTargeting : MonoBehaviour
     private UnitTeam hoveredTeam;
     private UnitStats hoveredStats;
     private UnitMover hoveredMover;
+    private Health hoveredHealth;
 
     private void Start()
     {
@@ -102,9 +103,10 @@ public class CombatTargeting : MonoBehaviour
             hoveredTeam = team;
             hoveredStats = team.GetComponent<UnitStats>();
             hoveredMover = team.GetComponent<UnitMover>();
+            hoveredHealth = team.GetComponent<Health>();
         }
 
-        if (hoveredStats == null || hoveredMover == null)
+        if (hoveredStats == null || hoveredMover == null || hoveredHealth == null)
         {
             Hide();
             return;
@@ -131,7 +133,9 @@ public class CombatTargeting : MonoBehaviour
             shotLine.enabled = false;
         }
 
+        int estimatedDamage = rules.EstimateDamage(attackerStats, hoveredStats, zone);
         chanceLabel.text = shotInfo + "Toucher : " + rules.HitChancePercent(attackerStats, hoveredStats, zone, rangeModifier) + " %\n"
+            + "Dégâts : " + estimatedDamage + " (PV " + hoveredHealth.Current + " > " + Mathf.Max(0, hoveredHealth.Current - estimatedDamage) + ")\n"
             + char.ToUpper(AttackZones.Name(zone)[0]) + AttackZones.Name(zone).Substring(1)
             + (modifier.hitBonus == 0 && modifier.damageBonus == 0
                 ? " : aucun bonus"

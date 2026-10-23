@@ -33,6 +33,11 @@ public class CombatRules : ICombatRules
         return zoneSettings.Get(zone);
     }
 
+    public int EstimateDamage(UnitStats attacker, UnitStats defender, AttackZone zone)
+    {
+        return Mathf.Max(settings.MinimumDamage, attacker.WeaponDamage + zoneSettings.Get(zone).damageBonus - defender.Armor);
+    }
+
     public int GetRangeModifier(float distance, float maxRange)
     {
         return maxRange > 0f ? settings.GetRangeModifier(distance / maxRange) : 0;

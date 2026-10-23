@@ -64,6 +64,9 @@ public interface ICombatRules
     /// <summary>What attacking this zone is worth.</summary>
     ZoneModifier GetZoneModifier(AttackZone zone);
 
+    /// <summary>The damage a hit would deal in this zone, after the zone bonus and the armor (for previews).</summary>
+    int EstimateDamage(UnitStats attacker, UnitStats defender, AttackZone zone);
+
     /// <summary>The modifier to the attack total for a ranged attack at this distance (0 near, negative far).</summary>
     int GetRangeModifier(float distance, float maxRange);
 

@@ -300,6 +300,34 @@ public class ActionController : MonoBehaviour
         return count;
     }
 
+    /// <summary>
+    /// Fills the list with one short label per order: the current action (or the recovery) first, then the queued
+    /// orders in turn. Returns how many there are. For the interface.
+    /// </summary>
+    public int GetOrderLabels(List<string> labels)
+    {
+        labels.Clear();
+        if (current != null)
+        {
+            labels.Add(current.Kind == ActionKind.Attack && current.Target != null
+                ? current.Name + " " + current.Target.name
+                : current.Name);
+        }
+        else if (recoveryRemaining > 0f)
+        {
+            labels.Add("Récupération");
+        }
+
+        for (int i = 0; i < queue.Count; i++)
+        {
+            labels.Add(queue[i].Kind == ActionKind.Attack && queue[i].Target != null
+                ? NameOf(queue[i].Kind) + " " + queue[i].Target.name
+                : NameOf(queue[i].Kind));
+        }
+
+        return labels.Count;
+    }
+
     /// <summary>The current action and the queued orders, in one line, for the interface.</summary>
     public string DescribeOrders()
     {
@@ -465,6 +493,11 @@ public class ActionController : MonoBehaviour
         reason = why;
         Log(action.Name + " refusée : " + why);
         ActionRefused(action, why);
+        if (team != null)
+        {
+            CombatEvents.RaiseOrderRefused(team.Team, name, why);
+        }
+
         return false;
     }
 
