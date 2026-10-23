@@ -106,6 +106,15 @@ Dernière mise à jour : 2026-10-23 (gestion du combat).
 - Patrouille entre des points ; poursuite d'une cible **vue** (détection **visuelle uniquement** : un mur bloque la vue ; l'ouïe sera une autre source de détection plus tard).
 - Cible perdue : l'ennemi va au dernier point vu, reste un moment à scruter, puis reprend ce qu'il faisait avant la poursuite.
 
+### 6.6 bis IA de combat (étape C7)
+- Quand le combat est engagé et qu'une unité IA **connaît** un ennemi, le composant **`AICombatBrain`** prend le relais d'`AIUnitController` (qui garde la patrouille, la poursuite et la recherche hors combat). Il décide toutes les 0,5 s (réglable). Quand plus aucun ennemi n'est connu pendant 5 s, il rend la main : l'unité scrute puis reprend sa patrouille.
+- **Aucun avantage caché** : l'IA ne connaît que les ennemis qu'elle voit (ligne de vue, dans sa portée de vision : 9 m, ou la portée de son arme si elle est à distance) et celui qui l'a attaquée. Elle agit uniquement par `ActionController` (déplacer, attendre, attaquer ou tirer), avec les mêmes contraintes que le joueur.
+- **Choix de la cible** (profil) : règle de base `Nearest` (la plus proche), `Weakest` (la moins de PV) ou `MostDangerous` (dégâts par seconde de l'arme), plus deux bonus : **point faible** (flanc ou dos de l'ennemi atteignable depuis sa position) et **protection des alliés** (l'ennemi qui attaque un allié est prioritaire). Elle **garde sa cible** (règle du focus) sauf si une autre est nettement meilleure (marge) et pas plus souvent que le délai du profil.
+- **Mêlée** : avance et frappe ; si elle est loin de sa cible, elle **contourne** pour l'attaquer par le flanc ou le dos quand le détour reste raisonnable (≤ 1,5× le trajet direct). **Distance** : tire (avec le repositionnement de C6) et **garde ses distances** : si un ennemi passe sous la distance de confort (40 % de la portée), elle recule vers un point avec ligne de vue, 2 fois de suite au plus, puis tire quand même.
+- **Repli** (profil) : sous un seuil de PV, l'unité va vers le point accessible le plus éloigné des ennemis, de préférence hors de leur vue ; elle y reste. Si un ennemi la rattrape, elle repart (jusqu'à 4 fois), puis se bat. Acculée, elle se bat. Elle **reprend le combat** quand ses PV dépassent le seuil de retour (prévu pour le soin, qui n'existe pas encore : sans soin, elle ne revient pas).
+- **Profils** (`AIProfile`, ScriptableObject) : **Agressif** (ne se replie jamais, la plus proche) et **Prudent** (se replie sous 35 % de PV, la plus faible, évite les positions exposées : flanc ou dos d'un ennemi proche). Tous les seuils et poids sont des paramètres.
+- **Debug** : la case « Show Decisions » du cerveau écrit chaque décision dans la console (« Enemy_Guard · nouvelle cible Player_3 (la plus faible, 12 PV, point faible exposé) »). La dernière décision est lisible (`LastDecision`).
+
 ## 7. Méthode de travail (rappel)
 
 - Une étape à la fois, plan validé avant de coder, vérifications à trois niveaux, rapport honnête. Détails dans `CLAUDE.md`.

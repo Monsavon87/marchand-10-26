@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.AI;
 
 /// <summary>
 /// "Tirer": the ranged attack. Out of range, the unit walks toward the target; in range it turns to it, draws for the
@@ -23,10 +22,6 @@ public sealed class ShootAction : UnitAction
     private const float ShotCheckInterval = 0.15f;
     // How many times the unit moves to find a better spot before giving up.
     private const int MaxRepositions = 3;
-    // The spots tried when looking for a better place: rings around the target (fractions of the range), and angles.
-    private static readonly float[] SpotRings = { 0.5f, 0.7f, 0.85f };
-    private const int SpotAngles = 12;
-    private const float SpotSnapRadius = 1.5f;
 
     private readonly UnitStats stats;
     private readonly UnitTeam team;
@@ -258,7 +253,7 @@ public sealed class ShootAction : UnitAction
         drawing = false;
         drawElapsed = 0f;
         string who = AttackTargets.Describe(stats);
-        if (IsEngaged && repositionsDone < MaxRepositions && TryReposition(myPosition, targetPosition))
+        if (IsEngaged && repositionsDone < MaxRepositions && TryReposition(myPosition))
         {
             CombatEvents.RaiseNote(who + " change de position : " + problem);
             return;
@@ -278,44 +273,10 @@ public sealed class ShootAction : UnitAction
     }
 
     // Looks around the target for the nearest reachable place in range, outside the dead zone, with a clear line.
-    private bool TryReposition(Vector3 myPosition, Vector3 targetPosition)
+    private bool TryReposition(Vector3 myPosition)
     {
-        float nearLimit = stats.DeadZone * 1.05f;
-        float farLimit = stats.MaxRange * 0.98f;
-        Vector3 away = myPosition - targetPosition;
-        away.y = 0f;
-        float startAngle = away.sqrMagnitude > 0.0001f ? Mathf.Atan2(away.z, away.x) : 0f;
-
-        bool found = false;
-        float bestLength = float.MaxValue;
-        Vector3 best = default;
-        for (int ring = 0; ring < SpotRings.Length; ring++)
-        {
-            float radius = Mathf.Clamp(stats.MaxRange * SpotRings[ring], stats.DeadZone * 1.2f, stats.MaxRange * 0.95f);
-            for (int i = 0; i < SpotAngles; i++)
-            {
-                float angle = startAngle + i * Mathf.PI * 2f / SpotAngles;
-                Vector3 candidate = targetPosition + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * radius;
-                if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, SpotSnapRadius, NavMesh.AllAreas))
-                {
-                    continue;
-                }
-
-                float spotDistance = FlatDistance(hit.position, targetPosition);
-                if (spotDistance < nearLimit || spotDistance > farLimit
-                    || !IsShotClear(hit.position, targetTransform, out _)
-                    || !mover.TryGetPath(hit.position, out float length, out _) || length >= bestLength)
-                {
-                    continue;
-                }
-
-                found = true;
-                bestLength = length;
-                best = hit.position;
-            }
-        }
-
-        if (!found)
+        if (!ShotSpotFinder.TryFind(stats, mover, combat.Settings, team.Team, myPosition, targetTransform, 0f, null, 0f,
+                out Vector3 best))
         {
             return false;
         }

@@ -8,6 +8,8 @@ using UnityEngine;
 /// (the look-around only turns the stationary unit in place).
 /// Detection is visual only: a solid object between the eyes and the target blocks it
 /// (hearing will be a separate detection source).
+/// In a running combat, AICombatBrain takes over (Interrupt) while enemies are known, and hands back with
+/// TakeBackControl.
 /// </summary>
 public class AIUnitController : MonoBehaviour
 {
@@ -94,6 +96,21 @@ public class AIUnitController : MonoBehaviour
     {
         interrupted = true;
         Halt();
+    }
+
+    /// <summary>
+    /// Ends an Interrupt after a combat fought by AICombatBrain: the unit looks around where it stands, then goes back
+    /// to its patrol.
+    /// </summary>
+    public void TakeBackControl()
+    {
+        if (!interrupted)
+        {
+            return;
+        }
+
+        interrupted = false;
+        BeginScan(Time.time);
     }
 
     /// <summary>Ends an Interrupt: the unit goes back to whatever it was doing.</summary>
@@ -431,7 +448,8 @@ public class AIUnitController : MonoBehaviour
     // A cancelled one was our own doing (a new state, a stop): nothing to react to.
     private void OnActionFinished(UnitAction action, ActionResult result)
     {
-        if (!(action is MoveAction))
+        // While interrupted, somebody else (the combat brain, an encounter) gives the orders: not our business.
+        if (interrupted || !(action is MoveAction))
         {
             return;
         }
