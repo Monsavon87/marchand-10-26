@@ -23,6 +23,8 @@ public sealed class AttackAction : UnitAction
     private readonly UnitMover mover;
     private readonly MoveAction move;
     private readonly CombatRulesProvider rulesProvider;
+    // Optional: gives the recovery after each strike.
+    private readonly ActionTimingSettings timing;
 
     private Transform targetTransform;
     private Health targetHealth;
@@ -33,19 +35,23 @@ public sealed class AttackAction : UnitAction
     private float strikeElapsed;
     private float repathTimer;
     private float faceTimer;
+    private float recoveryLeft;
     private Vector3 lastDestination;
 
     public AttackAction(UnitStats stats, UnitTeam team, UnitMover mover, MoveAction move,
-        CombatRulesProvider rulesProvider)
+        CombatRulesProvider rulesProvider, ActionTimingSettings timing)
     {
         this.stats = stats;
         this.team = team;
         this.mover = mover;
         this.move = move;
         this.rulesProvider = rulesProvider;
+        this.timing = timing;
     }
 
     public override string Name => "Attaquer";
+
+    public override ActionKind Kind => ActionKind.Attack;
 
     /// <summary>The unit being fought, or null.</summary>
     public Transform Target => targetTransform;
@@ -117,6 +123,13 @@ public sealed class AttackAction : UnitAction
         {
             // In reach: stop walking.
             move.Cancel();
+        }
+
+        if (recoveryLeft > 0f)
+        {
+            // Catching its breath after the last strike.
+            recoveryLeft -= deltaTime;
+            return;
         }
 
         if (!striking)
@@ -197,6 +210,7 @@ public sealed class AttackAction : UnitAction
         striking = false;
         strikeElapsed = 0f;
         repathTimer = 0f;
+        recoveryLeft = 0f;
     }
 
     // Walks toward the target with the "Déplacer" action and follows it if it moves.
@@ -251,6 +265,7 @@ public sealed class AttackAction : UnitAction
 
         striking = false;
         strikeElapsed = 0f;
+        recoveryLeft = timing != null ? timing.RecoveryAfter(ActionKind.Attack) : 0f;
         if (killed)
         {
             End(ActionResult.Succeeded);

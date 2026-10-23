@@ -18,6 +18,8 @@ public sealed class MoveAction : UnitAction
 
     public override string Name => "Déplacer";
 
+    public override ActionKind Kind => ActionKind.Move;
+
     public Vector3 Destination { get; private set; }
 
     public override bool Validate(ActionTarget target, out string reason)

@@ -2,12 +2,14 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// The combat journal on screen: one readable line per attack, the latest at the bottom.
-/// Listens to CombatEvents. Uses the built-in legacy Text (no font import needed).
+/// The combat journal on screen: one readable line per attack, the latest at the bottom, plus the big moments of
+/// the combat (start, automatic pauses, end). Listens to CombatEvents and, when set, to the combat manager. Uses the built-in legacy Text (no font import needed).
 /// </summary>
 public class CombatLog : MonoBehaviour
 {
     [SerializeField] private UnityEngine.UI.Text label;
+    [Tooltip("Optional: adds the start, the automatic pauses and the end of the combat to the journal.")]
+    [SerializeField] private CombatManager combat;
     [Tooltip("How many lines are kept on screen.")]
     [SerializeField] private int maxLines = 8;
 
@@ -28,11 +30,47 @@ public class CombatLog : MonoBehaviour
     private void OnEnable()
     {
         CombatEvents.AttackResolved += OnAttackResolved;
+        if (combat != null)
+        {
+            combat.CombatStarted += OnCombatStarted;
+            combat.CombatEnded += OnCombatEnded;
+            combat.PauseChanged += OnPauseChanged;
+        }
     }
 
     private void OnDisable()
     {
         CombatEvents.AttackResolved -= OnAttackResolved;
+        if (combat != null)
+        {
+            combat.CombatStarted -= OnCombatStarted;
+            combat.CombatEnded -= OnCombatEnded;
+            combat.PauseChanged -= OnPauseChanged;
+        }
+    }
+
+    private void OnCombatStarted()
+    {
+        Add("- Début du combat : " + combat.PlayersAlive + " contre " + combat.EnemiesAlive + " -");
+    }
+
+    private void OnCombatEnded(Team? winner)
+    {
+        Add(winner.HasValue
+            ? "- Fin du combat : victoire du camp " + (winner.Value == Team.Player ? "du joueur" : "ennemi") + " -"
+            : "- Fin du combat : match nul -");
+    }
+
+    private void OnPauseChanged(bool paused)
+    {
+        if (paused && combat.PauseCause == PauseCause.AllyDied)
+        {
+            Add("- Pause automatique : un allié est tombé -");
+        }
+        else if (paused && combat.PauseCause == PauseCause.EnemySighted)
+        {
+            Add("- Pause automatique : un ennemi est en vue -");
+        }
     }
 
     /// <summary>Adds a line to the journal.</summary>

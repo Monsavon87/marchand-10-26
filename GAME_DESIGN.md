@@ -4,7 +4,7 @@ Ce fichier regroupe les décisions de conception **prises et validées**, pour n
 Il ne décrit pas le code (voir `PROJECT_LOG.md` pour l'historique des étapes, `CLAUDE.md` pour les règles de travail).
 Quand une décision change, on modifie la ligne concernée et on note la date. Les points non tranchés sont à la fin.
 
-Dernière mise à jour : 2026-10-23 (zones d'attaque).
+Dernière mise à jour : 2026-10-23 (gestion du combat).
 
 ## 1. Le jeu
 
@@ -51,10 +51,18 @@ Dernière mise à jour : 2026-10-23 (zones d'attaque).
 - Un **système d'initiative** viendra plus tard pour décider qui agit quand ; il est à définir.
 - Les vitesses sont réalistes : marche **1,4 m/s** pour les joueurs, **1,2 m/s** pour les ennemis. La course et le sprint viendront plus tard.
 
-### 6.3 Ordres
-- Une nouvelle demande **remplace** l'action en cours (pas de file d'attente). Les ordres peuvent être donnés pendant la pause ; ils s'exécutent à la reprise.
+### 6.3 Ordres et file d'ordres
+- Un **clic** donne un ordre qui **remplace** l'action en cours et **vide la file**. **Maj + clic** **ajoute** l'ordre à la **file** de l'unité (jusqu'à **4 ordres** derrière l'action en cours, réglable dans `CombatSettings`). **X** annule l'action en cours et la file des unités sélectionnées. Hors combat (carte de campagne), il n'y a pas de file : Maj + clic est un ordre normal. (Décision du 2026-10-23, elle remplace l'ancien « pas de file d'attente ».)
+- Les ordres peuvent être donnés pendant la pause ; ils s'exécutent à la reprise.
+- Un ordre en file dont la cible est morte (ou impossible) est **ignoré** : la file passe au suivant.
 - Un ordre de déplacement, même très long, est exécuté jusqu'au bout. L'aperçu du trajet est un seul trait vers le point visé (pas d'aperçu de durée).
 - À l'arrêt, une unité fait face au point visé (et une unité immobile est un obstacle : les autres la contournent).
+- **Récupération** : après une attaque, une unité récupère **0,5 s** (réglable dans `ActionTimingSettings`, une valeur par type d'action) : entre deux coups, et avant l'ordre suivant de la file.
+
+### 6.3 bis Gestion du combat
+- Un combat **commence** avec les unités présentes et **se termine** quand un camp n'a plus d'unité vivante (victoire du camp restant, ou match nul si les deux tombent ensemble). Événements : début de combat, pause/reprise (avec la raison), fin de combat avec le vainqueur.
+- **Espace** met en pause (temps de jeu suspendu, interface utilisable, ordres possibles). **Pauses automatiques** (réglables, activées par défaut) : quand une unité alliée meurt, et quand un ennemi **entre en vue** d'une unité du joueur (rayon de vue 9 m en 360°, avec ligne de vue ; un ennemi déjà visible au début ne déclenche pas de pause). Le jeu affiche la raison.
+- La mort d'une unité vide sa file et annule son action ; les ordres des autres qui la visaient s'arrêtent ou sont ignorés quand leur tour vient.
 
 ### 6.4 Unités
 - Deux unités de départ : **Fantassin** (mêlée) et **Archer** (distance). Chaque type est décrit par une `UnitDefinition` : PV max, armure, bonus d'attaque, défense, dégâts de l'arme, allonge, zone morte, portée maximale (0 = mêlée), temps d'une attaque, vitesse.
@@ -93,7 +101,7 @@ Dernière mise à jour : 2026-10-23 (zones d'attaque).
 
 ## 8. Points non tranchés (à décider quand le sujet arrive)
 
-- Système d'initiative : qui agit quand (à définir ; remplace l'ancien découpage en manches).
+- Système d'initiative : qui agit quand (à définir ; remplace l'ancien découpage en manches). Le rythme actuel vient seulement des durées et des récupérations des actions.
 - Sélection de cible et gestion d'aggro (qui une unité décide-t-elle d'affronter quand plusieurs l'attaquent).
 - Course / sprint : coût, vitesse, durée.
 - Ouïe (détection par le bruit) pour l'IA.

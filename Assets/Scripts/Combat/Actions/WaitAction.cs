@@ -10,6 +10,8 @@ public sealed class WaitAction : UnitAction
 
     public override string Name => "Attendre";
 
+    public override ActionKind Kind => ActionKind.Wait;
+
     /// <summary>How long to wait, in seconds. Set before requesting the action.</summary>
     public float Duration { get; set; } = 1f;
 

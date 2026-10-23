@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// Turns a ground click into move orders for the selected units.
@@ -11,6 +12,8 @@ public class PlayerCommandController : MonoBehaviour
     [SerializeField] private SelectionManager selection;
     [Tooltip("When on, clicking an enemy unit orders the selected units to attack it. When off, it is a plain move to that point.")]
     [SerializeField] private bool attackEnemiesOnClick;
+    [Tooltip("Cancels the current order and the queue of the selected units.")]
+    [SerializeField] private Key cancelKey = Key.X;
     [Tooltip("Distance between two units of the formation, in meters.")]
     [SerializeField] private float formationSpacing = 1.6f;
 
@@ -25,6 +28,32 @@ public class PlayerCommandController : MonoBehaviour
             Debug.LogError("PlayerCommandController: selection is not assigned.", this);
             enabled = false;
         }
+    }
+
+    private void Update()
+    {
+        Keyboard keyboard = Keyboard.current;
+        if (keyboard == null || !keyboard[cancelKey].wasPressedThisFrame)
+        {
+            return;
+        }
+
+        System.Collections.Generic.IReadOnlyList<SelectableUnit> units = selection.Selected;
+        for (int i = 0; i < units.Count; i++)
+        {
+            ActionController actions = units[i].GetComponent<ActionController>();
+            if (actions != null)
+            {
+                actions.Cancel();
+            }
+        }
+    }
+
+    // Shift held while giving an order lines it up behind the current one instead of replacing it.
+    private static bool IsQueueing()
+    {
+        Keyboard keyboard = Keyboard.current;
+        return keyboard != null && (keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed);
     }
 
     private void OnEnable()
@@ -71,7 +100,15 @@ public class PlayerCommandController : MonoBehaviour
                 continue;
             }
 
-            actions.RequestAttack(clicked.transform);
+            if (IsQueueing())
+            {
+                actions.EnqueueAttack(clicked.transform);
+            }
+            else
+            {
+                actions.RequestAttack(clicked.transform);
+            }
+
             anyAttack = true;
         }
 
@@ -153,6 +190,13 @@ public class PlayerCommandController : MonoBehaviour
             return;
         }
 
-        actions.RequestMove(destination);
+        if (IsQueueing())
+        {
+            actions.EnqueueMove(destination);
+        }
+        else
+        {
+            actions.RequestMove(destination);
+        }
     }
 }

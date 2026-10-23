@@ -12,6 +12,14 @@ public enum ActionResult
     Impossible
 }
 
+/// <summary>The kinds of action a unit can do. Used to give each kind its own recovery time.</summary>
+public enum ActionKind
+{
+    Move,
+    Wait,
+    Attack
+}
+
 /// <summary>What an action is aimed at: a point on the ground, and optionally a unit.</summary>
 public readonly struct ActionTarget
 {
@@ -34,6 +42,9 @@ public abstract class UnitAction
 {
     /// <summary>Name shown in logs and, later, in the interface.</summary>
     public abstract string Name { get; }
+
+    /// <summary>Which kind of action this is.</summary>
+    public abstract ActionKind Kind { get; }
 
     /// <summary>Estimated cost in seconds of action time, filled in by a successful Validate.</summary>
     public float Cost { get; protected set; }
