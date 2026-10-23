@@ -250,6 +250,50 @@ public class ActionController : MonoBehaviour
         return found;
     }
 
+    /// <summary>
+    /// Where the order being carried out ends: the destination of the current walk, or the position of the target
+    /// being attacked. False when the unit is not walking or attacking.
+    /// </summary>
+    public bool TryGetCurrentOrderPoint(out Vector3 point)
+    {
+        point = default;
+        if (current is MoveAction move)
+        {
+            point = move.Destination;
+            return true;
+        }
+
+        if (current is AttackAction attack && attack.Target != null)
+        {
+            point = attack.Target.position;
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Copies, in order, the points the queued orders lead to (the destination of each queued walk, the position of
+    /// each target to attack; waits lead nowhere). Returns how many were written. No allocation.
+    /// </summary>
+    public int CopyQueuedPoints(Vector3[] buffer)
+    {
+        int count = 0;
+        for (int i = 0; i < queue.Count && count < buffer.Length; i++)
+        {
+            if (queue[i].Kind == ActionKind.Move)
+            {
+                buffer[count++] = queue[i].Point;
+            }
+            else if (queue[i].Kind == ActionKind.Attack && queue[i].Target != null)
+            {
+                buffer[count++] = queue[i].Target.position;
+            }
+        }
+
+        return count;
+    }
+
     /// <summary>The current action and the queued orders, in one line, for the interface.</summary>
     public string DescribeOrders()
     {

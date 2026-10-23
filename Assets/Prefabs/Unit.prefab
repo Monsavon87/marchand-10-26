@@ -462,7 +462,7 @@ GameObject:
   - component: {fileID: 1324853784766549568}
   - component: {fileID: 4123711348566999186}
   m_Layer: 0
-  m_Name: PendingPlanLine
+  m_Name: QueuedPathLine
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -592,7 +592,7 @@ LineRenderer:
       m_NumAlphaKeys: 2
     numCornerVertices: 0
     numCapVertices: 0
-    alignment: 1
+    alignment: 0
     textureMode: 0
     textureScale: {x: 1, y: 1}
     shadowBias: 0.5
@@ -883,6 +883,7 @@ MonoBehaviour:
   destinationMarker: {fileID: 4241814011152417077}
   selectable: {fileID: 2715301513733906901}
   actions: {fileID: 5451973146153742400}
+  queueLine: {fileID: 4123711348566999186}
   validMaterial: {fileID: 2100000, guid: daf0296db92810b4999adf6e04eb70bc, type: 2}
   partialMaterial: {fileID: 2100000, guid: 07938cb1a80266b478fec76b6ac1e1be, type: 2}
   selectedAtStart: 0

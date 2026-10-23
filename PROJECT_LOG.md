@@ -259,6 +259,12 @@ Projet Unity 6 (URP, 3D) : marchand-10-2026-mistral.
 - Note de test : un appel de script lancé tout de suite à l'entrée en Play peut passer avant l'initialisation des objets (une exception sans suite, non reproductible ensuite).
 - Non vérifié par moi : l'apparence de la ligne à l'écran ; l'aperçu quand l'ordre précédent est une attaque (le point utilisé est la position de la cible).
 
+### Chemin de tous les ordres en file (unité sélectionnée seulement)
+- Demande : afficher le chemin de tous les ordres en file ; seulement quand l'unité est sélectionnée. Commit préalable : `bdc1037`.
+- `ActionController` : `TryGetCurrentOrderPoint` (fin de l'ordre en cours) et `CopyQueuedPoints` (point de chaque déplacement ou attaque en file ; les attentes n'ont pas de point). `PathPreview` : champ `queueLine` (réutilise l'ancien enfant `PendingPlanLine` du prefab `Unit`, renommé `QueuedPathLine`, matériau cyan fin `Mat_PathPlan`) ; tant que l'unité est sélectionnée, une seule ligne relie, bout à bout, les chemins calculés par `UnitMover.TryGetPathCornersFrom` depuis la fin de l'ordre en cours, à travers chaque ordre en file ; rafraîchie avec l'aperçu (0,1 s). Masquée à la désélection. Interprétation retenue : seul le tracé de la file est limité à l'unité sélectionnée ; la ligne du chemin restant de l'ordre en cours est inchangée.
+- Vérifié (Play Mode, en pause, 2 unités avec file) : unité sélectionnée : ligne active (7 points, de la fin de l'ordre en cours à la fin du dernier ordre) ; unité non sélectionnée : ligne éteinte ; après Échap : ligne éteinte ; console sans erreur ; `ProjectSettings` propre.
+- Non vérifié par moi : l'apparence de la ligne (cyan fin) à l'écran ; pas de repère (marqueur) au bout de chaque ordre en file.
+
 ## À faire / en attente
 - Tester `Test_Combat` dans le Game view : sélectionner une unité, survoler au-delà de la portée (rouge), cliquer, Espace pour la pause.
 - Regarder les gizmos de détection dans la Scene view (sélectionner `Enemy_1`).
@@ -267,3 +273,8 @@ Projet Unity 6 (URP, 3D) : marchand-10-2026-mistral.
 - Tester dans le Game view : clic souris (Player actif) puis touche Espace (cocher `DebugMoveController`, décocher `PlayerUnitController`).
 - Premier commit de sécurité (non fait, aucun commit dans le dépôt).
 - Définir le design du jeu (aucun script ni asset de jeu pour l'instant).
+
+## Lignes de trajet : seulement pour l'unité sélectionnée
+- PathPreview : la ligne du trajet en cours et le repère de destination ne s'affichent plus que si l'unité est sélectionnée (masqués à la désélection).
+- Unit.prefab : QueuedPathLine passée en alignement View (comme les autres lignes) ; en Local elle semblait tracée à la verticale.
+- Vérifié : compilation OK, console sans erreur, unités non sélectionnées en déplacement = ligne cachée. Non vérifié : ligne visible sur unité sélectionnée en mouvement (les unités arrivaient avant ma lecture), rendu visuel.

@@ -6,11 +6,14 @@ using UnityEngine.InputSystem;
 /// the remaining path while moving, and a marker at the destination.
 /// With Shift held (the order would be lined up, not replace the current one), the preview starts from where the
 /// unit will be after the orders it already has, not from where it stands.
+/// While the unit is selected, the path of every order lined up behind the current one is drawn too, end to end.
 /// Read-only: it only queries UnitMover and never gives orders.
 /// </summary>
 public class PathPreview : MonoBehaviour
 {
     private const int MaxPoints = 64;
+    private const int MaxQueuedPoints = 8;
+    private const int MaxQueuePathPoints = 256;
     private const float MarkerHeight = 0.02f;
 
     [SerializeField] private UnitMover mover;
@@ -21,8 +24,10 @@ public class PathPreview : MonoBehaviour
     [SerializeField] private GameObject destinationMarker;
     [Tooltip("Optional: the hover preview is only shown while this unit is selected.")]
     [SerializeField] private SelectableUnit selectable;
-    [Tooltip("Optional: with Shift held, the hover preview starts at the end of the unit's queued orders.")]
+    [Tooltip("Optional: with Shift held, the hover preview starts at the end of the unit's queued orders, and the queued orders are drawn.")]
     [SerializeField] private ActionController actions;
+    [Tooltip("Line drawn through the paths of all the queued orders, only while the unit is selected.")]
+    [SerializeField] private LineRenderer queueLine;
     [Tooltip("Hover line material when the hovered point is reached exactly.")]
     [SerializeField] private Material validMaterial;
     [Tooltip("Hover line material when the unit would stop at the closest reachable point instead.")]
@@ -39,6 +44,8 @@ public class PathPreview : MonoBehaviour
 
     // Reused buffers: no allocation while refreshing.
     private readonly Vector3[] points = new Vector3[MaxPoints];
+    private readonly Vector3[] queuedPoints = new Vector3[MaxQueuedPoints];
+    private readonly Vector3[] queuePath = new Vector3[MaxQueuePathPoints];
     private bool isSelected;
     private bool wasMoving;
     private bool hasHoverPoint;
@@ -126,6 +133,7 @@ public class PathPreview : MonoBehaviour
         nextRefreshTime = Time.unscaledTime + refreshInterval;
         RefreshRemainingPath();
         RefreshHoverPreview();
+        RefreshQueuedPath();
     }
 
     /// <summary>Called by the (future) selection system. Only the hover preview depends on selection.</summary>
@@ -136,6 +144,9 @@ public class PathPreview : MonoBehaviour
         if (!selected)
         {
             HideHover();
+            HideQueuedPath();
+            remainingLine.enabled = false;
+            destinationMarker.SetActive(false);
         }
     }
 
@@ -162,7 +173,8 @@ public class PathPreview : MonoBehaviour
         }
 
         // Also covers Stop(), which raises no event.
-        int count = moving ? mover.GetRemainingPath(points) : 0;
+        // Only the selected unit shows where it is going.
+        int count = moving && isSelected ? mover.GetRemainingPath(points) : 0;
         if (count < 2)
         {
             remainingLine.enabled = false;
@@ -173,6 +185,63 @@ public class PathPreview : MonoBehaviour
         destinationMarker.transform.position = points[count - 1] + Vector3.up * MarkerHeight;
         destinationMarker.SetActive(true);
         DrawLine(remainingLine, points, count);
+    }
+
+    // The route of everything lined up behind the current order: from the end of the current order, through each
+    // queued walk or attack in turn. Only for the selected unit.
+    private void RefreshQueuedPath()
+    {
+        if (queueLine == null)
+        {
+            return;
+        }
+
+        if (!isSelected || actions == null)
+        {
+            HideQueuedPath();
+            return;
+        }
+
+        int targets = actions.CopyQueuedPoints(queuedPoints);
+        if (targets == 0)
+        {
+            HideQueuedPath();
+            return;
+        }
+
+        Vector3 start = actions.TryGetCurrentOrderPoint(out Vector3 currentEnd) ? currentEnd : mover.GroundPosition;
+        int total = 0;
+        for (int i = 0; i < targets; i++)
+        {
+            if (!mover.TryGetPathCornersFrom(start, queuedPoints[i], points, out int count, out _) || count < 2)
+            {
+                continue;
+            }
+
+            // The first corner of a segment is where the previous one ended.
+            for (int k = total == 0 ? 0 : 1; k < count && total < MaxQueuePathPoints; k++)
+            {
+                queuePath[total++] = points[k];
+            }
+
+            start = points[count - 1];
+        }
+
+        if (total < 2)
+        {
+            HideQueuedPath();
+            return;
+        }
+
+        DrawLine(queueLine, queuePath, total);
+    }
+
+    private void HideQueuedPath()
+    {
+        if (queueLine != null)
+        {
+            queueLine.enabled = false;
+        }
     }
 
     private void RefreshHoverPreview()
@@ -264,5 +333,6 @@ public class PathPreview : MonoBehaviour
         HideHover();
         remainingLine.enabled = false;
         destinationMarker.SetActive(false);
+        HideQueuedPath();
     }
 }
