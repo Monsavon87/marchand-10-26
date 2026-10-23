@@ -50,11 +50,24 @@ public class CombatLog : MonoBehaviour
     private void OnAttackResolved(AttackReport report)
     {
         AttackResult r = report.Result;
-        string line = report.AttackerName + " frappe " + report.DefenderName + " : jet " + r.Roll + " + " + r.AttackBonus
-            + " = " + r.Total + " contre " + r.Threshold;
+        string zone = AttackZones.Name(r.Zone);
+        string line = report.AttackerName + " frappe " + report.DefenderName + " (" + zone + ") : jet " + r.Roll
+            + " + " + r.AttackBonus;
+        if (r.ZoneHitBonus != 0)
+        {
+            line += " + " + r.ZoneHitBonus + " (" + zone + ")";
+        }
+
+        line += " = " + r.Total + " contre " + r.Threshold;
         if (r.Hit)
         {
-            line += " > touché, " + r.RawDamage + " - " + r.Armor + " = " + r.Damage + " dégâts (PV "
+            line += " > touché, " + r.WeaponDamage;
+            if (r.ZoneDamageBonus != 0)
+            {
+                line += " + " + r.ZoneDamageBonus + " (" + zone + ")";
+            }
+
+            line += " - " + r.Armor + " = " + r.Damage + " dégâts (PV "
                 + report.DefenderHealth + "/" + report.DefenderMaxHealth + ")";
         }
         else

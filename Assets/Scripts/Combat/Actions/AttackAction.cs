@@ -27,6 +27,8 @@ public sealed class AttackAction : UnitAction
     private Transform targetTransform;
     private Health targetHealth;
     private UnitStats targetStats;
+    private UnitMover targetMover;
+    private ActionController targetActions;
     private bool striking;
     private float strikeElapsed;
     private float repathTimer;
@@ -189,6 +191,8 @@ public sealed class AttackAction : UnitAction
     private void SetTarget(Transform target)
     {
         TryResolveTarget(target, out targetHealth, out targetStats, out _);
+        targetMover = targetHealth != null ? targetHealth.GetComponent<UnitMover>() : null;
+        targetActions = targetHealth != null ? targetHealth.GetComponent<ActionController>() : null;
         targetTransform = targetHealth != null ? targetHealth.transform : null;
         striking = false;
         strikeElapsed = 0f;
@@ -232,7 +236,9 @@ public sealed class AttackAction : UnitAction
     private void Strike(Vector3 targetPosition)
     {
         ICombatRules rules = rulesProvider.Rules;
-        AttackResult result = rules.ResolveAttack(stats, targetStats, rules.RollDie());
+        // The zone is the one the attacker stands in when the blow lands.
+        AttackZone zone = rules.DetermineZone(mover.transform.position, targetTransform);
+        AttackResult result = rules.ResolveAttack(stats, targetStats, zone, rules.RollDie());
         if (result.Damage > 0)
         {
             targetHealth.TakeDamage(result.Damage);
@@ -248,6 +254,18 @@ public sealed class AttackAction : UnitAction
         if (killed)
         {
             End(ActionResult.Succeeded);
+            return;
+        }
+
+        // The one who was attacked reacts: it turns toward the attacker unless it already has a focus of its own
+        // (a unit keeps its focus on its first target).
+        if (targetActions != null)
+        {
+            targetActions.NoteAttackedBy(mover.transform);
+        }
+        else if (targetMover != null)
+        {
+            targetMover.FaceTowards(mover.transform.position);
         }
     }
 

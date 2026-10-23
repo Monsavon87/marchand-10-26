@@ -3,8 +3,9 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// While a unit is selected, shows what the player would attack: the enemy under the mouse cursor gets a red ring
-/// on the ground and a label with the chance to hit it. Read-only: the click itself is handled by the player's
-/// command controller.
+/// on the ground, the zones around it (front, flank, back) with the one that would be hit, and a label with the
+/// chance to hit and what that zone is worth. Read-only: the click itself is handled by the player's command
+/// controller.
 /// </summary>
 public class CombatTargeting : MonoBehaviour
 {
@@ -16,6 +17,8 @@ public class CombatTargeting : MonoBehaviour
     [SerializeField] private Transform highlightRing;
     [Tooltip("World text above the targeted enemy, for the chance to hit.")]
     [SerializeField] private TextMesh chanceLabel;
+    [Tooltip("Draws the front / flank / back zones around the targeted enemy.")]
+    [SerializeField] private FacingZoneIndicator zoneIndicator;
     [SerializeField] private float labelHeight = 2.7f;
     [SerializeField] private float ringHeight = 0.08f;
 
@@ -32,7 +35,8 @@ public class CombatTargeting : MonoBehaviour
             viewCamera = Camera.main;
         }
 
-        if (selection == null || rulesProvider == null || viewCamera == null || highlightRing == null || chanceLabel == null)
+        if (selection == null || rulesProvider == null || viewCamera == null || highlightRing == null || chanceLabel == null
+            || zoneIndicator == null)
         {
             Debug.LogError("CombatTargeting: a serialized reference is not assigned.", this);
             enabled = false;
@@ -101,7 +105,18 @@ public class CombatTargeting : MonoBehaviour
         highlightRing.position = ground + Vector3.up * ringHeight;
         highlightRing.gameObject.SetActive(true);
 
-        chanceLabel.text = "Toucher : " + rulesProvider.Rules.HitChancePercent(attackerStats, hoveredStats) + " %";
+        // The attacker would arrive in a straight line from where it stands: that is the zone it would hit.
+        ICombatRules rules = rulesProvider.Rules;
+        Vector3 attackerPosition = attackerStats.transform.position;
+        AttackZone zone = rules.DetermineZone(attackerPosition, team.transform);
+        ZoneModifier modifier = rules.GetZoneModifier(zone);
+        chanceLabel.text = "Toucher : " + rules.HitChancePercent(attackerStats, hoveredStats, zone) + " %\n"
+            + char.ToUpper(AttackZones.Name(zone)[0]) + AttackZones.Name(zone).Substring(1)
+            + (modifier.hitBonus == 0 && modifier.damageBonus == 0
+                ? " : aucun bonus"
+                : " : +" + modifier.hitBonus + " toucher, +" + modifier.damageBonus + " dégâts");
+        zoneIndicator.Show(ground, team.transform.forward, attackerPosition - team.transform.position, zone,
+            rulesProvider.ZoneSettings);
         chanceLabel.transform.position = ground + Vector3.up * labelHeight;
         chanceLabel.transform.rotation = viewCamera.transform.rotation;
         chanceLabel.gameObject.SetActive(true);
@@ -130,5 +145,6 @@ public class CombatTargeting : MonoBehaviour
         hoveredTeam = null;
         highlightRing.gameObject.SetActive(false);
         chanceLabel.gameObject.SetActive(false);
+        zoneIndicator.Hide();
     }
 }

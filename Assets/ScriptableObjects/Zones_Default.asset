@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3ab4f4c52ce97c4bbb74123d312b94a, type: 3}
+  m_Name: Zones_Default
+  m_EditorClassIdentifier: Assembly-CSharp::AttackZoneSettings
+  frontHalfAngle: 60
+  backHalfAngle: 60
+  front:
+    hitBonus: 0
+    damageBonus: 0
+  flank:
+    hitBonus: 10
+    damageBonus: 2
+  back:
+    hitBonus: 20
+    damageBonus: 4

@@ -26,10 +26,20 @@ public class ActionController : MonoBehaviour
     private WaitAction waitAction;
     private AttackAction attackAction;
     private UnitAction current;
+    private Transform focus;
+    private Health focusHealth;
 
     /// <summary>The action running now, or null.</summary>
     public UnitAction Current => current;
     public bool IsBusy => current != null;
+
+    /// <summary>
+    /// The enemy this unit has its eyes on: the one it was told to attack, or else the first one that attacked it.
+    /// It keeps it until that enemy is gone or the unit is given another order. Null when it has none.
+    /// </summary>
+    public Transform Focus => IsFocusValid ? focus : null;
+
+    private bool IsFocusValid => focus != null && focusHealth != null && !focusHealth.IsDead;
 
     /// <summary>Raised when a request was accepted and the action starts.</summary>
     public event Action<UnitAction> ActionStarted = delegate { };
@@ -128,10 +138,25 @@ public class ActionController : MonoBehaviour
         {
             // Same action, new target (an AI refreshing its chase, a player clicking again): no journal, no restart.
             action.Retarget(target);
+            if (action == attackAction)
+            {
+                SetFocus(target.Target);
+            }
+
             return true;
         }
 
         Cancel();
+
+        // An attack gives the unit a focus; any other order makes it let go of it.
+        if (action == attackAction)
+        {
+            SetFocus(target.Target);
+        }
+        else
+        {
+            SetFocus(null);
+        }
 
         current = action;
         action.Finished += OnActionFinished;
@@ -141,6 +166,22 @@ public class ActionController : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// Tells the unit that 'attacker' has just struck it. A unit with no focus turns toward the attacker and keeps
+    /// it as its focus; a unit that already has one stays turned to it (the first target is kept, a notion of
+    /// target choice or aggro will come later). A unit that is walking keeps facing where it goes.
+    /// </summary>
+    public void NoteAttackedBy(Transform attacker)
+    {
+        if (IsFocusValid && focus != attacker)
+        {
+            return;
+        }
+
+        SetFocus(attacker);
+        mover.FaceTowards(attacker.position);
+    }
+
     /// <summary>Cancels the action in progress, if any. The unit stops.</summary>
     public void Cancel()
     {
@@ -148,6 +189,12 @@ public class ActionController : MonoBehaviour
         {
             current.Cancel();
         }
+    }
+
+    private void SetFocus(Transform target)
+    {
+        focus = target;
+        focusHealth = target != null ? target.GetComponentInParent<Health>() : null;
     }
 
     private bool Refuse(UnitAction action, string why, out string reason)

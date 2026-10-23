@@ -584,6 +584,57 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 230662836}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &257825027
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 257825029}
+  - component: {fileID: 257825028}
+  m_Layer: 0
+  m_Name: FacingZones
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &257825028
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 257825027}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 911b856050191594fb8aee1d87d23087, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FacingZoneIndicator
+  frontMaterial: {fileID: 2100000, guid: dd6a298a92f0f8040a86f46d411e95dc, type: 2}
+  flankMaterial: {fileID: 2100000, guid: d52cc2db398501d46b707799b0d8ca2a, type: 2}
+  backMaterial: {fileID: 2100000, guid: 930e69e4d1f99e446b1eeda71b848b71, type: 2}
+  radius: 1.4
+  height: 0.09
+  normalWidth: 0.05
+  highlightWidth: 0.2
+--- !u!4 &257825029
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 257825027}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1597815803}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &271696634
 GameObject:
   m_ObjectHideFlags: 0
@@ -2478,6 +2529,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CombatRulesProvider
   settings: {fileID: 11400000, guid: 4b732cc28a9c60e43912144dbcb8ca5e, type: 2}
+  zoneSettings: {fileID: 11400000, guid: ffed045d25fe552428b43ec833ca62d7, type: 2}
 --- !u!4 &1126726762
 Transform:
   m_ObjectHideFlags: 0
@@ -3793,6 +3845,7 @@ MonoBehaviour:
   viewCamera: {fileID: 0}
   highlightRing: {fileID: 230662837}
   chanceLabel: {fileID: 2063981714}
+  zoneIndicator: {fileID: 257825028}
   labelHeight: 2.7
   ringHeight: 0.08
 --- !u!114 &1597815802
@@ -3831,6 +3884,7 @@ Transform:
   - {fileID: 230662837}
   - {fileID: 2063981716}
   - {fileID: 863163057}
+  - {fileID: 257825029}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1724279725

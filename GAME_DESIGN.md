@@ -4,7 +4,7 @@ Ce fichier regroupe les décisions de conception **prises et validées**, pour n
 Il ne décrit pas le code (voir `PROJECT_LOG.md` pour l'historique des étapes, `CLAUDE.md` pour les règles de travail).
 Quand une décision change, on modifie la ligne concernée et on note la date. Les points non tranchés sont à la fin.
 
-Dernière mise à jour : 2026-10-23 (fin des manches).
+Dernière mise à jour : 2026-10-23 (zones d'attaque).
 
 ## 1. Le jeu
 
@@ -72,7 +72,15 @@ Dernière mise à jour : 2026-10-23 (fin des manches).
 - L'**allonge** se mesure de **centre à centre**. Une unité qui s'approche s'arrête à 85 % de son allonge.
 - Un clic gauche sur un ennemi = ordre d'attaque (dans la scène de combat) ; sur la carte de campagne, c'est un simple déplacement. L'IA attaque par **le même chemin** que le joueur.
 - Retour visuel : cercle d'allonge au sol (et cercle intérieur de zone morte), surbrillance de l'ennemi survolé avec la **chance de toucher**, texte flottant (dégâts ou « Raté »), journal de combat à l'écran.
-- Les attaques à distance (Archer) arrivent à l'étape C4.
+- Les attaques à distance (Archer) ne sont pas encore disponibles.
+
+### 6.5 ter Orientation et zones d'attaque (étape C4)
+- L'**orientation** d'une unité compte : selon l'endroit d'où l'attaquant frappe, il touche la **face**, le **flanc** ou le **dos** de sa cible. Les angles sont des paramètres (`AttackZoneSettings`) : par défaut face ±60° (120° devant), dos ±60° (120° derrière), flancs de 60° de chaque côté.
+- Chaque zone a un **bonus de toucher** (ajouté au total du jet) et un **bonus de dégâts** (ajouté aux dégâts de l'arme, **avant** l'armure). Valeurs de test : face +0/+0, flanc +10/+2, dos +20/+4 (Fantassin contre Fantassin : 76 %/8, 86 %/10, 96 %/12). Tout passe par `CombatRules`.
+- La zone est celle où se trouve l'attaquant **au moment où le coup porte** (fin des 2 s de l'attaque).
+- **Focus** (décision du 2026-10-23) : une unité **garde son regard sur sa première cible**. Celle qu'elle a reçu l'ordre d'attaquer, ou à défaut le **premier** qui l'a frappée (elle se tourne alors vers lui). Un second attaquant ne la fait pas pivoter : s'il est de dos, il garde son bonus de dos à chaque coup. Le focus dure jusqu'à la mort de la cible, ou jusqu'à un nouvel ordre (déplacer, attendre, attaquer quelqu'un d'autre). Une unité en marche regarde où elle va. **Plus tard**, une notion de sélection de cible ou de gestion d'aggro remplacera cette règle simple.
+- L'aperçu au survol montre les zones autour de l'ennemi (face gris, flancs jaunes, dos rouge, la zone visée en gras) et « Toucher : x % / Dos : +20 toucher, +4 dégâts ». Le journal indique la zone et ses bonus.
+- Une unité qui a repéré son attaquant se tourne vers lui avant le coup (l'IA poursuit et fait face) : surprendre demande une cible inattentive.
 
 ### 6.6 Intelligence artificielle
 - Patrouille entre des points ; poursuite d'une cible **vue** (détection **visuelle uniquement** : un mur bloque la vue ; l'ouïe sera une autre source de détection plus tard).
@@ -86,6 +94,7 @@ Dernière mise à jour : 2026-10-23 (fin des manches).
 ## 8. Points non tranchés (à décider quand le sujet arrive)
 
 - Système d'initiative : qui agit quand (à définir ; remplace l'ancien découpage en manches).
+- Sélection de cible et gestion d'aggro (qui une unité décide-t-elle d'affronter quand plusieurs l'attaquent).
 - Course / sprint : coût, vitesse, durée.
 - Ouïe (détection par le bruit) pour l'IA.
 - Valeurs d'équilibrage définitives des deux unités (les chiffres actuels sont des valeurs de test).
