@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// How a combat is run: which events pause the game by themselves, what the player's units can see, and how many
-/// orders a unit may line up. Pure data, editable in the Inspector.
+/// orders a unit may line up, and how arrows fly. Pure data, editable in the Inspector.
 /// </summary>
 [CreateAssetMenu(fileName = "CombatSettings", menuName = "Marchand/Combat Settings")]
 public class CombatSettings : ScriptableObject
@@ -27,6 +27,16 @@ public class CombatSettings : ScriptableObject
     [Tooltip("How many orders a unit can line up behind the one it is carrying out (Shift + click).")]
     [Min(0)] [SerializeField] private int maxQueuedOrders = 4;
 
+    [Header("Ranged attacks")]
+    [Tooltip("The arrow that flies from an archer to its target. Without it, ranged units cannot shoot.")]
+    [SerializeField] private Projectile projectilePrefab;
+    [Tooltip("How fast an arrow flies, in meters per second.")]
+    [Min(1f)] [SerializeField] private float arrowSpeed = 25f;
+    [Tooltip("Thickness of the arrow for hitting a unit, in meters. It flies to where the target stood when it was shot.")]
+    [Min(0.01f)] [SerializeField] private float arrowHitRadius = 0.15f;
+    [Tooltip("Off: arrows fly past the shooter's own side. On: the first unit on the arrow's way is hit, friend or foe.")]
+    [SerializeField] private bool allowFriendlyFire;
+
     public bool AutoPauseOnAllyDeath => autoPauseOnAllyDeath;
     public bool AutoPauseOnEnemySighted => autoPauseOnEnemySighted;
     public float ViewRadius => viewRadius;
@@ -34,4 +44,8 @@ public class CombatSettings : ScriptableObject
     public float EyeHeight => eyeHeight;
     public float SightCheckInterval => sightCheckInterval;
     public int MaxQueuedOrders => maxQueuedOrders;
+    public Projectile ProjectilePrefab => projectilePrefab;
+    public float ArrowSpeed => arrowSpeed;
+    public float ArrowHitRadius => arrowHitRadius;
+    public bool AllowFriendlyFire => allowFriendlyFire;
 }

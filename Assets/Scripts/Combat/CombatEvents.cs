@@ -36,8 +36,16 @@ public static class CombatEvents
 {
     public static event Action<AttackReport> AttackResolved = delegate { };
 
+    /// <summary>A line for the combat journal that is not an attack (a shot that cannot be taken, an arrow lost...).</summary>
+    public static event Action<string> Note = delegate { };
+
     public static void RaiseAttackResolved(AttackReport report)
     {
         AttackResolved(report);
+    }
+
+    public static void RaiseNote(string text)
+    {
+        Note(text);
     }
 }

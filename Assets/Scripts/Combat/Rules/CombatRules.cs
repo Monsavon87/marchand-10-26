@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// <summary>
 /// The prototype's simplified rules: a die roll plus the attacker's attack bonus (and the bonus of the zone being
-/// attacked) must reach the defender's defense to hit; a hit deals the weapon's damage plus the zone's damage
+/// attacked, and the distance modifier of a ranged attack) must reach the defender's defense to hit; a hit deals the weapon's damage plus the zone's damage
 /// bonus, minus the defender's armor, never less than the minimum.
 /// Numbers come from CombatRulesSettings, AttackZoneSettings and the units' stats; nothing is hard-coded here.
 /// </summary>
@@ -33,22 +33,29 @@ public class CombatRules : ICombatRules
         return zoneSettings.Get(zone);
     }
 
-    public int HitChancePercent(UnitStats attacker, UnitStats defender, AttackZone zone)
+    public int GetRangeModifier(float distance, float maxRange)
     {
-        // The roll must be at least (defense - attack bonus - zone bonus), and a die starts at 1.
-        int lowestHittingRoll = Mathf.Max(1, defender.Defense - attacker.AttackBonus - zoneSettings.Get(zone).hitBonus);
+        return maxRange > 0f ? settings.GetRangeModifier(distance / maxRange) : 0;
+    }
+
+    public int HitChancePercent(UnitStats attacker, UnitStats defender, AttackZone zone, int rangeModifier = 0)
+    {
+        // The roll must be at least (defense - attack bonus - zone bonus - range modifier), and a die starts at 1.
+        int lowestHittingRoll = Mathf.Max(1,
+            defender.Defense - attacker.AttackBonus - zoneSettings.Get(zone).hitBonus - rangeModifier);
         int hittingRolls = Mathf.Clamp(settings.DieSides - lowestHittingRoll + 1, 0, settings.DieSides);
         return Mathf.RoundToInt(hittingRolls * 100f / settings.DieSides);
     }
 
-    public AttackResult ResolveAttack(UnitStats attacker, UnitStats defender, AttackZone zone, int roll)
+    public AttackResult ResolveAttack(UnitStats attacker, UnitStats defender, AttackZone zone, int roll,
+        int rangeModifier = 0, float distance = 0f)
     {
         ZoneModifier modifier = zoneSettings.Get(zone);
-        bool hit = roll + attacker.AttackBonus + modifier.hitBonus >= defender.Defense;
+        bool hit = roll + attacker.AttackBonus + modifier.hitBonus + rangeModifier >= defender.Defense;
         int damage = hit
             ? Mathf.Max(settings.MinimumDamage, attacker.WeaponDamage + modifier.damageBonus - defender.Armor)
             : 0;
         return new AttackResult(roll, attacker.AttackBonus, zone, modifier, defender.Defense, hit,
-            attacker.WeaponDamage, defender.Armor, damage);
+            attacker.WeaponDamage, defender.Armor, damage, rangeModifier, distance);
     }
 }

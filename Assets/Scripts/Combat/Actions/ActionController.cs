@@ -10,7 +10,7 @@ using UnityEngine;
 /// A plain request replaces the action in progress and empties the queue; an enqueued order waits behind it
 /// (within combat, up to the limit in the combat settings) and starts when the unit is free and has recovered.
 /// It only drives UnitMover through the actions; nobody else needs to.
-/// Besides moving and waiting, a unit can attack another one (melee for now).
+/// Besides moving and waiting, a unit can attack another one: in melee, or from a distance if its weapon has a range.
 /// </summary>
 public class ActionController : MonoBehaviour
 {
@@ -41,6 +41,7 @@ public class ActionController : MonoBehaviour
     private MoveAction moveAction;
     private WaitAction waitAction;
     private AttackAction attackAction;
+    private ShootAction shootAction;
     private UnitAction current;
     private float recoveryRemaining;
     private Transform focus;
@@ -63,6 +64,9 @@ public class ActionController : MonoBehaviour
     public Transform Focus => IsFocusValid ? focus : null;
 
     private bool IsFocusValid => focus != null && focusHealth != null && !focusHealth.IsDead;
+
+    // The attack this unit makes: shooting for a ranged weapon, striking otherwise.
+    private UnitAction AttackFor => stats != null && stats.IsRanged ? shootAction : attackAction;
 
     private int MaxQueuedOrders => combat != null && combat.Settings != null ? combat.Settings.MaxQueuedOrders : 0;
 
@@ -88,6 +92,7 @@ public class ActionController : MonoBehaviour
         {
             attackAction = new AttackAction(stats, team, mover, moveAction, rulesProvider,
                 combat != null ? combat.Timing : null);
+            shootAction = new ShootAction(stats, team, mover, moveAction, rulesProvider, combat);
         }
     }
 
@@ -132,14 +137,15 @@ public class ActionController : MonoBehaviour
     /// <summary>Asks the unit to fight an enemy unit until it dies. When refused, 'reason' says why.</summary>
     public bool RequestAttack(Transform target, out string reason)
     {
-        if (attackAction == null)
+        UnitAction attack = AttackFor;
+        if (attack == null)
         {
             reason = "cette unité n'a pas de statistiques de combat";
             Debug.Log("[Action] " + name + " · Attaquer refusée : " + reason, this);
             return false;
         }
 
-        return Request(attackAction, new ActionTarget(target != null ? target.position : transform.position, target), out reason);
+        return Request(attack, new ActionTarget(target != null ? target.position : transform.position, target), out reason);
     }
 
     /// <summary>Asks the unit to fight an enemy unit until it dies.</summary>
@@ -169,7 +175,7 @@ public class ActionController : MonoBehaviour
     /// <summary>True when the unit is currently fighting this target.</summary>
     public bool IsAttacking(Transform target)
     {
-        return attackAction != null && current == attackAction && attackAction.Target == target;
+        return current != null && current.Kind == ActionKind.Attack && current.Target == target;
     }
 
     /// <summary>
@@ -227,9 +233,9 @@ public class ActionController : MonoBehaviour
             point = move.Destination;
             found = true;
         }
-        else if (current is AttackAction attack && attack.Target != null)
+        else if (current != null && current.Kind == ActionKind.Attack && current.Target != null)
         {
-            point = attack.Target.position;
+            point = current.Target.position;
             found = true;
         }
 
@@ -263,9 +269,9 @@ public class ActionController : MonoBehaviour
             return true;
         }
 
-        if (current is AttackAction attack && attack.Target != null)
+        if (current != null && current.Kind == ActionKind.Attack && current.Target != null)
         {
-            point = attack.Target.position;
+            point = current.Target.position;
             return true;
         }
 
@@ -298,9 +304,9 @@ public class ActionController : MonoBehaviour
     public string DescribeOrders()
     {
         summary.Clear();
-        if (current is AttackAction attack && attack.Target != null)
+        if (current != null && current.Kind == ActionKind.Attack && current.Target != null)
         {
-            summary.Append(current.Name).Append(' ').Append(attack.Target.name);
+            summary.Append(current.Name).Append(' ').Append(current.Target.name);
         }
         else if (current != null)
         {
@@ -381,13 +387,14 @@ public class ActionController : MonoBehaviour
                 return RunAction(waitAction, new ActionTarget(transform.position), out reason);
 
             default:
-                if (attackAction == null)
+                UnitAction attack = AttackFor;
+                if (attack == null)
                 {
                     Log("Attaquer refusée : cette unité n'a pas de statistiques de combat");
                     return false;
                 }
 
-                return RunAction(attackAction,
+                return RunAction(attack,
                     new ActionTarget(order.Target != null ? order.Target.position : transform.position, order.Target),
                     out reason);
         }
@@ -411,7 +418,7 @@ public class ActionController : MonoBehaviour
         {
             // Same action, new target (an AI refreshing its chase, a player clicking again): no journal, no restart.
             action.Retarget(target);
-            if (action == attackAction)
+            if (action.Kind == ActionKind.Attack)
             {
                 SetFocus(target.Target);
             }
@@ -422,7 +429,7 @@ public class ActionController : MonoBehaviour
         CancelCurrent();
 
         // An attack gives the unit a focus; any other order makes it let go of it.
-        if (action == attackAction)
+        if (action.Kind == ActionKind.Attack)
         {
             SetFocus(target.Target);
         }

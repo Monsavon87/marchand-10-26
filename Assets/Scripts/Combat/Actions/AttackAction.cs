@@ -54,18 +54,12 @@ public sealed class AttackAction : UnitAction
     public override ActionKind Kind => ActionKind.Attack;
 
     /// <summary>The unit being fought, or null.</summary>
-    public Transform Target => targetTransform;
+    public override Transform Target => targetTransform;
 
     public override bool Validate(ActionTarget target, out string reason)
     {
         if (!TryResolveTarget(target.Target, out _, out _, out reason))
         {
-            return false;
-        }
-
-        if (stats.IsRanged)
-        {
-            reason = "les attaques à distance ne sont pas encore disponibles";
             return false;
         }
 
@@ -168,37 +162,7 @@ public sealed class AttackAction : UnitAction
     // Reads the target's parts and checks that it can be fought.
     private bool TryResolveTarget(Transform target, out Health health, out UnitStats targetUnitStats, out string reason)
     {
-        health = null;
-        targetUnitStats = null;
-        if (target == null)
-        {
-            reason = "aucune cible";
-            return false;
-        }
-
-        health = target.GetComponentInParent<Health>();
-        targetUnitStats = target.GetComponentInParent<UnitStats>();
-        UnitTeam targetTeam = target.GetComponentInParent<UnitTeam>();
-        if (health == null || targetUnitStats == null || targetTeam == null)
-        {
-            reason = "cette cible ne peut pas être attaquée";
-            return false;
-        }
-
-        if (health.IsDead)
-        {
-            reason = "la cible est déjà morte";
-            return false;
-        }
-
-        if (targetTeam.Team == team.Team)
-        {
-            reason = "la cible est du même camp";
-            return false;
-        }
-
-        reason = null;
-        return true;
+        return AttackTargets.TryResolve(target, team.Team, out health, out targetUnitStats, out reason);
     }
 
     private void SetTarget(Transform target)
@@ -260,7 +224,7 @@ public sealed class AttackAction : UnitAction
 
         bool killed = targetHealth.IsDead;
         CombatEvents.RaiseAttackResolved(new AttackReport(
-            Describe(stats), Describe(targetStats), team.Team, result, targetPosition,
+            AttackTargets.Describe(stats), AttackTargets.Describe(targetStats), team.Team, result, targetPosition,
             targetHealth.Current, targetStats.MaxHealth, killed));
 
         striking = false;
@@ -300,10 +264,5 @@ public sealed class AttackAction : UnitAction
         {
             End(ActionResult.Impossible);
         }
-    }
-
-    private static string Describe(UnitStats unit)
-    {
-        return unit.name + " (" + unit.DisplayName + ")";
     }
 }

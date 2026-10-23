@@ -30,6 +30,7 @@ public class CombatLog : MonoBehaviour
     private void OnEnable()
     {
         CombatEvents.AttackResolved += OnAttackResolved;
+        CombatEvents.Note += Add;
         if (combat != null)
         {
             combat.CombatStarted += OnCombatStarted;
@@ -41,6 +42,7 @@ public class CombatLog : MonoBehaviour
     private void OnDisable()
     {
         CombatEvents.AttackResolved -= OnAttackResolved;
+        CombatEvents.Note -= Add;
         if (combat != null)
         {
             combat.CombatStarted -= OnCombatStarted;
@@ -89,11 +91,17 @@ public class CombatLog : MonoBehaviour
     {
         AttackResult r = report.Result;
         string zone = AttackZones.Name(r.Zone);
-        string line = report.AttackerName + " frappe " + report.DefenderName + " (" + zone + ") : jet " + r.Roll
-            + " + " + r.AttackBonus;
+        string line = report.AttackerName + (r.IsRanged ? " tire sur " : " frappe ") + report.DefenderName
+            + " (" + zone + (r.IsRanged ? ", distance " + r.Distance.ToString("F1") + " m" : string.Empty)
+            + ") : jet " + r.Roll + " + " + r.AttackBonus;
         if (r.ZoneHitBonus != 0)
         {
             line += " + " + r.ZoneHitBonus + " (" + zone + ")";
+        }
+
+        if (r.RangeHitModifier != 0)
+        {
+            line += (r.RangeHitModifier > 0 ? " + " : " - ") + Mathf.Abs(r.RangeHitModifier) + " (distance)";
         }
 
         line += " = " + r.Total + " contre " + r.Threshold;

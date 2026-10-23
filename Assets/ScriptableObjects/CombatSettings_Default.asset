@@ -21,3 +21,7 @@ MonoBehaviour:
   eyeHeight: 0.5
   sightCheckInterval: 0.2
   maxQueuedOrders: 4
+  projectilePrefab: {fileID: 8273404934132075935, guid: 1bc82e62909aa8d40bed42c1f08d756b, type: 3}
+  arrowSpeed: 25
+  arrowHitRadius: 0.15
+  allowFriendlyFire: 0

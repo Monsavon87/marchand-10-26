@@ -46,6 +46,9 @@ public abstract class UnitAction
     /// <summary>Which kind of action this is.</summary>
     public abstract ActionKind Kind { get; }
 
+    /// <summary>The unit this action is aimed at (attacks), or null.</summary>
+    public virtual Transform Target => null;
+
     /// <summary>Estimated cost in seconds of action time, filled in by a successful Validate.</summary>
     public float Cost { get; protected set; }
 
