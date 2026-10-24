@@ -255,7 +255,6 @@ Lancer : entrer en Play Mode dans `Demo_Campaign`, puis appeler `EconomySimulato
 - **Versions de démo** : toujours au format x.y.z (`PlayerSettings.bundleVersion`), zip nommé `Marchand_Demo_Windows_vX.Y.Z.zip`, version et commit notés dans `PROJECT_LOG.md`.
 - **Tests au clavier simulé** : dans une longue session de Play, les touches simulées finissent par ne plus être vues ; relancer le Play. Les touches I et Échap n'ont été testées qu'indirectement.
 - **Namespace** : dans un script éditeur, écrire `UnityEngine.UI.Image` (alias `UImage`) pour éviter la collision avec un autre type `Image`.
-- **Fichiers de suivi partiellement périmés** : `GAME_DESIGN.md` § 4 dit encore que le temps n'avance que pendant les déplacements (remplacé par le § 6 bis : le monde suit le joueur) et `PROJECT_LOG.md` garde une section « À faire / en attente » très ancienne. La référence actuelle du temps est `CampaignPause`.
 - **Test dans la scène du jeu** : `CampaignEncounterFlow` endort tous les objets racine de la scène sauf le sien. Tout nouvel objet racine de `Demo_Campaign` dort donc pendant un combat ; ne pas y mettre ce qui doit rester éveillé.
 
 ---

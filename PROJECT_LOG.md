@@ -265,14 +265,10 @@ Projet Unity 6 (URP, 3D) : marchand-10-2026-mistral.
 - Vérifié (Play Mode, en pause, 2 unités avec file) : unité sélectionnée : ligne active (7 points, de la fin de l'ordre en cours à la fin du dernier ordre) ; unité non sélectionnée : ligne éteinte ; après Échap : ligne éteinte ; console sans erreur ; `ProjectSettings` propre.
 - Non vérifié par moi : l'apparence de la ligne (cyan fin) à l'écran ; pas de repère (marqueur) au bout de chaque ordre en file.
 
-## À faire / en attente
-- Tester `Test_Combat` dans le Game view : sélectionner une unité, survoler au-delà de la portée (rouge), cliquer, Espace pour la pause.
-- Regarder les gizmos de détection dans la Scene view (sélectionner `Enemy_1`).
-- `Assets/Scripts/UI/HandCursorTexture.cs` (fichier de commentaire provisoire) supprimé avec accord. `Assets/Scripts/Controllers/PlayerUnitController.cs` conservé : il est encore actif sur l'objet `Unit` de `Test_Movement`.
-- Tester dans `Test_Terrain` (Game view) : se promener, zoomer, tourner (A/E ou bouton du milieu), centrer (F), cliquer pour déplacer à plusieurs zooms, clic droit maintenu pour faire glisser la vue (icône main), bouton du milieu maintenu pour tourner (icône rotation).
-- Tester dans le Game view : clic souris (Player actif) puis touche Espace (cocher `DebugMoveController`, décocher `PlayerUnitController`).
-- Premier commit de sécurité (non fait, aucun commit dans le dépôt).
-- Définir le design du jeu (aucun script ni asset de jeu pour l'instant).
+## À faire / en attente (section remplacée le 2026-10-24)
+- L'ancienne liste (premier commit de sécurité, définir le design, tests manuels de `Test_Combat`, `Test_Terrain` et `Test_Movement`) datait des premiers jours : ses points sont faits, validés depuis ou périmés. Elle est retirée pour ne pas induire en erreur.
+- Deux faits à garder de cette liste : `Assets/Scripts/UI/HandCursorTexture.cs` (fichier de commentaire provisoire) a été supprimé avec accord ; `Assets/Scripts/Controllers/PlayerUnitController.cs` est conservé, il est encore actif sur l'objet `Unit` de `Test_Movement`.
+- La liste à jour de ce qui reste à décider ou à faire est dans `PROJECT_GUIDE.md`, section 10.
 
 ## Lignes de trajet : seulement pour l'unité sélectionnée
 - PathPreview : la ligne du trajet en cours et le repère de destination ne s'affichent plus que si l'unité est sélectionnée (masqués à la désélection).

@@ -28,7 +28,7 @@ Dernière mise à jour : 2026-10-23 (gestion du combat).
 ## 4. Carte de campagne
 
 - La carte est une **miniature** (façon Bannerlord). Le groupe du joueur est **une seule unité** : la caravane.
-- Le temps de jeu avance **uniquement quand la caravane se déplace** : la distance parcourue est convertie en temps (réglage : 10 minutes de jeu par mètre en terrain normal ; le terrain lent allonge, la route raccourcit). Objectif : 1 à 2 jours entre deux villes.
+- Le temps de jeu suit le monde, pas la distance (voir § 6 bis, « Le temps de la carte suit le joueur ») : le monde est figé tant que le joueur n'agit pas, s'écoule pendant un déplacement ou une poursuite, ou quand le joueur laisse passer le temps (T). Réglage : 10 minutes de jeu par mètre marché à la vitesse de base ; un terrain lent ralentit la caravane, donc allonge le trajet sur le calendrier. Objectif : 1 à 2 jours entre deux villes.
 - Les villes sont des cubes ; un clic sur une ville envoie la caravane à son entrée ; l'arrivée déclenche un événement « Arrivé à … ».
 - Rencontre : quand la caravane et un ennemi se touchent, les deux s'arrêtent et un événement « rencontre » est déclenché. Ce sera plus tard la boîte de dialogue avant combat.
 - (2026-10-23) La caravane est **toujours sélectionnée** sur la carte (on ne joue qu'elle). Un **clic sur une bande ennemie** lance une **poursuite** : la caravane suit la bande jusqu'au contact. Au survol, la bande est entourée d'un anneau rouge et une étiquette donne sa composition et son butin. **Espace met la carte en pause** (bandeau « PAUSE ») ; la fenêtre de ville met aussi la carte en pause.
@@ -37,7 +37,7 @@ Dernière mise à jour : 2026-10-23 (gestion du combat).
 
 - Clic gauche : sélectionner une unité (Maj = ajouter/retirer) ou donner un ordre sur le sol ; glisser = rectangle de sélection ; Échap = tout désélectionner. Un rectangle vide ne change pas la sélection ; il faut bouger de plus de 16 px pour qu'un clic devienne un rectangle.
 - Caméra : déplacement ZQSD (positions physiques) et bords d'écran, clic droit maintenu = glisser la vue (icône main), bouton du milieu maintenu = rotation (icône dédiée), molette = zoom, F = centrer.
-- Espace = pause (en combat).
+- Espace = pause (en combat et sur la carte).
 
 ## 6. Combat tactique
 
