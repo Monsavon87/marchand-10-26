@@ -13,6 +13,7 @@
    - Niveau 2 : Play Mode lancé quelques secondes, puis arrêté, console sans erreur ni exception.
    - Niveau 3 : capture d'écran de la scène ou du Game view quand le résultat est visuel.
 4. **Rapport final** court : ce qui a changé, ce qui a été vérifié, ce qui reste à tester par moi. Ne prétends jamais avoir testé quelque chose que tu n'as pas testé.
+5. **Documents de suivi.** À chaque étape, mets à jour `GAME_DESIGN.md` (décisions), `PROJECT_LOG.md` (ce qui est fait) et `PROJECT_GUIDE.md` (guide de reprise : structure du code, scènes, données, pièges) quand l'étape change la structure ou la façon de travailler.
 
 ## Git
 - Avant une grosse tâche, propose un commit de sécurité (message clair, en anglais).
