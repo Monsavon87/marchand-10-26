@@ -11049,7 +11049,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "Cliquez sur une ligne pour choisir la marchandise ; l'onglet Acheter ou Vendre dit ce que vous faites. Les prix sont en U.V. par unit\xE9 : ils changent \xE0 chaque unit\xE9 achet\xE9e ou vendue. Profit/u : ce que rapporterait une unit\xE9 vendue ici, compar\xE9 \xE0 ce qu'elle vous a co\xFBt\xE9 en moyenne (le butin ne co\xFBte rien). Tendance : o\xF9 va le prix d'ici demain."
+  m_Text: "Cliquez sur une ligne pour choisir la marchandise ; l'onglet Acheter ou Vendre dit ce que vous faites. Les prix sont en U.V. par unit\xE9 : ils changent \xE0 chaque unit\xE9 achet\xE9e ou vendue. Profit/u : ce que rapporterait une unit\xE9 vendue ici, compar\xE9 \xE0 ce qu'elle vous a co\xFBt\xE9 en moyenne (le butin ne co\xFBte rien). Tendance : de combien le prix serait diff\xE9rent demain si vous faisiez l'action (acheter ou vendre) avec la quantit\xE9 choisie."
 --- !u!222 &1420020584
 CanvasRenderer:
   m_ObjectHideFlags: 0

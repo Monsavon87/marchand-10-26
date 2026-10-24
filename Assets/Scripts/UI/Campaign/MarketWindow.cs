@@ -270,7 +270,7 @@ public class MarketWindow : TownFunctionWindow
             int owned = inventory.GetQuantity(good);
             row.Show(market.GetStock(good), owned,
                 tradeService.UnitPrice(TradeKind.Buy, market, good), tradeService.UnitPrice(TradeKind.Sell, market, good),
-                tradeService.GetTrend(market, good), owned > 0, tradeService.UnitProfit(market, good));
+                tradeService.GetTrend(market, good, tab, Quantity), owned > 0, tradeService.UnitProfit(market, good));
             // Buy tab: only what the town offers (in stock or made there), with the buying price. Sell tab: everything the
             // town buys, which is every good, with the selling price and the profit.
             row.gameObject.SetActive(!buying || market.IsOffered(good));

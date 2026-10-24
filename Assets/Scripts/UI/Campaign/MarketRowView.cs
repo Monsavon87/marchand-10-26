@@ -37,7 +37,7 @@ public class MarketRowView : MonoBehaviour
         Good = good;
     }
 
-    public void Show(int townStock, int owned, int buyPrice, int sellPrice, PriceTrend trend, bool showProfit, int unitProfit)
+    public void Show(int townStock, int owned, int buyPrice, int sellPrice, TrendReading trend, bool showProfit, int unitProfit)
     {
         bool stable = Good.StablePrice;
         nameText.text = Good.DisplayName + (stable ? "  (cours fixe)" : string.Empty);
@@ -57,21 +57,7 @@ public class MarketRowView : MonoBehaviour
             profitText.color = stableColor;
         }
 
-        switch (trend)
-        {
-            case PriceTrend.Rising:
-                trendText.text = stable ? "fixe" : "Hausse";
-                trendText.color = risingColor;
-                break;
-            case PriceTrend.Falling:
-                trendText.text = "Baisse";
-                trendText.color = fallingColor;
-                break;
-            default:
-                trendText.text = stable ? "fixe" : "Stable";
-                trendText.color = stable ? fixedPriceColor : stableColor;
-                break;
-        }
+        ShowTrend(trend, stable);
     }
 
     /// <summary>Lays the columns of this line out for the tab in use (see MarketColumns).</summary>
@@ -92,6 +78,36 @@ public class MarketRowView : MonoBehaviour
     public void SetSelected(bool selected)
     {
         background.color = selected ? selectedColor : normalColor;
+    }
+
+    // "Hausse +12 %", "Baisse -8 %", "Stable", "fixe" for a fixed price, "-" when the action is not possible.
+    private void ShowTrend(TrendReading trend, bool stable)
+    {
+        if (stable)
+        {
+            trendText.text = "fixe";
+            trendText.color = fixedPriceColor;
+        }
+        else if (!trend.Known)
+        {
+            trendText.text = "-";
+            trendText.color = stableColor;
+        }
+        else if (trend.Trend == PriceTrend.Rising)
+        {
+            trendText.text = "Hausse +" + trend.Percent + " %";
+            trendText.color = risingColor;
+        }
+        else if (trend.Trend == PriceTrend.Falling)
+        {
+            trendText.text = "Baisse " + trend.Percent + " %";
+            trendText.color = fallingColor;
+        }
+        else
+        {
+            trendText.text = "Stable";
+            trendText.color = stableColor;
+        }
     }
 
     private static string TradeSign(int amount)

@@ -19,8 +19,8 @@ public static class MarketColumns
 
     private static readonly Vector2[] Sell =
     {
-        new Vector2(10f, 330f), new Vector2(350f, 100f), new Vector2(460f, 100f), Vector2.zero,
-        new Vector2(570f, 150f), new Vector2(730f, 140f), new Vector2(880f, 110f)
+        new Vector2(10f, 300f), new Vector2(320f, 90f), new Vector2(420f, 90f), Vector2.zero,
+        new Vector2(520f, 140f), new Vector2(670f, 130f), new Vector2(810f, 180f)
     };
 
     /// <summary>Places the columns (in the order above) for the tab in use, hiding those it does not show.</summary>

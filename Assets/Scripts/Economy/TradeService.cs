@@ -8,7 +8,7 @@ using UnityEngine;
 /// three changes are applied, and if one of them fails anyway (a bug) the ones already done are undone. Only a trade
 /// that went through raises Traded.
 /// The player buys at the price of the units one after the other (each costs more than the one before), and a town
-/// buys every good. The reading methods (UnitPrice, Preview, MaxQuantity, GetTrend) change nothing and give the
+/// buys every good. The reading methods (UnitPrice, Preview, MaxQuantity, GetTrend, AverageCost, UnitProfit) change nothing and give the
 /// interface every figure it shows, so the interface holds no rule of its own. The service does not check that the
 /// caravan is in the town: whoever shows the market does (the town windows). It holds no text: see TradeMessages.
 /// </summary>
@@ -97,20 +97,36 @@ public class TradeService : MonoBehaviour
     }
 
     /// <summary>
-    /// Where the price of this good in this town is heading: tomorrow's price compared to today's (stable goods and
-    /// markets at balance stay Stable). Changes nothing.
+    /// Where the price of this good in this town is heading if the player does this: tomorrow's price compared to
+    /// today's, once 'quantity' units have been bought (the town's stock goes down) or sold (it goes up) and the market
+    /// has lived a day. Rounded to a percent; a fixed-price good stays Stable. Not known when the town has fewer units
+    /// than a purchase would take. Changes nothing.
     /// </summary>
-    public PriceTrend GetTrend(Market market, GoodDefinition good)
+    public TrendReading GetTrend(Market market, GoodDefinition good, TradeKind kind, int quantity)
     {
-        if (!configured || market == null || good == null || good.StablePrice)
+        if (!configured || market == null || good == null || quantity <= 0)
         {
-            return PriceTrend.Stable;
+            return TrendReading.Unknown;
+        }
+
+        int stock = market.GetStock(good);
+        if (kind == TradeKind.Buy && quantity > stock)
+        {
+            return TrendReading.Unknown;
+        }
+
+        if (good.StablePrice)
+        {
+            return new TrendReading(PriceTrend.Stable, 0, true);
         }
 
         int target = market.GetTarget(good);
-        int today = rules.MidPrice(good, market.GetStock(good), target);
-        int tomorrow = rules.MidPrice(good, ticker.ForecastStock(market, good), target);
-        return tomorrow > today ? PriceTrend.Rising : tomorrow < today ? PriceTrend.Falling : PriceTrend.Stable;
+        int stockAfter = (int)Math.Min((long)stock + (kind == TradeKind.Buy ? -quantity : quantity), int.MaxValue);
+        int today = rules.MidPrice(good, stock, target);
+        int tomorrow = rules.MidPrice(good, ticker.ForecastStock(market, good, stockAfter), target);
+        int percent = (int)Math.Round((tomorrow - today) * 100.0 / today);
+        PriceTrend trend = percent > 0 ? PriceTrend.Rising : percent < 0 ? PriceTrend.Falling : PriceTrend.Stable;
+        return new TrendReading(trend, percent, true);
     }
 
     /// <summary>

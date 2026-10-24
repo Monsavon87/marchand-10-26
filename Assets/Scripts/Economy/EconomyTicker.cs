@@ -79,10 +79,24 @@ public class EconomyTicker : MonoBehaviour
     /// </summary>
     public int ForecastStock(Market market, GoodDefinition good)
     {
-        return NextStockOf(market, good, clock.Day + 1);
+        return ForecastStock(market, good, market.GetStock(good));
+    }
+
+    /// <summary>
+    /// The same, starting from a stock the market does not have yet (what it would have after a purchase or a sale).
+    /// Changes nothing.
+    /// </summary>
+    public int ForecastStock(Market market, GoodDefinition good, int stock)
+    {
+        return NextStockOf(market, good, clock.Day + 1, stock);
     }
 
     private int NextStockOf(Market market, GoodDefinition good, int day)
+    {
+        return NextStockOf(market, good, day, market.GetStock(good));
+    }
+
+    private int NextStockOf(Market market, GoodDefinition good, int day, int stock)
     {
         int target = 0;
         int production = 0;
@@ -100,7 +114,7 @@ public class EconomyTicker : MonoBehaviour
             consumption = modifiers[i].AdjustConsumption(market, good, day, consumption);
         }
 
-        return MarketDayRules.NextStock(market.GetStock(good), target, production, consumption, settings.ReversionPercent);
+        return MarketDayRules.NextStock(stock, target, production, consumption, settings.ReversionPercent);
     }
 
     private void ApplyDay(Market market, int day)
