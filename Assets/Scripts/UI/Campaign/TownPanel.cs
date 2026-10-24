@@ -3,64 +3,65 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// The town window, opened when the caravan reaches a town (after its rest): the group and its U.V., one button
-/// per unit the town offers (grayed out with the reason when it cannot be recruited), and a button to leave.
-/// The map is paused while the window is open, so no patrol reaches the caravan meanwhile. The recruiting itself
-/// is TownRecruitment's business: this window only asks and shows.
+/// The town's main window, opened when the caravan reaches a town (after its rest): the generic information (the
+/// town, the rest, the group, the money and the cargo) and one button per town function (market, recruitment...), each
+/// opening its own window in place of this one; a window's own button brings the player back here. The map is
+/// paused while any of it is open, so no patrol reaches the caravan meanwhile. What each function does is its own
+/// window's business: this one only shows the town and goes from window to window.
 /// </summary>
 public class TownPanel : MonoBehaviour
 {
-    private class Row
-    {
-        public RecruitOffer Offer;
-        public Button Button;
-        public Text Label;
-        public Text Reason;
-    }
-
     [SerializeField] private TownRest townRest;
-    [SerializeField] private TownRecruitment recruitment;
-    [Tooltip("The whole window: hidden until the caravan reaches a town.")]
+    [Tooltip("The whole main window: hidden until the caravan reaches a town.")]
     [SerializeField] private GameObject root;
     [SerializeField] private Text titleText;
+    [SerializeField] private Text subtitleText;
     [SerializeField] private Text groupText;
-    [Tooltip("An inactive row used as a model: a Button with a child Label, and a child Reason text.")]
-    [SerializeField] private Button offerTemplate;
-    [Tooltip("Where the rows are put (it should have a vertical layout group).")]
-    [SerializeField] private RectTransform offerContainer;
+    [SerializeField] private Text summaryText;
+    [SerializeField] private PartyRoster party;
+    [SerializeField] private PartyCapacity capacity;
+    [SerializeField] private Wallet wallet;
+    [SerializeField] private Inventory inventory;
+    [Tooltip("The windows of the town functions: the main window shows one button for each, in this order.")]
+    [SerializeField] private List<TownFunctionWindow> functions = new List<TownFunctionWindow>();
+    [Tooltip("An inactive button used as a model for the function buttons.")]
+    [SerializeField] private LabeledButton functionButtonTemplate;
+    [Tooltip("Where the function buttons are put (it should have a layout group).")]
+    [SerializeField] private RectTransform functionButtonContainer;
     [SerializeField] private Button leaveButton;
-    [Tooltip("Optional: the map's pause, held while the window is open. Without it the window sets the time scale itself.")]
+    [Tooltip("Optional: the map's pause, held while the town is open. Without it the window sets the time scale itself.")]
     [SerializeField] private CampaignPause pause;
 
-    private readonly List<Row> rows = new List<Row>();
     private readonly System.Text.StringBuilder text = new System.Text.StringBuilder(256);
+    private PointOfInterest town;
+    private TownFunctionWindow openWindow;
+    private bool isOpen;
 
     private void Start()
     {
-        if (townRest == null || recruitment == null || root == null || titleText == null || groupText == null
-            || offerTemplate == null || offerContainer == null || leaveButton == null)
+        if (townRest == null || root == null || titleText == null || subtitleText == null || groupText == null
+            || summaryText == null || party == null || capacity == null || wallet == null || inventory == null
+            || functionButtonTemplate == null || functionButtonContainer == null || leaveButton == null)
         {
             Debug.LogError("TownPanel: a serialized reference is not assigned.", this);
             enabled = false;
             return;
         }
 
-        offerTemplate.gameObject.SetActive(false);
-        IReadOnlyList<RecruitOffer> offers = recruitment.Settings.Offers;
-        for (int i = 0; i < offers.Count; i++)
+        functionButtonTemplate.gameObject.SetActive(false);
+        for (int i = 0; i < functions.Count; i++)
         {
-            Button button = Instantiate(offerTemplate, offerContainer);
-            button.gameObject.SetActive(true);
-            var row = new Row
+            TownFunctionWindow window = functions[i];
+            if (window == null)
             {
-                Offer = offers[i],
-                Button = button,
-                Label = button.transform.Find("Label").GetComponent<Text>(),
-                Reason = button.transform.Find("Reason").GetComponent<Text>()
-            };
-            RecruitOffer offer = offers[i];
-            button.onClick.AddListener(() => OnRecruitClicked(offer));
-            rows.Add(row);
+                Debug.LogError("TownPanel: the function window " + i + " is not assigned.", this);
+                continue;
+            }
+
+            LabeledButton button = Instantiate(functionButtonTemplate, functionButtonContainer);
+            button.gameObject.SetActive(true);
+            button.SetLabel(window.ButtonLabel);
+            button.Button.onClick.AddListener(() => OpenWindow(window));
         }
 
         root.SetActive(false);
@@ -77,6 +78,14 @@ public class TownPanel : MonoBehaviour
         {
             leaveButton.onClick.AddListener(Close);
         }
+
+        for (int i = 0; i < functions.Count; i++)
+        {
+            if (functions[i] != null)
+            {
+                functions[i].BackRequested += OnBackRequested;
+            }
+        }
     }
 
     private void OnDisable()
@@ -90,12 +99,28 @@ public class TownPanel : MonoBehaviour
         {
             leaveButton.onClick.RemoveListener(Close);
         }
+
+        for (int i = 0; i < functions.Count; i++)
+        {
+            if (functions[i] != null)
+            {
+                functions[i].BackRequested -= OnBackRequested;
+            }
+        }
     }
 
-    private void Open(PointOfInterest town)
+    private void Open(PointOfInterest reached)
     {
+        town = reached;
+        isOpen = true;
+        openWindow = null;
+        Market market = Market.For(town);
         titleText.text = town.DisplayName;
+        subtitleText.text = market != null ? "Ville " + market.Definition.ProfileName.ToLowerInvariant() : string.Empty;
         root.SetActive(true);
+        UiLayering.BringToFront(root.transform);
+        wallet.Changed += RefreshSummary;
+        inventory.Changed += RefreshSummary;
         if (pause != null)
         {
             pause.SetHeld(this, true);
@@ -110,6 +135,20 @@ public class TownPanel : MonoBehaviour
 
     private void Close()
     {
+        if (!isOpen)
+        {
+            return;
+        }
+
+        isOpen = false;
+        if (openWindow != null)
+        {
+            openWindow.Close();
+            openWindow = null;
+        }
+
+        wallet.Changed -= RefreshSummary;
+        inventory.Changed -= RefreshSummary;
         root.SetActive(false);
         if (pause != null)
         {
@@ -121,17 +160,36 @@ public class TownPanel : MonoBehaviour
         }
     }
 
-    private void OnRecruitClicked(RecruitOffer offer)
+    private void OpenWindow(TownFunctionWindow window)
     {
-        recruitment.Recruit(offer);
+        if (!isOpen || openWindow != null)
+        {
+            return;
+        }
+
+        openWindow = window;
+        root.SetActive(false);
+        window.Open(town);
+    }
+
+    private void OnBackRequested()
+    {
+        if (!isOpen || openWindow == null)
+        {
+            return;
+        }
+
+        openWindow.Close();
+        openWindow = null;
+        root.SetActive(true);
+        UiLayering.BringToFront(root.transform);
         Refresh();
     }
 
     private void Refresh()
     {
-        PartyRoster party = recruitment.Party;
         text.Clear().Append("Votre groupe s'est reposé : tous ses PV sont rendus.\n\nGroupe (")
-            .Append(party.Members.Count).Append(" / ").Append(recruitment.MaxSize).Append(") : ");
+            .Append(party.Members.Count).Append(" / ").Append(capacity.MaxSize).Append(") : ");
         for (int i = 0; i < party.Members.Count; i++)
         {
             PartyMember member = party.Members[i];
@@ -147,17 +205,17 @@ public class TownPanel : MonoBehaviour
             }
         }
 
-        text.Append('\n').Append(MoneyFormat.Unit).Append(" : ").Append(MoneyFormat.Number(recruitment.Wallet.Balance));
         groupText.text = text.ToString();
+        RefreshSummary();
+    }
 
-        for (int i = 0; i < rows.Count; i++)
-        {
-            Row row = rows[i];
-            bool possible = recruitment.CanRecruit(row.Offer, out string reason);
-            string unitName = row.Offer.definition != null ? row.Offer.definition.DisplayName : row.Offer.baseName;
-            row.Label.text = "Recruter un " + unitName + "  -  " + MoneyFormat.WithUnit(row.Offer.price);
-            row.Reason.text = possible ? string.Empty : reason;
-            row.Button.interactable = possible;
-        }
+    private void RefreshSummary()
+    {
+        text.Clear().Append(MoneyFormat.Unit).Append(" : ").Append(MoneyFormat.Number(wallet.Balance))
+            .Append("\nCargaison : ").Append(inventory.TotalMass.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))
+            .Append(" / ").Append(inventory.Capacity.MaxMass.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)).Append(" kg, ")
+            .Append(inventory.TotalVolume.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))
+            .Append(" / ").Append(inventory.Capacity.MaxVolume.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)).Append(" L");
+        summaryText.text = text.ToString();
     }
 }

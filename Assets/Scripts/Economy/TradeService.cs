@@ -2,13 +2,15 @@ using System;
 using UnityEngine;
 
 /// <summary>
-/// The one way to buy from a town and sell to it. A trade is all-or-nothing: every condition (the town's stock, the
-/// caravan's money, the cargo's mass and volume, what the player owns) is checked BEFORE anything changes, so a
-/// refused trade changes nothing and raises nothing; then the three changes are applied, and if one of them fails
-/// anyway (a bug) the ones already done are undone. Only a trade that went through raises Traded.
+/// The one way to buy from a town and sell to it, and the one place the interface asks about it. A trade is
+/// all-or-nothing: every condition (the town's stock, the caravan's money, the cargo's mass and volume, what the
+/// player owns) is checked BEFORE anything changes, so a refused trade changes nothing and raises nothing; then the
+/// three changes are applied, and if one of them fails anyway (a bug) the ones already done are undone. Only a trade
+/// that went through raises Traded.
 /// The player buys at the price of the units one after the other (each costs more than the one before), and a town
-/// buys every good. The service does not check that the caravan is in the town: whoever calls it does (the town
-/// window, later). It holds no text: see TradeMessages.
+/// buys every good. The reading methods (UnitPrice, Preview, MaxQuantity, GetTrend) change nothing and give the
+/// interface every figure it shows, so the interface holds no rule of its own. The service does not check that the
+/// caravan is in the town: whoever shows the market does (the town windows). It holds no text: see TradeMessages.
 /// </summary>
 public class TradeService : MonoBehaviour
 {
@@ -17,6 +19,8 @@ public class TradeService : MonoBehaviour
     [SerializeField] private PricingSettings pricingSettings;
     [Tooltip("Gives the game day written in each trade.")]
     [SerializeField] private CampaignClock clock;
+    [Tooltip("Tells where a price is heading (the stock of tomorrow).")]
+    [SerializeField] private EconomyTicker ticker;
 
     private IPricingRules rules;
     private bool configured;
@@ -26,7 +30,7 @@ public class TradeService : MonoBehaviour
 
     private void Awake()
     {
-        if (wallet == null || inventory == null || pricingSettings == null || clock == null)
+        if (wallet == null || inventory == null || pricingSettings == null || clock == null || ticker == null)
         {
             Debug.LogError("TradeService: a serialized reference is not assigned.", this);
             return;
@@ -56,26 +60,125 @@ public class TradeService : MonoBehaviour
     /// </summary>
     public TradeResult BuyMax(Market market, GoodDefinition good)
     {
-        TradeStatus ready = CheckReady(market, good);
-        if (ready != TradeStatus.Done)
+        int quantity = MaxQuantity(TradeKind.Buy, market, good, out TradeStatus limit);
+        if (quantity <= 0)
         {
-            return Refused(TradeKind.Buy, good, 0, ready);
+            return Refused(TradeKind.Buy, good, 0, limit);
+        }
+
+        TradeResult result = Buy(market, good, quantity);
+        return result.Success ? result.WithLimit(limit) : result;
+    }
+
+    /// <summary>Sells everything the player has of a good (up to the most the pricing handles at once).</summary>
+    public TradeResult SellMax(Market market, GoodDefinition good)
+    {
+        int quantity = MaxQuantity(TradeKind.Sell, market, good, out TradeStatus limit);
+        if (quantity <= 0)
+        {
+            return Refused(TradeKind.Sell, good, 0, limit);
+        }
+
+        TradeResult result = Sell(market, good, quantity);
+        return result.Success ? result.WithLimit(limit) : result;
+    }
+
+    /// <summary>What the next unit costs the player (Buy) or brings (Sell) in this town; 0 when there is none to buy.</summary>
+    public int UnitPrice(TradeKind kind, Market market, GoodDefinition good)
+    {
+        if (!configured || market == null || good == null)
+        {
+            return 0;
         }
 
         int stock = market.GetStock(good);
-        int room = inventory.MaxAddable(good);
-        int limit = Math.Min(Math.Min(stock, room), PricingRules.MaxQuantity);
-        if (limit <= 0)
+        int target = market.GetTarget(good);
+        return kind == TradeKind.Buy ? rules.BuyUnitPrice(good, stock, target) : rules.SellUnitPrice(good, stock, target);
+    }
+
+    /// <summary>
+    /// Where the price of this good in this town is heading: tomorrow's price compared to today's (stable goods and
+    /// markets at balance stay Stable). Changes nothing.
+    /// </summary>
+    public PriceTrend GetTrend(Market market, GoodDefinition good)
+    {
+        if (!configured || market == null || good == null || good.StablePrice)
         {
-            // Nothing can be bought: a single unit tells exactly why (no stock, or no room in mass or volume).
+            return PriceTrend.Stable;
+        }
+
+        int target = market.GetTarget(good);
+        int today = rules.MidPrice(good, market.GetStock(good), target);
+        int tomorrow = rules.MidPrice(good, ticker.ForecastStock(market, good), target);
+        return tomorrow > today ? PriceTrend.Rising : tomorrow < today ? PriceTrend.Falling : PriceTrend.Stable;
+    }
+
+    /// <summary>
+    /// What a trade would come to, without doing it: whether it would go through or why not, the total, and the
+    /// money and cargo room left afterwards. Changes nothing.
+    /// </summary>
+    public TradePreview Preview(TradeKind kind, Market market, GoodDefinition good, int quantity)
+    {
+        int total;
+        TradeStatus status = kind == TradeKind.Buy ? CheckBuy(market, good, quantity, out total) : CheckSell(market, good, quantity, out total);
+        if (!configured || market == null || good == null)
+        {
+            return new TradePreview(status, kind, good, quantity, 0, 0, 0f, 0f, 0, 0);
+        }
+
+        int balance = wallet.Balance;
+        float massLeft = inventory.Capacity.MaxMass - inventory.TotalMass;
+        float volumeLeft = inventory.Capacity.MaxVolume - inventory.TotalVolume;
+        int available = kind == TradeKind.Buy ? market.GetStock(good) : inventory.GetQuantity(good);
+        int missing = status == TradeStatus.NotEnoughMoney ? total - balance : 0;
+
+        // The figures "after the trade" are what it would give when it goes through or falls short only of money or
+        // room; for any other refusal nothing would change.
+        bool shows = status == TradeStatus.Done || status == TradeStatus.NotEnoughMoney
+            || status == TradeStatus.OverMass || status == TradeStatus.OverVolume;
+        if (!shows)
+        {
+            return new TradePreview(status, kind, good, quantity, 0, balance, massLeft, volumeLeft, available, 0);
+        }
+
+        int sign = kind == TradeKind.Buy ? 1 : -1;
+        return new TradePreview(status, kind, good, quantity, total, balance - sign * total,
+            massLeft - sign * quantity * good.MassPerUnit, volumeLeft - sign * quantity * good.VolumePerUnit, available, missing);
+    }
+
+    /// <summary>
+    /// The most units of a good that can be bought (Buy: what the town has, what fits in the cargo and what the money
+    /// pays for, whichever is least) or sold (Sell: what the player has). 0 when none; 'limit' then says why, and
+    /// otherwise what stopped it from going higher (Done when nothing did). Changes nothing.
+    /// </summary>
+    public int MaxQuantity(TradeKind kind, Market market, GoodDefinition good, out TradeStatus limit)
+    {
+        limit = CheckReady(market, good);
+        if (limit != TradeStatus.Done)
+        {
+            return 0;
+        }
+
+        return kind == TradeKind.Buy ? MaxBuy(market, good, out limit) : MaxSell(good, out limit);
+    }
+
+    private int MaxBuy(Market market, GoodDefinition good, out TradeStatus limit)
+    {
+        int stock = market.GetStock(good);
+        int room = inventory.MaxAddable(good);
+        int cap = Math.Min(Math.Min(stock, room), PricingRules.MaxQuantity);
+        if (cap <= 0)
+        {
+            // Nothing can be bought: a single unit tells exactly why (no stock, no money, or no room in mass or volume).
             TradeStatus why = CheckBuy(market, good, 1, out _);
-            return Refused(TradeKind.Buy, good, 0, why == TradeStatus.Done ? TradeStatus.InternalError : why);
+            limit = why == TradeStatus.Done ? TradeStatus.InternalError : why;
+            return 0;
         }
 
         // The cost grows with the quantity: find the largest one the money pays for.
         int target = market.GetTarget(good);
         int low = 0;
-        int high = limit;
+        int high = cap;
         while (low < high)
         {
             int middle = (low + high + 1) / 2;
@@ -93,43 +196,33 @@ public class TradeService : MonoBehaviour
 
         if (low == 0)
         {
-            return Refused(TradeKind.Buy, good, 0, TradeStatus.NotEnoughMoney);
+            limit = TradeStatus.NotEnoughMoney;
+            return 0;
         }
 
-        TradeResult result = Buy(market, good, low);
-        if (!result.Success)
-        {
-            return result;
-        }
-
-        return result.WithLimit(low < limit ? TradeStatus.NotEnoughMoney : WhatLimitedBuy(good, low, stock, room));
+        limit = low < cap ? TradeStatus.NotEnoughMoney : WhatLimitedBuy(good, low, stock, room);
+        return low;
     }
 
-    /// <summary>Sells everything the player has of a good (up to the most the pricing handles at once).</summary>
-    public TradeResult SellMax(Market market, GoodDefinition good)
+    private int MaxSell(GoodDefinition good, out TradeStatus limit)
     {
-        TradeStatus ready = CheckReady(market, good);
-        if (ready != TradeStatus.Done)
-        {
-            return Refused(TradeKind.Sell, good, 0, ready);
-        }
-
         int owned = inventory.GetQuantity(good);
         if (owned <= 0)
         {
-            return Refused(TradeKind.Sell, good, 0, TradeStatus.NotEnoughGoods);
+            limit = TradeStatus.NotEnoughGoods;
+            return 0;
         }
 
         int quantity = Math.Min(owned, PricingRules.MaxQuantity);
-        TradeResult result = Sell(market, good, quantity);
-        return result.Success && quantity < owned ? result.WithLimit(TradeStatus.TooLarge) : result;
+        limit = quantity < owned ? TradeStatus.TooLarge : TradeStatus.Done;
+        return quantity;
     }
 
-    // What stopped a "maximum" purchase that was not stopped by the money.
-    // Called once the purchase is done: 'stock' and 'room' are what they were before it.
-    private TradeStatus WhatLimitedBuy(GoodDefinition good, int bought, int stock, int room)
+    // What stopped a "maximum" purchase that the money did not stop. 'stock' and 'room' are the town's stock and the
+    // number of units that fit; nothing has been bought yet.
+    private TradeStatus WhatLimitedBuy(GoodDefinition good, int quantity, int stock, int room)
     {
-        if (bought >= PricingRules.MaxQuantity && bought < Math.Min(stock, room))
+        if (quantity >= PricingRules.MaxQuantity && quantity < Math.Min(stock, room))
         {
             return TradeStatus.TooLarge;
         }
@@ -139,8 +232,8 @@ public class TradeService : MonoBehaviour
             return TradeStatus.NotEnoughStock;
         }
 
-        // The cargo is what ran out: one more unit, on top of what was just bought, tells whether the mass or the volume.
-        return CapacityStatus(inventory.CheckAdd(good, 1));
+        // The cargo is what runs out: one more unit tells whether the mass or the volume.
+        return CapacityStatus(inventory.CheckAdd(good, quantity + 1));
     }
 
     private TradeStatus CheckReady(Market market, GoodDefinition good)

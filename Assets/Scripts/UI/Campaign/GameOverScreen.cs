@@ -68,6 +68,7 @@ public class GameOverScreen : MonoBehaviour
     private void OnGameOver()
     {
         root.SetActive(true);
+        UiLayering.BringToFront(root.transform);
     }
 
     private void BackToMenu()

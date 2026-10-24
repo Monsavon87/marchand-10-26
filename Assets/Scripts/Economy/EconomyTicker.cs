@@ -73,30 +73,44 @@ public class EconomyTicker : MonoBehaviour
         DayApplied(day);
     }
 
+    /// <summary>
+    /// What the stock of this good in this market will be when the next day has been lived (events included). Changes
+    /// nothing: it lets the trade service tell where a price is heading.
+    /// </summary>
+    public int ForecastStock(Market market, GoodDefinition good)
+    {
+        return NextStockOf(market, good, clock.Day + 1);
+    }
+
+    private int NextStockOf(Market market, GoodDefinition good, int day)
+    {
+        int target = 0;
+        int production = 0;
+        int consumption = 0;
+        if (market.Definition.TryGetEntry(good, out GoodStockProfile entry))
+        {
+            target = entry.targetStock;
+            production = entry.productionPerDay;
+            consumption = entry.consumptionPerDay;
+        }
+
+        for (int i = 0; i < modifiers.Count; i++)
+        {
+            production = modifiers[i].AdjustProduction(market, good, day, production);
+            consumption = modifiers[i].AdjustConsumption(market, good, day, consumption);
+        }
+
+        return MarketDayRules.NextStock(market.GetStock(good), target, production, consumption, settings.ReversionPercent);
+    }
+
     private void ApplyDay(Market market, int day)
     {
         IReadOnlyList<GoodDefinition> goods = market.AllGoods;
         for (int g = 0; g < goods.Count; g++)
         {
             GoodDefinition good = goods[g];
-            int target = 0;
-            int production = 0;
-            int consumption = 0;
-            if (market.Definition.TryGetEntry(good, out GoodStockProfile entry))
-            {
-                target = entry.targetStock;
-                production = entry.productionPerDay;
-                consumption = entry.consumptionPerDay;
-            }
-
-            for (int i = 0; i < modifiers.Count; i++)
-            {
-                production = modifiers[i].AdjustProduction(market, good, day, production);
-                consumption = modifiers[i].AdjustConsumption(market, good, day, consumption);
-            }
-
             int stock = market.GetStock(good);
-            int next = MarketDayRules.NextStock(stock, target, production, consumption, settings.ReversionPercent);
+            int next = NextStockOf(market, good, day);
             if (next == stock)
             {
                 continue;

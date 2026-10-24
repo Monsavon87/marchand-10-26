@@ -71,6 +71,20 @@ public class Market : MonoBehaviour
         AllMarkets.Remove(this);
     }
 
+    /// <summary>The market of this town (null when it has none).</summary>
+    public static Market For(PointOfInterest town)
+    {
+        for (int i = 0; i < AllMarkets.Count; i++)
+        {
+            if (AllMarkets[i].town == town)
+            {
+                return AllMarkets[i];
+            }
+        }
+
+        return null;
+    }
+
     /// <summary>True when the good is in the town's profile (the town makes or uses it).</summary>
     public bool IsInProfile(GoodDefinition good)
     {

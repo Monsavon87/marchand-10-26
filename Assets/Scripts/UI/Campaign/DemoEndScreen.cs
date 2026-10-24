@@ -59,6 +59,7 @@ public class DemoEndScreen : MonoBehaviour
         detailsText.text = "Toutes les bandes de brigands sont vaincues.\nButin total : " + MoneyFormat.WithUnit(party.Gathered)
             + "\n\nMerci d'avoir joué !";
         root.SetActive(true);
+        UiLayering.BringToFront(root.transform);
     }
 
     private void BackToMenu()

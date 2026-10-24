@@ -78,6 +78,11 @@ public class HelpPanel : MonoBehaviour
         }
 
         root.SetActive(open);
+        if (open)
+        {
+            UiLayering.BringToFront(root.transform);
+        }
+
         OpenChanged(open);
     }
 }

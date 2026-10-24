@@ -18,8 +18,6 @@ public class CampaignHud : MonoBehaviour
     [Tooltip("Optional: shows the caravan's group (units and hit points).")]
     [SerializeField] private PartyRoster party;
     [SerializeField] private UnityEngine.UI.Text partyLabel;
-    [Tooltip("Optional: shows the caravan's U.V. next to its group.")]
-    [SerializeField] private Wallet wallet;
     [Tooltip("Seconds a message stays on screen.")]
     [SerializeField] private float messageDuration = 4f;
     [Tooltip("Seconds between two refreshes of the clock text.")]
@@ -119,11 +117,6 @@ public class CampaignHud : MonoBehaviour
         if (party.Members.Count == 0)
         {
             text.Append("personne");
-        }
-
-        if (wallet != null)
-        {
-            text.Append("     ").Append(MoneyFormat.Unit).Append(" : ").Append(MoneyFormat.Number(wallet.Balance));
         }
 
         partyLabel.text = text.ToString();

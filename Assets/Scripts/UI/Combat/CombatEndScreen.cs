@@ -97,6 +97,7 @@ public class CombatEndScreen : MonoBehaviour
     private void OnCombatEnded(Team? winner)
     {
         root.SetActive(true);
+        UiLayering.BringToFront(root.transform);
         if (!winner.HasValue)
         {
             titleText.text = "Match nul";

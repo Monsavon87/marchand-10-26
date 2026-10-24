@@ -40,6 +40,10 @@
 - Un script = une responsabilité. Nomme les fichiers comme la classe. Ranges-les par fonctionnalité sous `Assets/Scripts/`.
 - Les données de jeu (stats, configs) vont dans des ScriptableObjects, pas en dur dans le code.
 
+## Interface (UI)
+- Toute fenêtre qui s'ouvre passe au premier plan : elle appelle `UiLayering.BringToFront` à l'ouverture, pour que le résultat ne dépende jamais de l'ordre des objets dans la scène. Les affichages permanents de l'écran (horloge, groupe, U.V. et cargaison) restent en dessous de toutes les fenêtres.
+- Une nouvelle fenêtre ou un nouvel affichage = vérifier à l'écran (capture) qu'il est bien au-dessus ou au-dessous de ce qu'il faut.
+
 ## Compétences Unity
 - Avant de toucher à l'UI, URP, post-processing, NavMesh, physique, audio ou packages, utilise le skill Unity correspondant si disponible.
 - Si une API ou un comportement t'est incertain, cherche dans la documentation Unity plutôt que de deviner.
