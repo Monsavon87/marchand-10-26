@@ -3530,6 +3530,7 @@ MonoBehaviour:
   menuButton: {fileID: 1525550491}
   helpButton: {fileID: 1308222282}
   helpPanel: {fileID: 498030094}
+  pause: {fileID: 675263633}
   menuScene: MainMenu
 --- !u!1 &711348239
 GameObject:

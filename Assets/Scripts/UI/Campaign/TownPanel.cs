@@ -98,7 +98,7 @@ public class TownPanel : MonoBehaviour
         root.SetActive(true);
         if (pause != null)
         {
-            pause.SetHeld(true);
+            pause.SetHeld(this, true);
         }
         else
         {
@@ -113,7 +113,7 @@ public class TownPanel : MonoBehaviour
         root.SetActive(false);
         if (pause != null)
         {
-            pause.SetHeld(false);
+            pause.SetHeld(this, false);
         }
         else
         {

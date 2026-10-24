@@ -1,10 +1,13 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Object = UnityEngine.Object;
 
 /// <summary>
 /// Pause of the campaign map: the pause key freezes everything that moves (caravan, patrols) and shows a banner;
-/// pressed again, the map goes on. A window that needs the map frozen while it is open (a town) holds the pause
-/// through SetHeld, independently of the player's own pause.
+/// pressed again, the map goes on. A window that needs the map frozen while it is open (a town, the help page)
+/// holds the pause through SetHeld, independently of the player's own pause and of the other windows: the map
+/// goes on only when no window holds it any more.
 /// </summary>
 public class CampaignPause : MonoBehaviour
 {
@@ -13,10 +16,10 @@ public class CampaignPause : MonoBehaviour
     [Tooltip("Shown while the player has paused the map.")]
     [SerializeField] private GameObject banner;
 
+    private readonly HashSet<Object> holders = new HashSet<Object>();
     private bool pausedByPlayer;
-    private bool held;
 
-    public bool IsPaused => pausedByPlayer || held;
+    public bool IsPaused => pausedByPlayer || holders.Count > 0;
 
     private void Start()
     {
@@ -40,11 +43,18 @@ public class CampaignPause : MonoBehaviour
         }
     }
 
-    /// <summary>Freezes the map while a window is open (true), or lets it go again (false).</summary>
-    public void SetHeld(bool hold)
+    /// <summary>
+    /// Freezes the map while the 'owner' window is open (true), or stops that window's hold (false). Each window
+    /// holds the pause on its own: closing one does not unfreeze the map while another is still open.
+    /// </summary>
+    public void SetHeld(Object owner, bool hold)
     {
-        held = hold;
-        Apply();
+        // Nothing changes when the window did not hold the pause (or already does): the time is left alone.
+        bool changed = hold ? holders.Add(owner) : holders.Remove(owner);
+        if (changed)
+        {
+            Apply();
+        }
     }
 
     private void Apply()

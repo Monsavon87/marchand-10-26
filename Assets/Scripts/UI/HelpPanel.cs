@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,9 @@ public class HelpPanel : MonoBehaviour
     [SerializeField] private Text mapControlsText;
     [SerializeField] private Text combatControlsText;
     [SerializeField] private Button closeButton;
+
+    /// <summary>Raised when the page opens (true) or closes (false), however it was done (button, menu, code).</summary>
+    public event Action<bool> OpenChanged = delegate { };
 
     public bool IsOpen => root != null && root.activeSelf;
 
@@ -53,16 +57,27 @@ public class HelpPanel : MonoBehaviour
 
     public void Show()
     {
-        root.SetActive(true);
+        SetOpen(true);
     }
 
     public void Hide()
     {
-        root.SetActive(false);
+        SetOpen(false);
     }
 
     public void Toggle()
     {
-        root.SetActive(!root.activeSelf);
+        SetOpen(!root.activeSelf);
+    }
+
+    private void SetOpen(bool open)
+    {
+        if (root.activeSelf == open)
+        {
+            return;
+        }
+
+        root.SetActive(open);
+        OpenChanged(open);
     }
 }
