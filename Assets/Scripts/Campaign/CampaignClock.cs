@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -20,6 +21,12 @@ public class CampaignClock : MonoBehaviour
 
     private float totalMinutes;
     private float minutesPerSecond;
+
+    /// <summary>
+    /// Raised each time a new day begins (at midnight), with the number of the day that begins. When a jump covers
+    /// several days it is raised once for each, in order, so whoever listens can apply the days one by one.
+    /// </summary>
+    public event Action<int> DayStarted = delegate { };
 
     /// <summary>Game minutes elapsed since day 1, 00:00.</summary>
     public float TotalMinutes => totalMinutes;
@@ -50,6 +57,29 @@ public class CampaignClock : MonoBehaviour
     private void Update()
     {
         // Time.deltaTime is 0 while the world is frozen or paused, so the clock stands still with it.
-        totalMinutes += Time.deltaTime * minutesPerSecond;
+        AddMinutes(Time.deltaTime * minutesPerSecond);
+    }
+
+    /// <summary>
+    /// Moves the calendar forward by this many game minutes at once (a debug jump, later the time the player lets
+    /// pass in town). Every day it crosses raises DayStarted, so the rest of the world follows.
+    /// </summary>
+    public void AdvanceMinutes(float minutes)
+    {
+        if (minutes > 0f)
+        {
+            AddMinutes(minutes);
+        }
+    }
+
+    private void AddMinutes(float minutes)
+    {
+        int before = Day;
+        totalMinutes += minutes;
+        int after = Day;
+        for (int day = before + 1; day <= after; day++)
+        {
+            DayStarted(day);
+        }
     }
 }
