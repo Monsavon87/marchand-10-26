@@ -67,6 +67,16 @@ public class PartyRoster : MonoBehaviour
         Gathered += Mathf.Max(0, amount);
     }
 
+    /// <summary>The group becomes exactly these members (copies): a band that came back with its original composition.</summary>
+    public void ReplaceMembers(IReadOnlyList<PartyMember> newMembers)
+    {
+        members.Clear();
+        for (int i = 0; i < newMembers.Count; i++)
+        {
+            members.Add(newMembers[i].Copy());
+        }
+    }
+
     /// <summary>A new member joins the group (a recruit).</summary>
     public void AddMember(PartyMember member)
     {

@@ -201,6 +201,20 @@ public class UnitMover : MonoBehaviour
         Order(destination, true, faceTowardsAtArrival, maxPathLength);
     }
 
+    /// <summary>
+    /// Puts the unit at a point at once, without any walk (a band coming back on the map): it stops what it was doing,
+    /// then stands there.
+    /// </summary>
+    public void PlaceAt(Vector3 position)
+    {
+        Stop();
+        transform.position = position;
+        if (agent != null && agent.enabled && agent.isOnNavMesh)
+        {
+            agent.Warp(position);
+        }
+    }
+
     /// <summary>Stops the unit immediately. Does not raise Arrived.</summary>
     public void Stop()
     {

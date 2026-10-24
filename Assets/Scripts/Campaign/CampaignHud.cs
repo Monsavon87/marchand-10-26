@@ -17,6 +17,8 @@ public class CampaignHud : MonoBehaviour
     [SerializeField] private UnityEngine.UI.Text messageLabel;
     [Tooltip("Optional: says so when the group rests in a town.")]
     [SerializeField] private TownRest townRest;
+    [Tooltip("Optional: shows the length of the demo next to the day (Jour 12 / 100).")]
+    [SerializeField] private DemoGoal goal;
     [Tooltip("Optional: says what a won fight brought (money, goods, what the cargo could not take).")]
     [SerializeField] private CampaignEncounterFlow encounterFlow;
     [Tooltip("Optional: shows the caravan's group (units and hit points).")]
@@ -102,7 +104,7 @@ public class CampaignHud : MonoBehaviour
         }
 
         nextRefresh = Time.unscaledTime + refreshInterval;
-        clockLabel.text = "Jour " + clock.Day + "  -  " + clock.Hour.ToString("00") + "h" + clock.Minute.ToString("00")
+        clockLabel.text = "Jour " + (goal != null ? Mathf.Min(clock.Day, goal.Days) : clock.Day) + (goal != null ? " / " + goal.Days : string.Empty) + "  -  " + clock.Hour.ToString("00") + "h" + clock.Minute.ToString("00")
             + (pause != null ? TimeStateText(pause.State) : string.Empty);
         if (party != null && partyLabel != null)
         {

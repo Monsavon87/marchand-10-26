@@ -88,6 +88,29 @@ public class AIUnitController : MonoBehaviour
     /// <summary>Current behavior, for debugging.</summary>
     public AIState State => state;
 
+    /// <summary>The points of the patrol route (read-only; empty when the unit has none).</summary>
+    public System.Collections.Generic.IReadOnlyList<Transform> PatrolPoints => patrolPoints ?? System.Array.Empty<Transform>();
+
+    /// <summary>
+    /// Starts the patrol over from where the unit stands (a band that came back): whatever it was doing is forgotten,
+    /// it is no longer interrupted, and it walks to the first point of its route.
+    /// </summary>
+    public void ResetToPatrol()
+    {
+        interrupted = false;
+        isWaiting = false;
+        target = null;
+        targetVisible = false;
+        state = AIState.Patrol;
+        patrolIndex = 0;
+        homePosition = transform.position;
+        Halt();
+        if (patrolPoints != null && patrolPoints.Length > 0)
+        {
+            Order(patrolPoints[0].position);
+        }
+    }
+
     /// <summary>
     /// Freezes the brain and stops the unit (for example during an encounter on the campaign map).
     /// The behavior is kept: Resume carries on with it.

@@ -5156,6 +5156,7 @@ MonoBehaviour:
   clockLabel: {fileID: 1755504200}
   messageLabel: {fileID: 1543718973}
   townRest: {fileID: 675263630}
+  goal: {fileID: 1141991981}
   encounterFlow: {fileID: 1095158888}
   party: {fileID: 2733532370329639517}
   partyLabel: {fileID: 917970773}
@@ -8386,6 +8387,56 @@ Transform:
   m_Children: []
   m_Father: {fileID: 129024133}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1141991980
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1141991982}
+  - component: {fileID: 1141991981}
+  m_Layer: 0
+  m_Name: DemoGoal
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1141991981
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1141991980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a716e575282c4e4683e7644275b800c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DemoGoal
+  settings: {fileID: 11400000, guid: 8d7898410ff4d3b40b066d9701096f75, type: 2}
+  clock: {fileID: 675263628}
+  wallet: {fileID: 2733532370329639520}
+  inventory: {fileID: 2733532370329639519}
+  catalog: {fileID: 11400000, guid: 0c4d3bbc498a84945bdb1249d423f4ff, type: 2}
+  pause: {fileID: 675263633}
+--- !u!4 &1141991982
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1141991980}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1145128911
 GameObject:
   m_ObjectHideFlags: 0
@@ -10014,7 +10065,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 150}
+  m_AnchoredPosition: {x: 0, y: 270}
   m_SizeDelta: {x: 1200, y: 120}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1286671333
@@ -10494,8 +10545,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 789f4baf3f6f38b4ca4ca9fadecffed2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DemoEndScreen
-  flow: {fileID: 1095158888}
+  goal: {fileID: 1141991981}
   party: {fileID: 2733532370329639517}
+  respawner: {fileID: 2079362303}
   root: {fileID: 2118782465}
   detailsText: {fileID: 1985348603}
   menuButton: {fileID: 1551779635}
@@ -11744,7 +11796,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -140}
+  m_AnchoredPosition: {x: 0, y: -200}
   m_SizeDelta: {x: 300, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1551779635
@@ -14994,8 +15046,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 10}
-  m_SizeDelta: {x: 1200, y: 170}
+  m_AnchoredPosition: {x: 0, y: 40}
+  m_SizeDelta: {x: 1200, y: 320}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1985348603
 MonoBehaviour:
@@ -15473,6 +15525,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EconomySimulator
   settings: {fileID: 11400000, guid: f25b4df4952e7c34ab902617410ef43f, type: 2}
+  respawnSettings: {fileID: 11400000, guid: 2b7c5c6e365f31948858cf69a22425d2, type: 2}
   tradeService: {fileID: 2733532370329639523}
   wallet: {fileID: 2733532370329639520}
   inventory: {fileID: 2733532370329639519}
@@ -15663,6 +15716,56 @@ MonoBehaviour:
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
   m_PresetInfoIsWorld: 0
+--- !u!1 &2079362302
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2079362304}
+  - component: {fileID: 2079362303}
+  m_Layer: 0
+  m_Name: BandRespawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2079362303
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2079362302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7140eab2481fb5b4c90bfd101a1191b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BandRespawner
+  settings: {fileID: 11400000, guid: 2b7c5c6e365f31948858cf69a22425d2, type: 2}
+  clock: {fileID: 675263628}
+  flow: {fileID: 1095158888}
+  caravan: {fileID: 359145124}
+  lootSetup: {fileID: 1872740805}
+  viewCamera: {fileID: 0}
+--- !u!4 &2079362304
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2079362302}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2081605730
 GameObject:
   m_ObjectHideFlags: 0
@@ -16418,3 +16521,5 @@ SceneRoots:
   - {fileID: 493977060}
   - {fileID: 2038860611}
   - {fileID: 1872740806}
+  - {fileID: 1141991982}
+  - {fileID: 2079362304}

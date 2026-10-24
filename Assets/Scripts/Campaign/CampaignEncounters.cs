@@ -48,6 +48,13 @@ public class CampaignEncounters : MonoBehaviour
 
         nextCheckTime = Time.time + checkInterval;
 
+        // A band beaten in the combat that just ended is switched off: there is nobody left to release.
+        if (heldEnemy != null && !heldEnemy.gameObject.activeInHierarchy)
+        {
+            heldEnemy = null;
+            heldAi = null;
+        }
+
         if (heldEnemy != null)
         {
             if (Time.time >= releaseTime)

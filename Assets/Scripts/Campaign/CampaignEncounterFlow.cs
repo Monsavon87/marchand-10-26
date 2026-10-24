@@ -9,8 +9,8 @@ using UnityEngine.SceneManagement;
 /// band, it builds the EncounterData from both rosters, puts the map to sleep (every other root object of this
 /// scene is switched off, so its camera, light, NavMesh and units stay exactly as they are) and loads the arena on
 /// top. When the arena asks to go back, it unloads it, wakes the map up and applies the result: the survivors keep
-/// their hit points, the dead leave the caravan, the beaten band disappears and its loot goes to the wallet. A defeat
-/// raises GameOver, and beating the last band raises AllBandsDefeated. The arena is drawn at random from a list
+/// their hit points, the dead leave the caravan, the beaten band leaves the map (it is switched off, not destroyed, so it can come back: see BandRespawner) and its loot
+/// goes to the wallet and the cargo. A defeat raises GameOver. The arena is drawn at random from a list
 /// for each encounter. This object must stay a root object of its own, outside what it puts to sleep.
 /// </summary>
 public class CampaignEncounterFlow : MonoBehaviour
@@ -30,12 +30,16 @@ public class CampaignEncounterFlow : MonoBehaviour
     private readonly List<GameObject> asleep = new List<GameObject>();
     private UnitTeam enemy;
     private bool inCombat;
+
+    /// <summary>True from the moment an encounter turns into a combat until the map is back.</summary>
+    public bool InCombat => inCombat;
     private string arenaScene;
 
     /// <summary>Raised when the caravan lost a fight: the campaign is over.</summary>
     public event Action GameOver = delegate { };
     /// <summary>Raised when the last enemy band of the map has been beaten.</summary>
-    public event Action AllBandsDefeated = delegate { };
+    /// <summary>Raised when the caravan beat a band, just before it leaves the map. The band is switched off, not destroyed.</summary>
+    public event Action<UnitTeam> BandDefeated = delegate { };
     /// <summary>Raised once the map is back, with the result of the fight.</summary>
     public event Action<EncounterData> EncounterResolved = delegate { };
 
@@ -159,16 +163,15 @@ public class CampaignEncounterFlow : MonoBehaviour
         WakeMapUp();
         Time.timeScale = 1f;
 
-        bool lastBand = false;
         if (encounter != null && encounter.HasResult && encounter.Winner == Team.Player)
         {
             caravanParty.ApplyHealth(encounter.PlayerHealthAfter);
             CollectLoot(encounter);
 
-            lastBand = CountOtherBands(enemy) == 0;
             if (enemy != null)
             {
-                Destroy(enemy.gameObject);
+                BandDefeated(enemy);
+                enemy.gameObject.SetActive(false);
             }
         }
         else
@@ -180,10 +183,6 @@ public class CampaignEncounterFlow : MonoBehaviour
         inCombat = false;
         channel.Clear();
         EncounterResolved(encounter);
-        if (lastBand)
-        {
-            AllBandsDefeated();
-        }
     }
 
     // The money goes to the wallet and the goods that fit (settled when the encounter began) to the cargo. The statistic
@@ -220,22 +219,6 @@ public class CampaignEncounterFlow : MonoBehaviour
         }
 
         caravanParty.RecordLoot((int)System.Math.Min(gathered, int.MaxValue));
-    }
-
-    // The enemy bands still on the map, apart from the one just beaten.
-    private static int CountOtherBands(UnitTeam beaten)
-    {
-        int count = 0;
-        IReadOnlyList<UnitTeam> units = UnitTeam.All;
-        for (int i = 0; i < units.Count; i++)
-        {
-            if (units[i] != beaten && units[i].Team == Team.Enemy && units[i].GetComponent<PartyRoster>() != null)
-            {
-                count++;
-            }
-        }
-
-        return count;
     }
 
     private void WakeMapUp()

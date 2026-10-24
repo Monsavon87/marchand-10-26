@@ -109,9 +109,11 @@ Un script = une responsabilité, rangé par fonctionnalité. Chaque classe a un 
 | `CampaignClock`                | Calendrier de la carte ; événement `DayStarted` ; `AdvanceMinutes`                                                                                          |
 | `CampaignTravel`               | Clic sur une ville = aller à son entrée ; événement `TownReached`                                                                                           |
 | `CampaignEncounters`           | Détecte le contact caravane / ennemi                                                                                                                        |
-| `CampaignEncounterFlow`        | Rencontre → combat → retour : construit `EncounterData`, endort la carte, charge l'arène, applique le résultat (survivants, butin, bande détruite, défaite) |
+| `CampaignEncounterFlow`        | Rencontre → combat → retour : construit `EncounterData`, endort la carte, charge l'arène, applique le résultat (survivants, butin, bande mise de côté, défaite) |
 | `PartyRoster`, `PartyCapacity` | Les unités d'un groupe (avec leurs PV ; butin d'une bande) et la taille maximale du groupe                                                                  |
 | `BandLootSetup`                | Donne à chaque bande ennemie son butin, tiré une fois au démarrage de la scène depuis sa table (`LootTable`), avec une graine réglable                       |
+| `BandRespawner`                | Fait revenir les bandes battues : délai tiré en jours du monde (`DayStarted`), retour à leur point de départ (ou un point de leur route) à plus de 50 m de la caravane et hors de la vue du joueur, même composition, nouveau butin ; réglages dans `BandRespawnSettings` |
+| `DemoGoal`                     | But de la démo : 100 jours (`DemoGoalSettings`) ; à la fin, tient la carte et lève `Finished` avec la richesse finale (argent + cargaison au prix de base) |
 | `PointOfInterest`              | Une ville de la carte (données et test de clic)                                                                                                             |
 | `TownRest`, `TownRecruitment`  | Repos en ville (PV rendus) et recrutement                                                                                                                   |
 | `CampaignHud`                  | Horloge, message, état du temps                                                                                                                             |
@@ -178,7 +180,7 @@ Les dossiers `Enemies/` et `Player/` sont **vides** (vestiges) : ne pas y cherch
 1. `CampaignEncounters` détecte le contact et lève `EncounterStarted`.
 2. `CampaignEncounterFlow` construit un `EncounterData` (les deux groupes, le butin tiré de la bande, l'arène), le dépose dans l'asset `EncounterChannel`, **désactive tous les autres objets racine de la scène** (la carte « dort » telle quelle), et charge l'arène en additif. Il calcule déjà ce que la cargaison peut prendre du butin (`Inventory.PlanAdd`, marchandises les plus chères d'abord), pour que l'écran de fin le dise. Cet objet doit rester un objet racine à lui.
 3. `CombatSpawner` (dans l'arène) lit `EncounterData` et crée les unités. À la fin, l'écran de fin de combat liste le butin (U.V., marchandises gagnées, « perdu faute de place ») et demande le retour par le canal.
-4. `CampaignEncounterFlow` décharge l'arène, réveille la carte et applique le résultat : survivants avec leurs PV, morts retirés du groupe, bande détruite, U.V. du butin versées au `Wallet`, marchandises qui rentrent ajoutées à l'`Inventory` (`TryAdd`), le reste perdu et signalé par le message de la carte. Une défaite lève `GameOver` ; vaincre la dernière bande lève `AllBandsDefeated`.
+4. `CampaignEncounterFlow` décharge l'arène, réveille la carte et applique le résultat : survivants avec leurs PV, morts retirés du groupe, bande battue mise de côté (désactivée, pas détruite : voir `BandRespawner`), U.V. du butin versées au `Wallet`, marchandises qui rentrent ajoutées à l'`Inventory` (`TryAdd`), le reste perdu et signalé par le message de la carte. Une défaite lève `GameOver` ; vaincre la dernière bande lève `AllBandsDefeated`.
 
 ### 4.4 Le système d'actions (combat et IA)
 
@@ -265,7 +267,7 @@ Lancer : entrer en Play Mode dans `Demo_Campaign`, puis appeler `EconomySimulato
 
 ## 10. Où en est-on, et la suite
 
-Fait : démo jouable (v0.1.0), économie E1 à E9.
+Fait : démo jouable (v0.1.0), économie E1 à E9, butin en marchandises (F1), marché à onglets et profit (F2), retour des bandes et nouveau but de la démo (F3).
 
 À décider avec le responsable du jeu :
 

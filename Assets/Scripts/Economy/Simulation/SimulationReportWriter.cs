@@ -178,7 +178,7 @@ public static class SimulationReportWriter
         text.AppendLine("## 5. La boucle complète : acheter, voyager, combattre, revenir, vendre (scénario C)");
         text.AppendLine();
         text.AppendLine("Les combats sont tirés au sort (pas d'arène) : chance de rencontre par jour de voyage, chance de victoire réduite quand le groupe est amoindri, "
-            + "butin de chaque bande de la carte (tiré dans sa table au départ, U.V. et marchandises, une fois chacune ; les marchandises qui ne rentrent pas dans la cargaison sont perdues, les plus chères entrent d'abord), unités perdues rachetées à la ville suivante au prix de la moins chère des recrues.");
+            + "butin de chaque bande de la carte (tiré dans sa table, U.V. et marchandises ; une bande battue revient après le délai des réglages de retour avec un nouveau butin ; les marchandises qui ne rentrent pas dans la cargaison sont perdues, les plus chères entrent d'abord), unités perdues rachetées à la ville suivante au prix de la moins chère des recrues.");
         text.AppendLine();
         text.AppendLine("- Profit net : **" + Money(combat.NetProfit) + "** en " + combat.DaysElapsed + " jours (sans combat : " + Money(reference.NetProfit) + ").");
         text.AppendLine("- Combats : " + combat.Victories + " victoire(s), " + combat.Defeats + " défaite(s) ; unités perdues : " + combat.UnitsLost

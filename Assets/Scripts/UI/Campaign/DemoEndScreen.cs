@@ -3,13 +3,16 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
-/// The end of the demo: when every enemy band of the map is beaten, "Démo terminée" with the total loot gathered and a
-/// button back to the title screen.
+/// The end of the demo: when the last of its days is over (see DemoGoal), "Démo terminée" with the final wealth (the
+/// money and the cargo at base price, the score), the loot gathered and the bands beaten, and a button back to the
+/// title screen.
 /// </summary>
 public class DemoEndScreen : MonoBehaviour
 {
-    [SerializeField] private CampaignEncounterFlow flow;
+    [SerializeField] private DemoGoal goal;
     [SerializeField] private PartyRoster party;
+    [Tooltip("Optional: gives the number of bands beaten.")]
+    [SerializeField] private BandRespawner respawner;
     [Tooltip("The whole screen: hidden until the demo is over.")]
     [SerializeField] private GameObject root;
     [SerializeField] private Text detailsText;
@@ -18,7 +21,7 @@ public class DemoEndScreen : MonoBehaviour
 
     private void Start()
     {
-        if (flow == null || party == null || root == null || detailsText == null || menuButton == null)
+        if (goal == null || party == null || root == null || detailsText == null || menuButton == null)
         {
             Debug.LogError("DemoEndScreen: a serialized reference is not assigned.", this);
             enabled = false;
@@ -30,9 +33,9 @@ public class DemoEndScreen : MonoBehaviour
 
     private void OnEnable()
     {
-        if (flow != null)
+        if (goal != null)
         {
-            flow.AllBandsDefeated += OnAllBandsDefeated;
+            goal.Finished += OnFinished;
         }
 
         if (menuButton != null)
@@ -43,9 +46,9 @@ public class DemoEndScreen : MonoBehaviour
 
     private void OnDisable()
     {
-        if (flow != null)
+        if (goal != null)
         {
-            flow.AllBandsDefeated -= OnAllBandsDefeated;
+            goal.Finished -= OnFinished;
         }
 
         if (menuButton != null)
@@ -54,10 +57,18 @@ public class DemoEndScreen : MonoBehaviour
         }
     }
 
-    private void OnAllBandsDefeated()
+    private void OnFinished(DemoScore score)
     {
-        detailsText.text = "Toutes les bandes de brigands sont vaincues.\nValeur totale du butin : " + MoneyFormat.WithUnit(party.Gathered)
-            + "\n\nMerci d'avoir joué !";
+        string text = "Les " + goal.Days + " jours sont écoulés.\n\nRichesse finale : " + MoneyFormat.WithUnit((int)System.Math.Min(score.Total, int.MaxValue))
+            + "\n(argent : " + MoneyFormat.WithUnit(score.Money)
+            + (score.CargoCounted ? ", cargaison : " + MoneyFormat.WithUnit((int)System.Math.Min(score.CargoValue, int.MaxValue)) : string.Empty) + ")"
+            + "\nValeur du butin ramassé : " + MoneyFormat.WithUnit(party.Gathered);
+        if (respawner != null)
+        {
+            text += "\nBandes battues : " + respawner.TotalDefeated;
+        }
+
+        detailsText.text = text + "\n\nMerci d'avoir joué !";
         root.SetActive(true);
         UiLayering.BringToFront(root.transform);
     }

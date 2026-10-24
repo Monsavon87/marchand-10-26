@@ -9,7 +9,7 @@ Simulation sans rendu de **100 jours**, graine **1**, capital de départ **10 00
 | A. Marchand glouton, sans combat | 208 446 U.V. | 2 063 U.V. | 93 | 2 241 U.V. | 0 | 0 / 0 | Terminé : 100 jours écoulés. |
 | B. Marchand prévoyant, sans combat | 170 183 U.V. | 1 684 U.V. | 95 | 1 791 U.V. | 0 | 0 / 0 | Terminé : 100 jours écoulés. |
 | B'. Même scénario B rejoué (contrôle de graine) | 170 183 U.V. | 1 684 U.V. | 95 | 1 791 U.V. | 0 | 0 / 0 | Terminé : 100 jours écoulés. |
-| C. Marchand prévoyant, avec combats | 92 453 U.V. | 2 801 U.V. | 29 | 3 188 U.V. | 0 | 5 / 1 | Défaite en combat sur la route Hautmont > Aubeterre (fin de la campagne). |
+| C. Marchand prévoyant, avec combats | 22 378 U.V. | 1 316 U.V. | 14 | 1 598 U.V. | 0 | 3 / 1 | Défaite en combat sur la route Bourg-Val > Port-Brume (fin de la campagne). |
 | E. Départ réaliste (capital = argent du plus petit butin), sans combat | 1 283 U.V. | 80 U.V. | 5 | 256 U.V. | 11 | 0 / 0 | Bloqué : aucun trajet rentable pendant 10 jours (ville Bourg-Val). |
 | E2. Départ réaliste (capital = valeur complète du plus petit butin), sans combat | 168 385 U.V. | 1 667 U.V. | 95 | 1 772 U.V. | 0 | 0 / 0 | Terminé : 100 jours écoulés. |
 
@@ -179,39 +179,37 @@ Prix médian (sans écart acheteur/vendeur) : moyenne, minimum et maximum sur la
 
 ## 5. La boucle complète : acheter, voyager, combattre, revenir, vendre (scénario C)
 
-Les combats sont tirés au sort (pas d'arène) : chance de rencontre par jour de voyage, chance de victoire réduite quand le groupe est amoindri, butin de chaque bande de la carte (tiré dans sa table au départ, U.V. et marchandises, une fois chacune ; les marchandises qui ne rentrent pas dans la cargaison sont perdues, les plus chères entrent d'abord), unités perdues rachetées à la ville suivante au prix de la moins chère des recrues.
+Les combats sont tirés au sort (pas d'arène) : chance de rencontre par jour de voyage, chance de victoire réduite quand le groupe est amoindri, butin de chaque bande de la carte (tiré dans sa table, U.V. et marchandises ; une bande battue revient après le délai des réglages de retour avec un nouveau butin ; les marchandises qui ne rentrent pas dans la cargaison sont perdues, les plus chères entrent d'abord), unités perdues rachetées à la ville suivante au prix de la moins chère des recrues.
 
-- Profit net : **92 453 U.V.** en 33 jours (sans combat : 170 183 U.V.).
-- Combats : 5 victoire(s), 1 défaite(s) ; unités perdues : 4 ; valeur du butin ramassé : 22 098 U.V. (perdu faute de place : 0 U.V.) ; coût des remplacements : 12 000 U.V..
-- Fin : Défaite en combat sur la route Hautmont > Aubeterre (fin de la campagne).
+- Profit net : **22 378 U.V.** en 17 jours (sans combat : 170 183 U.V.).
+- Combats : 3 victoire(s), 1 défaite(s) ; unités perdues : 2 ; valeur du butin ramassé : 13 767 U.V. (perdu faute de place : 0 U.V.) ; coût des remplacements : 6 000 U.V..
+- Fin : Défaite en combat sur la route Bourg-Val > Port-Brume (fin de la campagne).
 
-Trajets avec un combat (graine 3, la première partie menée jusqu'au bout) : 6 victoire(s), 10 unité(s) perdue(s), butin 31 484 U.V., remplacements 30 000 U.V..
+Trajets avec un combat (graine 1) : 3 victoire(s), 2 unité(s) perdue(s), butin 13 767 U.V., remplacements 6 000 U.V..
 
 | Jour | Trajet | Résultat | Valeur du butin | Profit (vente du butin comprise) |
 |---:|---|---|---:|---:|
-| 9 | Hautmont > Aubeterre (Huile d'olive) | Victoire, 2 unité(s) perdue(s) | 11 004 U.V. | 8 164 U.V. |
-| 14 | Aubeterre > Bourg-Val (Cuir) | Victoire, 1 unité(s) perdue(s) | 6 496 U.V. | 6 090 U.V. |
-| 16 | Port-Brume > Hautmont (Épices) | Victoire, 1 unité(s) perdue(s) | 2 023 U.V. | 38 753 U.V. |
-| 18 | Aubeterre > Port-Brume (Cuir) | Victoire, 2 unité(s) perdue(s) | 4 328 U.V. | 3 798 U.V. |
-| 20 | Port-Brume > Hautmont (Épices) | Victoire, 2 unité(s) perdue(s) | 4 546 U.V. | 29 183 U.V. |
-| 24 | Aubeterre > Hautmont (Vin) | Victoire, 2 unité(s) perdue(s) | 3 087 U.V. | 1 934 U.V. |
+| 5 | Bourg-Val > Hautmont (Outils) | Victoire | 6 729 U.V. | 8 401 U.V. |
+| 7 | Hautmont > Aubeterre (Huile d'olive) | Victoire | 1 652 U.V. | 2 337 U.V. |
+| 14 | Aubeterre > Bourg-Val (Cuir) | Victoire, 2 unité(s) perdue(s) | 5 386 U.V. | 5 164 U.V. |
+| 15 | Bourg-Val > Port-Brume (Outils) | Défaite | 0 U.V. | -10 962 U.V. |
 
 Effet de la chance (même scénario, 10 graines) :
 
 | Graine | Profit net | Jours | Victoires | Défaites | Unités perdues | Valeur du butin | Butin perdu | Remplacements | Fin |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| 1 | 92 453 U.V. | 33 | 5 | 1 | 4 | 22 098 U.V. | 0 U.V. | 12 000 U.V. | Défaite en combat sur la route Hautmont > Aubeterre (fin de la campagne). |
-| 2 | 20 651 U.V. | 12 | 3 | 1 | 2 | 12 011 U.V. | 0 U.V. | 6 000 U.V. | Défaite en combat sur la route Aubeterre > Bourg-Val (fin de la campagne). |
-| 3 | 175 238 U.V. | 101 | 6 | 0 | 10 | 31 484 U.V. | 0 U.V. | 30 000 U.V. | Terminé : 100 jours écoulés. |
-| 4 | 16 611 U.V. | 14 | 1 | 1 | 1 | 2 209 U.V. | 0 U.V. | 3 000 U.V. | Défaite en combat sur la route Aubeterre > Hautmont (fin de la campagne). |
-| 5 | 194 528 U.V. | 101 | 6 | 0 | 3 | 30 550 U.V. | 0 U.V. | 9 000 U.V. | Terminé : 100 jours écoulés. |
-| 6 | 125 305 U.V. | 41 | 5 | 1 | 5 | 31 247 U.V. | 0 U.V. | 15 000 U.V. | Défaite en combat sur la route Hautmont > Aubeterre (fin de la campagne). |
+| 1 | 22 378 U.V. | 17 | 3 | 1 | 2 | 13 767 U.V. | 0 U.V. | 6 000 U.V. | Défaite en combat sur la route Bourg-Val > Port-Brume (fin de la campagne). |
+| 2 | 5 238 U.V. | 9 | 1 | 1 | 0 | 5 117 U.V. | 0 U.V. | 0 U.V. | Défaite en combat sur la route Bourg-Val > Aubeterre (fin de la campagne). |
+| 3 | 68 257 U.V. | 21 | 3 | 1 | 4 | 16 114 U.V. | 0 U.V. | 12 000 U.V. | Défaite en combat sur la route Bourg-Val > Aubeterre (fin de la campagne). |
+| 4 | -8 222 U.V. | 5 | 1 | 1 | 2 | 2 209 U.V. | 0 U.V. | 6 000 U.V. | Défaite en combat sur la route Hautmont > Aubeterre (fin de la campagne). |
+| 5 | 23 384 U.V. | 12 | 4 | 1 | 5 | 25 179 U.V. | 0 U.V. | 15 000 U.V. | Défaite en combat sur la route Aubeterre > Bourg-Val (fin de la campagne). |
+| 6 | -8 613 U.V. | 7 | 1 | 1 | 2 | 4 728 U.V. | 0 U.V. | 6 000 U.V. | Défaite en combat sur la route Bourg-Val > Hautmont (fin de la campagne). |
 | 7 | -7 456 U.V. | 7 | 0 | 1 | 0 | 0 U.V. | 0 U.V. | 0 U.V. | Défaite en combat sur la route Bourg-Val > Hautmont (fin de la campagne). |
 | 8 | -6 959 U.V. | 3 | 0 | 1 | 0 | 0 U.V. | 0 U.V. | 0 U.V. | Défaite en combat sur la route Bourg-Val > Aubeterre (fin de la campagne). |
-| 9 | 113 025 U.V. | 50 | 5 | 1 | 9 | 24 078 U.V. | 0 U.V. | 27 000 U.V. | Défaite en combat sur la route Bourg-Val > Aubeterre (fin de la campagne). |
-| 10 | 29 407 U.V. | 8 | 2 | 1 | 0 | 22 252 U.V. | 0 U.V. | 0 U.V. | Défaite en combat sur la route Hautmont > Aubeterre (fin de la campagne). |
+| 9 | -7 501 U.V. | 10 | 2 | 1 | 4 | 9 960 U.V. | 0 U.V. | 12 000 U.V. | Défaite en combat sur la route Bourg-Val > Hautmont (fin de la campagne). |
+| 10 | 27 643 U.V. | 12 | 2 | 1 | 0 | 11 621 U.V. | 0 U.V. | 0 U.V. | Défaite en combat sur la route Aubeterre > Bourg-Val (fin de la campagne). |
 
-Parties perdues en combat : 8 sur 10. Profit net : minimum -7 456 U.V., moyenne 75 280 U.V., maximum 194 528 U.V..
+Parties perdues en combat : 10 sur 10. Profit net : minimum -8 613 U.V., moyenne 10 814 U.V., maximum 68 257 U.V..
 
 ## 5 bis. Le départ de la partie manuelle
 

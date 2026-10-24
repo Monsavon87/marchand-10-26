@@ -2013,6 +2013,56 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 472363745}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &564098143
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 564098145}
+  - component: {fileID: 564098144}
+  m_Layer: 0
+  m_Name: DemoGoal
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &564098144
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 564098143}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a716e575282c4e4683e7644275b800c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DemoGoal
+  settings: {fileID: 11400000, guid: 8d7898410ff4d3b40b066d9701096f75, type: 2}
+  clock: {fileID: 675263628}
+  wallet: {fileID: 2733532370329639520}
+  inventory: {fileID: 2733532370329639519}
+  catalog: {fileID: 11400000, guid: 0c4d3bbc498a84945bdb1249d423f4ff, type: 2}
+  pause: {fileID: 675263630}
+--- !u!4 &564098145
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 564098143}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &574311508
 GameObject:
   m_ObjectHideFlags: 0
@@ -2441,6 +2491,7 @@ MonoBehaviour:
   clockLabel: {fileID: 1755504200}
   messageLabel: {fileID: 1543718973}
   townRest: {fileID: 0}
+  goal: {fileID: 564098144}
   encounterFlow: {fileID: 1095158888}
   party: {fileID: 2733532370329639517}
   partyLabel: {fileID: 917970773}
@@ -4751,6 +4802,56 @@ Transform:
   m_Children: []
   m_Father: {fileID: 574311510}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1715106785
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1715106787}
+  - component: {fileID: 1715106786}
+  m_Layer: 0
+  m_Name: BandRespawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1715106786
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1715106785}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7140eab2481fb5b4c90bfd101a1191b6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BandRespawner
+  settings: {fileID: 11400000, guid: 2b7c5c6e365f31948858cf69a22425d2, type: 2}
+  clock: {fileID: 675263628}
+  flow: {fileID: 1095158888}
+  caravan: {fileID: 359145124}
+  lootSetup: {fileID: 1956787830}
+  viewCamera: {fileID: 0}
+--- !u!4 &1715106787
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1715106785}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1736903544 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2715301513733906901, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
@@ -6058,3 +6159,5 @@ SceneRoots:
   - {fileID: 2017408824}
   - {fileID: 574311510}
   - {fileID: 1956787831}
+  - {fileID: 564098145}
+  - {fileID: 1715106787}

@@ -17,6 +17,8 @@ public class EconomySimulator : MonoBehaviour
     private const float StartHour = 8f;
 
     [SerializeField] private SimulationSettings settings;
+    [Tooltip("The same settings as the map: how long a beaten band stays away.")]
+    [SerializeField] private BandRespawnSettings respawnSettings;
     [SerializeField] private TradeService tradeService;
     [SerializeField] private Wallet wallet;
     [SerializeField] private Inventory inventory;
@@ -119,7 +121,7 @@ public class EconomySimulator : MonoBehaviour
         Deposit(capital);
 
         var dice = new System.Random(seed);
-        SimulationCombat fights = new SimulationCombat(settings, dice, CollectBandTables(), recruitment.MaxSize);
+        SimulationCombat fights = new SimulationCombat(settings, respawnSettings, dice, CollectBandTables(), recruitment.MaxSize);
         var planner = new TradePlanner(tradeService, rules, economySettings.ReversionPercent, travel, markets, goods);
         PriceSeries[,] series = CreateSeries(result);
 
@@ -188,7 +190,7 @@ public class EconomySimulator : MonoBehaviour
             };
             result.Trips.Add(trip);
 
-            FightOutcome fight = combat ? fights.Roll(plan.Minutes / MinutesPerDay) : default;
+            FightOutcome fight = combat ? fights.Roll(plan.Minutes / MinutesPerDay, clock.Day - startDay) : default;
             clock.AdvanceMinutes(plan.Minutes);
             here = plan.ToIndex;
             if (fight.Happened && !fight.Won)
