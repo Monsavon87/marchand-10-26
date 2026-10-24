@@ -3,11 +3,12 @@ using UnityEngine;
 
 /// <summary>
 /// Recruiting in town: a new unit joins the caravan's group, at full health, for the price of its offer, as long
-/// as the caravan has the coins and the group is not full. It says why when a recruitment is not possible.
+/// as the caravan has the U.V. and the group is not full. It says why when a recruitment is not possible.
 /// </summary>
 public class TownRecruitment : MonoBehaviour
 {
     [SerializeField] private PartyRoster party;
+    [SerializeField] private Wallet wallet;
     [SerializeField] private PartyCapacity capacity;
     [SerializeField] private RecruitmentSettings settings;
 
@@ -16,11 +17,12 @@ public class TownRecruitment : MonoBehaviour
 
     public RecruitmentSettings Settings => settings;
     public PartyRoster Party => party;
+    public Wallet Wallet => wallet;
     public int MaxSize => capacity.MaxSize;
 
     private void Start()
     {
-        if (party == null || capacity == null || settings == null)
+        if (party == null || wallet == null || capacity == null || settings == null)
         {
             Debug.LogError("TownRecruitment: a serialized reference is not assigned.", this);
             enabled = false;
@@ -42,9 +44,9 @@ public class TownRecruitment : MonoBehaviour
             return false;
         }
 
-        if (party.Coins < offer.price)
+        if (!wallet.CanAfford(offer.price))
         {
-            reason = "pas assez de pièces (" + party.Coins + " / " + offer.price + ")";
+            reason = "pas assez d'U.V. (" + MoneyFormat.Number(wallet.Balance) + " / " + MoneyFormat.Number(offer.price) + ")";
             return false;
         }
 
@@ -61,7 +63,17 @@ public class TownRecruitment : MonoBehaviour
             return false;
         }
 
-        party.Spend(offer.price);
+        // A free offer (price 0) costs nothing and needs no withdrawal.
+        if (offer.price > 0)
+        {
+            WalletResult payment = wallet.TryWithdraw(offer.price);
+            if (payment != WalletResult.Accepted)
+            {
+                Debug.LogError("TownRecruitment: the payment was refused (" + payment + ") although the price was checked.", this);
+                return false;
+            }
+        }
+
         var member = new PartyMember { name = NextName(offer.baseName), definition = offer.definition, currentHealth = 0 };
         party.AddMember(member);
         Recruited(member);

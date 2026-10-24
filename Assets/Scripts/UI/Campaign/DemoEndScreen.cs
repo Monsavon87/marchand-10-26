@@ -3,7 +3,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
-/// The end of the demo: when every enemy band of the map is beaten, "Démo terminée" with the loot gathered and a
+/// The end of the demo: when every enemy band of the map is beaten, "Démo terminée" with the total loot gathered and a
 /// button back to the title screen.
 /// </summary>
 public class DemoEndScreen : MonoBehaviour
@@ -56,8 +56,8 @@ public class DemoEndScreen : MonoBehaviour
 
     private void OnAllBandsDefeated()
     {
-        detailsText.text = "Toutes les bandes de brigands sont vaincues.\nButin total : " + party.Gathered
-            + " pièces\n\nMerci d'avoir joué !";
+        detailsText.text = "Toutes les bandes de brigands sont vaincues.\nButin total : " + MoneyFormat.WithUnit(party.Gathered)
+            + "\n\nMerci d'avoir joué !";
         root.SetActive(true);
     }
 

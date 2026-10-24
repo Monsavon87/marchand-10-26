@@ -76,7 +76,7 @@ public class BandTargeting : MonoBehaviour
         label.gameObject.SetActive(true);
     }
 
-    // "Bande ennemie / 2 Fantassins, 1 Archer / Butin : 25 pièces".
+    // "Bande ennemie / 2 Fantassins, 1 Archer / Butin : 2 500 U.V.".
     private string Describe(PartyRoster band)
     {
         kinds.Clear();
@@ -112,7 +112,7 @@ public class BandTargeting : MonoBehaviour
             }
         }
 
-        text.Append("\nButin : ").Append(band.Loot).Append(" pièces");
+        text.Append("\nButin : ").Append(MoneyFormat.WithUnit(band.Loot));
         return text.ToString();
     }
 

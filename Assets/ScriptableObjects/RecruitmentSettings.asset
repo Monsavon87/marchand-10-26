@@ -15,8 +15,8 @@ MonoBehaviour:
   offers:
   - baseName: Fantassin
     definition: {fileID: 11400000, guid: a16d3c5633103cd448bb19217e11a52a, type: 2}
-    price: 30
+    price: 3000
   - baseName: Archer
     definition: {fileID: 11400000, guid: 4c97199af40300c4dabff21090ed1ddf, type: 2}
-    price: 40
+    price: 4000
   basePartySize: 4

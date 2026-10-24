@@ -9,7 +9,7 @@ using UnityEngine.SceneManagement;
 /// band, it builds the EncounterData from both rosters, puts the map to sleep (every other root object of this
 /// scene is switched off, so its camera, light, NavMesh and units stay exactly as they are) and loads the arena on
 /// top. When the arena asks to go back, it unloads it, wakes the map up and applies the result: the survivors keep
-/// their hit points, the dead leave the caravan, the beaten band disappears and its loot is gathered. A defeat
+/// their hit points, the dead leave the caravan, the beaten band disappears and its loot goes to the wallet. A defeat
 /// raises GameOver, and beating the last band raises AllBandsDefeated. The arena is drawn at random from a list
 /// for each encounter. This object must stay a root object of its own, outside what it puts to sleep.
 /// </summary>
@@ -17,6 +17,8 @@ public class CampaignEncounterFlow : MonoBehaviour
 {
     [SerializeField] private CampaignEncounters encounters;
     [SerializeField] private PartyRoster caravanParty;
+    [Tooltip("The caravan's money: the loot of a beaten band is deposited in it.")]
+    [SerializeField] private Wallet wallet;
     [SerializeField] private EncounterChannel channel;
     [Tooltip("The combat scenes, one drawn at random for each encounter (they must be in the build settings).")]
     [SerializeField] private string[] arenaScenes = { "Combat_Arena" };
@@ -37,7 +39,7 @@ public class CampaignEncounterFlow : MonoBehaviour
 
     private void Awake()
     {
-        if (encounters == null || caravanParty == null || channel == null || arenaScenes == null || arenaScenes.Length == 0)
+        if (encounters == null || caravanParty == null || wallet == null || channel == null || arenaScenes == null || arenaScenes.Length == 0)
         {
             Debug.LogError("CampaignEncounterFlow: a serialized reference is not assigned.", this);
             enabled = false;
@@ -156,7 +158,19 @@ public class CampaignEncounterFlow : MonoBehaviour
         if (encounter != null && encounter.HasResult && encounter.Winner == Team.Player)
         {
             caravanParty.ApplyHealth(encounter.PlayerHealthAfter);
-            caravanParty.AddLoot(encounter.Loot);
+            if (encounter.Loot > 0)
+            {
+                WalletResult deposit = wallet.TryDeposit(encounter.Loot);
+                if (deposit == WalletResult.Accepted)
+                {
+                    caravanParty.RecordLoot(encounter.Loot);
+                }
+                else
+                {
+                    Debug.LogError("CampaignEncounterFlow: the loot of " + encounter.Loot + " U.V. was refused by the wallet (" + deposit + ").", this);
+                }
+            }
+
             lastBand = CountOtherBands(enemy) == 0;
             if (enemy != null)
             {

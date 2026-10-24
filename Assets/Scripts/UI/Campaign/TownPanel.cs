@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// The town window, opened when the caravan reaches a town (after its rest): the group and its coins, one button
+/// The town window, opened when the caravan reaches a town (after its rest): the group and its U.V., one button
 /// per unit the town offers (grayed out with the reason when it cannot be recruited), and a button to leave.
 /// The map is paused while the window is open, so no patrol reaches the caravan meanwhile. The recruiting itself
 /// is TownRecruitment's business: this window only asks and shows.
@@ -147,7 +147,7 @@ public class TownPanel : MonoBehaviour
             }
         }
 
-        text.Append("\nPièces : ").Append(party.Coins);
+        text.Append('\n').Append(MoneyFormat.Unit).Append(" : ").Append(MoneyFormat.Number(recruitment.Wallet.Balance));
         groupText.text = text.ToString();
 
         for (int i = 0; i < rows.Count; i++)
@@ -155,7 +155,7 @@ public class TownPanel : MonoBehaviour
             Row row = rows[i];
             bool possible = recruitment.CanRecruit(row.Offer, out string reason);
             string unitName = row.Offer.definition != null ? row.Offer.definition.DisplayName : row.Offer.baseName;
-            row.Label.text = "Recruter un " + unitName + "  -  " + row.Offer.price + " pièces";
+            row.Label.text = "Recruter un " + unitName + "  -  " + MoneyFormat.WithUnit(row.Offer.price);
             row.Reason.text = possible ? string.Empty : reason;
             row.Button.interactable = possible;
         }

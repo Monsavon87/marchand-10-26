@@ -62,7 +62,7 @@ public class CombatEndScreen : MonoBehaviour
             + "\nPertes ennemies : " + (encounter.EnemyLosses.Count == 0 ? "aucune" : string.Join(", ", encounter.EnemyLosses));
         if (encounter.Winner == Team.Player && encounter.Loot > 0)
         {
-            text += "\nButin : " + encounter.Loot + " pièces";
+            text += "\nButin : " + MoneyFormat.WithUnit(encounter.Loot);
         }
 
         detailsText.text = text;

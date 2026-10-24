@@ -3,8 +3,8 @@ using UnityEngine;
 
 /// <summary>
 /// The group behind a pawn of the campaign map: the units that fight when an encounter turns into a combat, with
-/// their hit points, and for an enemy band the loot it leaves. The caravan's roster also keeps its coins (loot it
-/// can spend, on recruits for instance) and the total loot gathered.
+/// their hit points, and for an enemy band the loot it leaves (in U.V.). The caravan's roster also keeps the total
+/// loot gathered, a statistic: the money itself is the Wallet's business.
 /// Pure data plus the update after a fight; it never moves anything.
 /// </summary>
 public class PartyRoster : MonoBehaviour
@@ -15,10 +15,8 @@ public class PartyRoster : MonoBehaviour
 
     public IReadOnlyList<PartyMember> Members => members;
     public int Loot => loot;
-    /// <summary>Total loot gathered so far (the caravan's), spent or not.</summary>
+    /// <summary>Total loot gathered so far (the caravan's), in U.V., spent or not. A statistic only.</summary>
     public int Gathered { get; private set; }
-    /// <summary>Coins the caravan has now: the loot gathered minus what was spent.</summary>
-    public int Coins { get; private set; }
 
     /// <summary>
     /// After a fight: each member gets its hit points back from 'healthAfter' (same order as the roster); the
@@ -54,23 +52,10 @@ public class PartyRoster : MonoBehaviour
         }
     }
 
-    public void AddLoot(int amount)
+    /// <summary>Counts loot in the statistic of the total gathered. It does not pay anything: that is the Wallet's job.</summary>
+    public void RecordLoot(int amount)
     {
-        int gained = Mathf.Max(0, amount);
-        Gathered += gained;
-        Coins += gained;
-    }
-
-    /// <summary>Pays this many coins. False (and nothing is paid) when the caravan does not have them.</summary>
-    public bool Spend(int amount)
-    {
-        if (amount < 0 || amount > Coins)
-        {
-            return false;
-        }
-
-        Coins -= amount;
-        return true;
+        Gathered += Mathf.Max(0, amount);
     }
 
     /// <summary>A new member joins the group (a recruit).</summary>

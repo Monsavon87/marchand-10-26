@@ -221,7 +221,7 @@ MonoBehaviour:
     definition: {fileID: 11400000, guid: a16d3c5633103cd448bb19217e11a52a, type: 2}
     currentHealth: 0
     aiProfile: {fileID: 11400000, guid: 84aa4f984bdb3744fbe4880bc263a8ed, type: 2}
-  loot: 25
+  loot: 2500
 --- !u!1 &16750934
 GameObject:
   m_ObjectHideFlags: 0
@@ -2504,7 +2504,7 @@ MonoBehaviour:
     definition: {fileID: 11400000, guid: a16d3c5633103cd448bb19217e11a52a, type: 2}
     currentHealth: 0
     aiProfile: {fileID: 11400000, guid: 046a07f4c21c45945aa8d9160cbae4a5, type: 2}
-  loot: 15
+  loot: 1500
 --- !u!1 &472363745
 GameObject:
   m_ObjectHideFlags: 0
@@ -2872,7 +2872,7 @@ MonoBehaviour:
     definition: {fileID: 11400000, guid: 4c97199af40300c4dabff21090ed1ddf, type: 2}
     currentHealth: 0
     aiProfile: {fileID: 11400000, guid: 046a07f4c21c45945aa8d9160cbae4a5, type: 2}
-  loot: 40
+  loot: 4000
 --- !u!1 &603229895
 GameObject:
   m_ObjectHideFlags: 0
@@ -3348,6 +3348,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TownRecruitment
   party: {fileID: 2733532370329639517}
+  wallet: {fileID: 2733532370329639520}
   capacity: {fileID: 675263632}
   settings: {fileID: 11400000, guid: dde256dc438561344a6d75bd9030caff, type: 2}
 --- !u!114 &675263632
@@ -3418,6 +3419,7 @@ MonoBehaviour:
   townRest: {fileID: 675263630}
   party: {fileID: 2733532370329639517}
   partyLabel: {fileID: 917970773}
+  wallet: {fileID: 2733532370329639520}
   messageDuration: 4
   refreshInterval: 0.1
 --- !u!114 &681525956
@@ -3959,7 +3961,7 @@ MonoBehaviour:
     definition: {fileID: 11400000, guid: 4c97199af40300c4dabff21090ed1ddf, type: 2}
     currentHealth: 0
     aiProfile: {fileID: 11400000, guid: 046a07f4c21c45945aa8d9160cbae4a5, type: 2}
-  loot: 45
+  loot: 4500
 --- !u!1 &808748271
 GameObject:
   m_ObjectHideFlags: 0
@@ -4688,7 +4690,7 @@ MonoBehaviour:
     definition: {fileID: 11400000, guid: 4c97199af40300c4dabff21090ed1ddf, type: 2}
     currentHealth: 0
     aiProfile: {fileID: 11400000, guid: 046a07f4c21c45945aa8d9160cbae4a5, type: 2}
-  loot: 70
+  loot: 7000
 --- !u!1 &1012965318
 GameObject:
   m_ObjectHideFlags: 0
@@ -4910,6 +4912,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CampaignEncounterFlow
   encounters: {fileID: 675263626}
   caravanParty: {fileID: 2733532370329639517}
+  wallet: {fileID: 2733532370329639520}
   channel: {fileID: 11400000, guid: 96f59e5905690954f8e65cfa69958de4, type: 2}
   arenaScenes:
   - Combat_Arena
@@ -7705,7 +7708,7 @@ MonoBehaviour:
     definition: {fileID: 11400000, guid: a16d3c5633103cd448bb19217e11a52a, type: 2}
     currentHealth: 0
     aiProfile: {fileID: 11400000, guid: 84aa4f984bdb3744fbe4880bc263a8ed, type: 2}
-  loot: 30
+  loot: 3000
 --- !u!1 &1700992787
 GameObject:
   m_ObjectHideFlags: 0
@@ -9466,6 +9469,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6294835999223347834, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2733532370329639518}
+    - targetCorrespondingSourceObject: {fileID: 6294835999223347834, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2733532370329639520}
   m_SourcePrefab: {fileID: 100100000, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
 --- !u!114 &2733532370329639512 stripped
 MonoBehaviour:
@@ -9567,6 +9573,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Inventory
   catalog: {fileID: 11400000, guid: 0c4d3bbc498a84945bdb1249d423f4ff, type: 2}
   capacity: {fileID: 11400000, guid: b8818854fd596ee4cb2ba7f1bf92dd62, type: 2}
+--- !u!114 &2733532370329639520
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2733532370329639516}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42cfe8a1158ee1d41a8036c4427a5c70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Wallet
+  startingBalance: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

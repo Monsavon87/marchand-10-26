@@ -13,9 +13,11 @@ public class CampaignHud : MonoBehaviour
     [SerializeField] private UnityEngine.UI.Text messageLabel;
     [Tooltip("Optional: says so when the group rests in a town.")]
     [SerializeField] private TownRest townRest;
-    [Tooltip("Optional: shows the caravan's group (units and hit points) and its coins.")]
+    [Tooltip("Optional: shows the caravan's group (units and hit points).")]
     [SerializeField] private PartyRoster party;
     [SerializeField] private UnityEngine.UI.Text partyLabel;
+    [Tooltip("Optional: shows the caravan's U.V. next to its group.")]
+    [SerializeField] private Wallet wallet;
     [Tooltip("Seconds a message stays on screen.")]
     [SerializeField] private float messageDuration = 4f;
     [Tooltip("Seconds between two refreshes of the clock text.")]
@@ -116,7 +118,11 @@ public class CampaignHud : MonoBehaviour
             text.Append("personne");
         }
 
-        text.Append("     Pièces : ").Append(party.Coins);
+        if (wallet != null)
+        {
+            text.Append("     ").Append(MoneyFormat.Unit).Append(" : ").Append(MoneyFormat.Number(wallet.Balance));
+        }
+
         partyLabel.text = text.ToString();
     }
 
