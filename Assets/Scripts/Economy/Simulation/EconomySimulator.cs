@@ -88,13 +88,17 @@ public class EconomySimulator : MonoBehaviour
             otherSeeds.Add(RunScenario("C (graine " + (settings.Seed + i) + ")", SimulationStrategy.Foresight, true, settings.Seed + i, startIndex, settings.StartingCapital));
         }
 
-        // The real game starts with an empty wallet: the first money is the loot of the smallest band.
-        List<int> loots = CollectBandLoots();
-        int smallestLoot = loots.Count > 0 ? loots.Min() : 0;
-        scenarios.Add(RunScenario("E. Départ réaliste (capital = plus petit butin), sans combat", SimulationStrategy.Foresight, false, settings.Seed, startIndex, smallestLoot));
+        // The real game starts with an empty wallet: the first money is the money part of the loot of the poorest band
+        // (the least value its table can draw, times the share of the money in the split).
+        List<LootTable> tables = CollectBandTables();
+        int smallestLoot = tables.Count > 0 ? tables.Min(table => (int)(table.MinValue * (double)table.UvWeight / table.TotalWeight)) : 0;
+        scenarios.Add(RunScenario("E. Départ réaliste (capital = argent du plus petit butin), sans combat", SimulationStrategy.Foresight, false, settings.Seed, startIndex, smallestLoot));
+        // The same start, counting the goods of the poorest band as money (they are sold to the first town).
+        int smallestValue = tables.Count > 0 ? tables.Min(table => table.MinValue) : 0;
+        scenarios.Add(RunScenario("E2. Départ réaliste (capital = valeur complète du plus petit butin), sans combat", SimulationStrategy.Foresight, false, settings.Seed, startIndex, smallestValue));
 
         ResetWorld();
-        LastReport = SimulationReportWriter.Build(settings, pricingSettings, markets, goods, travel, scenarios, otherSeeds, loots, ReplacementPrice());
+        LastReport = SimulationReportWriter.Build(settings, pricingSettings, markets, goods, travel, scenarios, otherSeeds, tables, ReplacementPrice());
         WriteReport(LastReport);
         return LastReport;
     }
@@ -115,7 +119,7 @@ public class EconomySimulator : MonoBehaviour
         Deposit(capital);
 
         var dice = new System.Random(seed);
-        SimulationCombat fights = new SimulationCombat(settings, dice, CollectBandLoots(), recruitment.MaxSize);
+        SimulationCombat fights = new SimulationCombat(settings, dice, CollectBandTables(), recruitment.MaxSize);
         var planner = new TradePlanner(tradeService, rules, economySettings.ReversionPercent, travel, markets, goods);
         PriceSeries[,] series = CreateSeries(result);
 
@@ -198,14 +202,9 @@ public class EconomySimulator : MonoBehaviour
             if (fight.Happened)
             {
                 trip.Fight = "Victoire" + (fight.UnitsLost > 0 ? ", " + fight.UnitsLost + " unité(s) perdue(s)" : "");
-                trip.Loot = fight.Loot;
                 result.Victories++;
                 result.UnitsLost += fight.UnitsLost;
-                result.LootTotal += fight.Loot;
-                if (fight.Loot > 0)
-                {
-                    Deposit(fight.Loot);
-                }
+                CollectLoot(fight.Loot, trip, result);
             }
 
             SellEverything(markets[here], trip, result);
@@ -407,16 +406,49 @@ public class EconomySimulator : MonoBehaviour
         return best;
     }
 
-    // The loot of every enemy band still on the map.
-    private static List<int> CollectBandLoots()
+    // The money goes to the wallet; the goods go to the cargo as far as they fit (dearest first, as in the game), the
+    // rest is lost. The value gathered and the value lost are noted.
+    private void CollectLoot(LootResult loot, TripRecord trip, ScenarioResult result)
     {
-        var loots = new List<int>();
+        var taken = new List<GoodStack>();
+        var lost = new List<GoodStack>();
+        inventory.PlanAdd(loot.Goods, taken, lost);
+        long gathered = loot.Uv;
+        Deposit(loot.Uv);
+        for (int i = 0; i < taken.Count; i++)
+        {
+            if (inventory.TryAdd(taken[i].Good, taken[i].Quantity) == InventoryResult.Accepted)
+            {
+                gathered += taken[i].BaseValue;
+            }
+            else
+            {
+                result.InvariantFailures.Add("Butin : ajout de " + taken[i].Good.Id + " refusé alors qu'il devait rentrer.");
+            }
+        }
+
+        for (int i = 0; i < lost.Count; i++)
+        {
+            result.LootLostValue += (int)lost[i].BaseValue;
+        }
+
+        trip.Loot = (int)gathered;
+        result.LootTotal += (int)gathered;
+    }
+
+    // The loot table of every enemy band of the map.
+    private static List<LootTable> CollectBandTables()
+    {
+        var loots = new List<LootTable>();
         IReadOnlyList<UnitTeam> units = UnitTeam.All;
         for (int i = 0; i < units.Count; i++)
         {
             if (units[i].Team == Team.Enemy && units[i].TryGetComponent(out PartyRoster roster))
             {
-                loots.Add(roster.Loot);
+                if (roster.LootTable != null)
+                {
+                    loots.Add(roster.LootTable);
+                }
             }
         }
 

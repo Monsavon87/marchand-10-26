@@ -3,19 +3,22 @@ using UnityEngine;
 
 /// <summary>
 /// The group behind a pawn of the campaign map: the units that fight when an encounter turns into a combat, with
-/// their hit points, and for an enemy band the loot it leaves (in U.V.). The caravan's roster also keeps the total
-/// loot gathered, a statistic: the money itself is the Wallet's business.
+/// their hit points, and for an enemy band the loot it leaves: a loot table (what it can carry) and, once the band
+/// is created, the loot rolled from it. The caravan's roster also keeps the total value gathered, a statistic: the
+/// money itself is the Wallet's business.
 /// Pure data plus the update after a fight; it never moves anything.
 /// </summary>
 public class PartyRoster : MonoBehaviour
 {
     [SerializeField] private List<PartyMember> members = new List<PartyMember>();
-    [Tooltip("Enemy bands: what defeating them is worth.")]
-    [Min(0)] [SerializeField] private int loot;
+    [Tooltip("Enemy bands: what the band can carry. Rolled once when the band is created (see BandLootSetup).")]
+    [SerializeField] private LootTable lootTable;
 
     public IReadOnlyList<PartyMember> Members => members;
-    public int Loot => loot;
-    /// <summary>Total loot gathered so far (the caravan's), in U.V., spent or not. A statistic only.</summary>
+    public LootTable LootTable => lootTable;
+    /// <summary>The loot this band carries, rolled when it was created (empty until then, and for the caravan).</summary>
+    public LootResult Loot { get; private set; } = LootResult.Empty;
+    /// <summary>Total value of the loot gathered so far (the caravan's): U.V. plus goods at base price. A statistic only.</summary>
     public int Gathered { get; private set; }
 
     /// <summary>
@@ -50,6 +53,12 @@ public class PartyRoster : MonoBehaviour
         {
             members[i].currentHealth = 0;
         }
+    }
+
+    /// <summary>Gives the band the loot rolled from its table (done once, when the band is created).</summary>
+    public void SetLoot(LootResult loot)
+    {
+        Loot = loot ?? LootResult.Empty;
     }
 
     /// <summary>Counts loot in the statistic of the total gathered. It does not pay anything: that is the Wallet's job.</summary>

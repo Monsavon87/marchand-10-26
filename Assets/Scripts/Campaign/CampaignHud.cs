@@ -6,6 +6,8 @@ using UnityEngine;
 /// </summary>
 public class CampaignHud : MonoBehaviour
 {
+    private const float LootMessageDuration = 8f;
+
     [SerializeField] private CampaignClock clock;
     [Tooltip("Optional: writes what the map's time is doing (frozen, running...) next to the clock.")]
     [SerializeField] private CampaignPause pause;
@@ -15,6 +17,8 @@ public class CampaignHud : MonoBehaviour
     [SerializeField] private UnityEngine.UI.Text messageLabel;
     [Tooltip("Optional: says so when the group rests in a town.")]
     [SerializeField] private TownRest townRest;
+    [Tooltip("Optional: says what a won fight brought (money, goods, what the cargo could not take).")]
+    [SerializeField] private CampaignEncounterFlow encounterFlow;
     [Tooltip("Optional: shows the caravan's group (units and hit points).")]
     [SerializeField] private PartyRoster party;
     [SerializeField] private UnityEngine.UI.Text partyLabel;
@@ -55,6 +59,11 @@ public class CampaignHud : MonoBehaviour
         {
             townRest.Rested += OnRested;
         }
+
+        if (encounterFlow != null)
+        {
+            encounterFlow.EncounterResolved += OnEncounterResolved;
+        }
     }
 
     private void OnDisable()
@@ -72,6 +81,11 @@ public class CampaignHud : MonoBehaviour
         if (townRest != null)
         {
             townRest.Rested -= OnRested;
+        }
+
+        if (encounterFlow != null)
+        {
+            encounterFlow.EncounterResolved -= OnEncounterResolved;
         }
     }
 
@@ -143,14 +157,28 @@ public class CampaignHud : MonoBehaviour
         ShowMessage("Arrivé à " + town.DisplayName + " : votre groupe se repose et récupère tous ses PV.");
     }
 
+    private void OnEncounterResolved(EncounterData encounter)
+    {
+        if (encounter == null || !encounter.HasResult || encounter.Winner != Team.Player)
+        {
+            return;
+        }
+
+        string loot = LootMessages.Report(encounter.Loot.Uv, encounter.LootTaken, encounter.LootLost);
+        if (loot.Length > 0)
+        {
+            ShowMessage("Victoire !  " + loot.Replace("\n", "  -  "), LootMessageDuration);
+        }
+    }
+
     private void OnEncounterStarted(UnitTeam enemy)
     {
         ShowMessage("Rencontre !  Une patrouille ennemie bloque la route.");
     }
 
-    private void ShowMessage(string text)
+    private void ShowMessage(string text, float duration = 0f)
     {
         messageLabel.text = text;
-        hideMessageTime = Time.unscaledTime + messageDuration;
+        hideMessageTime = Time.unscaledTime + (duration > 0f ? duration : messageDuration);
     }
 }

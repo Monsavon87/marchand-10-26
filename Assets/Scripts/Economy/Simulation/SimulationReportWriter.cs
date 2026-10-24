@@ -16,7 +16,7 @@ public static class SimulationReportWriter
 
     public static string Build(SimulationSettings settings, PricingSettings pricing, IReadOnlyList<Market> markets,
         IReadOnlyList<GoodDefinition> goods, TravelTimeTable travel, IReadOnlyList<ScenarioResult> scenarios, IReadOnlyList<ScenarioResult> otherSeeds,
-        IReadOnlyList<int> bandLoots, int recruitPrice)
+        IReadOnlyList<LootTable> bandTables, int recruitPrice)
     {
         ScenarioResult reference = scenarios[1];
         ScenarioResult replay = scenarios[2];
@@ -35,7 +35,7 @@ public static class SimulationReportWriter
         AppendEarnings(text, reference);
         AppendPrices(text, reference, goods, pricing);
         AppendLoop(text, combat, reference, otherSeeds);
-        AppendStart(text, scenarios[4], bandLoots, recruitPrice);
+        AppendStart(text, scenarios[4], scenarios[5], bandTables, recruitPrice);
         List<string> anomalies = FindAnomalies(settings, pricing, scenarios, otherSeeds, markets, replay, reference);
         AppendAnomalies(text, anomalies);
         AppendParameters(text, settings, pricing, reference, anomalies);
@@ -178,11 +178,11 @@ public static class SimulationReportWriter
         text.AppendLine("## 5. La boucle complète : acheter, voyager, combattre, revenir, vendre (scénario C)");
         text.AppendLine();
         text.AppendLine("Les combats sont tirés au sort (pas d'arène) : chance de rencontre par jour de voyage, chance de victoire réduite quand le groupe est amoindri, "
-            + "butin de chaque bande de la carte (une fois chacune), unités perdues rachetées à la ville suivante au prix de la moins chère des recrues.");
+            + "butin de chaque bande de la carte (tiré dans sa table au départ, U.V. et marchandises, une fois chacune ; les marchandises qui ne rentrent pas dans la cargaison sont perdues, les plus chères entrent d'abord), unités perdues rachetées à la ville suivante au prix de la moins chère des recrues.");
         text.AppendLine();
         text.AppendLine("- Profit net : **" + Money(combat.NetProfit) + "** en " + combat.DaysElapsed + " jours (sans combat : " + Money(reference.NetProfit) + ").");
         text.AppendLine("- Combats : " + combat.Victories + " victoire(s), " + combat.Defeats + " défaite(s) ; unités perdues : " + combat.UnitsLost
-            + " ; butin ramassé : " + Money(combat.LootTotal) + " ; coût des remplacements : " + Money(combat.ReplacementCost) + ".");
+            + " ; valeur du butin ramassé : " + Money(combat.LootTotal) + " (perdu faute de place : " + Money(combat.LootLostValue) + ") ; coût des remplacements : " + Money(combat.ReplacementCost) + ".");
         text.AppendLine("- Fin : " + combat.EndReason);
         text.AppendLine();
         var all = new List<ScenarioResult> { combat };
@@ -191,7 +191,7 @@ public static class SimulationReportWriter
         text.AppendLine("Trajets avec un combat (graine " + detail.Seed + (detail == combat ? "" : ", la première partie menée jusqu'au bout") + ") : "
             + detail.Victories + " victoire(s), " + detail.UnitsLost + " unité(s) perdue(s), butin " + Money(detail.LootTotal) + ", remplacements " + Money(detail.ReplacementCost) + ".");
         text.AppendLine();
-        text.AppendLine("| Jour | Trajet | Résultat | Butin | Profit du commerce |");
+        text.AppendLine("| Jour | Trajet | Résultat | Valeur du butin | Profit (vente du butin comprise) |");
         text.AppendLine("|---:|---|---|---:|---:|");
         foreach (TripRecord t in detail.Trips.Where(x => x.Fight.Length > 0))
         {
@@ -203,12 +203,12 @@ public static class SimulationReportWriter
         {
             text.AppendLine("Effet de la chance (même scénario, " + (otherSeeds.Count + 1) + " graines) :");
             text.AppendLine();
-            text.AppendLine("| Graine | Profit net | Jours | Victoires | Défaites | Unités perdues | Butin | Remplacements | Fin |");
-            text.AppendLine("|---:|---:|---:|---:|---:|---:|---:|---:|---|");
+            text.AppendLine("| Graine | Profit net | Jours | Victoires | Défaites | Unités perdues | Valeur du butin | Butin perdu | Remplacements | Fin |");
+            text.AppendLine("|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|");
             foreach (ScenarioResult s in all)
             {
                 text.AppendLine("| " + s.Seed + " | " + Money(s.NetProfit) + " | " + s.DaysElapsed + " | " + s.Victories + " | " + s.Defeats + " | " + s.UnitsLost + " | "
-                    + Money(s.LootTotal) + " | " + Money(s.ReplacementCost) + " | " + s.EndReason + " |");
+                    + Money(s.LootTotal) + " | " + Money(s.LootLostValue) + " | " + Money(s.ReplacementCost) + " | " + s.EndReason + " |");
             }
 
             int lost = all.Count(s => s.Defeats > 0);
@@ -219,28 +219,34 @@ public static class SimulationReportWriter
         }
     }
 
-    private static void AppendStart(StringBuilder text, ScenarioResult start, IReadOnlyList<int> bandLoots, int recruitPrice)
+    private static void AppendStart(StringBuilder text, ScenarioResult start, ScenarioResult startWithGoods, IReadOnlyList<LootTable> bandTables, int recruitPrice)
     {
         text.AppendLine("## 5 bis. Le départ de la partie manuelle");
         text.AppendLine();
-        text.AppendLine("La caravane démarre avec **0 U.V.** : sans argent on ne peut rien acheter, la première somme vient du butin d'une bande. "
-            + "Butins des bandes de la carte : " + (bandLoots.Count > 0 ? string.Join(", ", bandLoots.OrderBy(l => l).Select(l => Money(l))) : "aucune bande") + ". "
+        text.AppendLine("La caravane démarre avec **0 U.V.** : sans argent on ne peut rien acheter, la première somme vient du butin d'une bande (une partie en U.V., le reste en marchandises à revendre). "
+            + "Butin des bandes de la carte (valeur totale tirée dans la table de la bande, U.V. et marchandises au prix de base) : " + (bandTables.Count > 0 ? string.Join(", ", bandTables.OrderBy(b => b.MinValue).Select(b => Money(b.MinValue) + " à " + Money(b.MaxValue))) : "aucune bande") + ". "
             + "La recrue la moins chère coûte " + Money(recruitPrice) + ".");
         text.AppendLine();
+        text.AppendLine(DescribeStart("Scénario E : un marchand prévoyant qui part avec la seule part en U.V. du plus petit butin", start));
+        text.AppendLine();
+        text.AppendLine(DescribeStart("Scénario E2 : le même, en comptant aussi les marchandises de ce butin comme de l'argent", startWithGoods));
+        text.AppendLine();
+    }
+
+    private static string DescribeStart(string intro, ScenarioResult run)
+    {
         int doubling = -1;
-        for (int d = 0; d < start.DailyBalance.Count && start.StartingCapital > 0; d++)
+        for (int d = 0; d < run.DailyBalance.Count && run.StartingCapital > 0; d++)
         {
-            if (start.DailyBalance[d] >= 2 * start.StartingCapital)
+            if (run.DailyBalance[d] >= 2 * run.StartingCapital)
             {
                 doubling = d;
                 break;
             }
         }
 
-        text.AppendLine("Scénario E : un marchand prévoyant qui part avec le plus petit butin (" + Money(start.StartingCapital) + ") finit à " + Money(start.EndingBalance)
-            + " en " + start.DaysElapsed + " jours (" + start.Trips.Count + " trajets)"
-            + (doubling >= 0 ? " ; il double son capital au jour " + doubling + "." : "; il ne double pas son capital sur la durée.") + " " + start.EndReason);
-        text.AppendLine();
+        return intro + " (" + Money(run.StartingCapital) + ") finit à " + Money(run.EndingBalance) + " en " + run.DaysElapsed + " jours (" + run.Trips.Count + " trajets)"
+            + (doubling >= 0 ? " ; il double son capital au jour " + doubling + "." : " ; il ne double pas son capital sur la durée.") + " " + run.EndReason;
     }
 
     private static void AppendLimits(StringBuilder text)
@@ -250,6 +256,7 @@ public static class SimulationReportWriter
         text.AppendLine("- Le marchand simulé est un optimiseur à courte vue (le meilleur profit par jour du prochain trajet) : un humain peut faire mieux (enchaîner des routes) ou moins bien.");
         text.AppendLine("- Les combats sont un modèle tiré au sort (chance de rencontre, chance de victoire, pertes) dont les valeurs sont des hypothèses de `SimulationSettings`, pas des mesures : "
             + "le taux de défaites du scénario C en dépend entièrement. Les vrais combats, eux, ne sont pas joués.");
+        text.AppendLine("- Le profit d'un trajet avec combat comprend la vente des marchandises ramassées (elles se mélangent à la cargaison) : ces trajets sont exclus du contrôle de rendement par trajet.");
         text.AppendLine("- Les bandes sont supposées immobiles et rencontrées au hasard sur la route ; les patrouilles réelles ne sont pas modélisées.");
         text.AppendLine("- Le temps passé en ville est nul (comme dans le jeu) ; le recrutement se paie directement, sans passer par la fenêtre de recrutement.");
         text.AppendLine("- Les durées de trajet sont celles du chemin NavMesh à vitesse de base ralentie par les terrains traversés ; un détour décidé par le joueur n'est pas simulé.");
@@ -284,7 +291,7 @@ public static class SimulationReportWriter
         double bestReturn = 0.0;
         foreach (ScenarioResult s in every)
         {
-            foreach (TripRecord t in s.Trips.Where(x => x.Cost > 0 && x.Revenue > 0))
+            foreach (TripRecord t in s.Trips.Where(x => x.Cost > 0 && x.Revenue > 0 && x.Fight.Length == 0))
             {
                 double r = t.Profit / (double)t.Cost;
                 if (r > bestReturn)
@@ -489,13 +496,12 @@ public static class SimulationReportWriter
 
     private static void AppendLootPrinciple(StringBuilder text)
     {
-        text.AppendLine("## 8. Principe proposé : butin en marchandises (à valider, non implémenté)");
+        text.AppendLine("## 8. Butin en marchandises (étape F1, en jeu)");
         text.AppendLine();
-        text.AppendLine("- Chaque bande ennemie a une table de butin (ScriptableObject) : un montant d'U.V. et/ou une liste de marchandises avec des quantités ou des fourchettes.");
-        text.AppendLine("- Le butin en marchandises entre dans la cargaison par `Inventory.TryAdd`, dans la limite de la place restante en masse et en volume ; ce qui ne rentre pas est perdu, avec un message clair.");
-        text.AppendLine("- Il se vend ensuite aux prix du marché comme n'importe quelle cargaison : aucune règle de prix nouvelle.");
-        text.AppendLine("- Garde-fou d'équilibrage : la valeur totale du butin (U.V. et marchandises, au prix de base) d'une bande doit rester dans l'ordre de grandeur de son butin actuel en U.V. ; une fois le butin en marchandises implémenté, le simulateur (scénario C) servira à le vérifier.");
-        text.AppendLine("- Intérêt : une bande proche d'une ville qui achète sa marchandise donne un choix (combattre pour charger, ou commercer) ; risque : une bande très proche d'une ville qui paie bien casserait l'équilibre, d'où la limite de valeur.");
+        text.AppendLine("- Chaque bande a une table de butin (`LootTable`) : une valeur totale entre un minimum et un maximum, répartie au hasard entre les U.V. et des marchandises selon des poids ; tirée une fois à la création de la bande (`BandLootSetup`, `LootRoller`).");
+        text.AppendLine("- Les marchandises entrent dans la cargaison à la victoire, les plus chères d'abord, dans la limite de la masse et du volume ; le reste est perdu et dit à l'écran de fin de combat.");
+        text.AppendLine("- Elles se vendent ensuite aux prix du marché comme toute cargaison. Le scénario C les simule avec le même tirage et la même règle de place.");
+        text.AppendLine("- Garde-fou : la valeur totale d'un butin reste dans l'ordre de grandeur de la table de la bande ; à comparer, dans ce rapport, au profit du commerce.");
         text.AppendLine();
     }
 

@@ -5,12 +5,15 @@ using UnityEngine.InputSystem;
 
 /// <summary>
 /// On the campaign map, the enemy band under the mouse cursor gets a red ring on the ground and a label with what
-/// it is made of and what beating it is worth, so the player knows what a click on it (a chase) will lead to.
+/// it is made of and how rich its loot is (a word such as "riche", not what it holds), so the player knows what a
+/// click on it (a chase) will lead to.
 /// Read-only: it only reads the band's roster.
 /// </summary>
 public class BandTargeting : MonoBehaviour
 {
     [SerializeField] private UnitTeam caravanTeam;
+    [Tooltip("The words for the richness of a band's loot (it does not say what the loot holds).")]
+    [SerializeField] private LootWealthScale wealthScale;
     [Tooltip("Optional: falls back to the main camera.")]
     [SerializeField] private Camera viewCamera;
     [Tooltip("Flat ring shown under the band. It must have no collider, or it would block clicks.")]
@@ -31,7 +34,7 @@ public class BandTargeting : MonoBehaviour
             viewCamera = Camera.main;
         }
 
-        if (caravanTeam == null || viewCamera == null || ring == null || label == null)
+        if (caravanTeam == null || wealthScale == null || viewCamera == null || ring == null || label == null)
         {
             Debug.LogError("BandTargeting: a serialized reference is not assigned.", this);
             enabled = false;
@@ -76,7 +79,7 @@ public class BandTargeting : MonoBehaviour
         label.gameObject.SetActive(true);
     }
 
-    // "Bande ennemie / 2 Fantassins, 1 Archer / Butin : 2 500 U.V.".
+    // "Bande ennemie / 2 Fantassins, 1 Archer / Butin estimé : riche": the richness of the loot, not what it holds.
     private string Describe(PartyRoster band)
     {
         kinds.Clear();
@@ -112,7 +115,7 @@ public class BandTargeting : MonoBehaviour
             }
         }
 
-        text.Append("\nButin : ").Append(MoneyFormat.WithUnit(band.Loot));
+        text.Append("\nButin estimé : ").Append(wealthScale.Describe(band.Loot.Value));
         return text.ToString();
     }
 

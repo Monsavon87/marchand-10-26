@@ -19,6 +19,8 @@ public class CampaignEncounterFlow : MonoBehaviour
     [SerializeField] private PartyRoster caravanParty;
     [Tooltip("The caravan's money: the loot of a beaten band is deposited in it.")]
     [SerializeField] private Wallet wallet;
+    [Tooltip("The caravan's cargo: the goods of a beaten band's loot are added to it, as far as they fit.")]
+    [SerializeField] private Inventory inventory;
     [SerializeField] private EncounterChannel channel;
     [Tooltip("The combat scenes, one drawn at random for each encounter (they must be in the build settings).")]
     [SerializeField] private string[] arenaScenes = { "Combat_Arena" };
@@ -39,7 +41,7 @@ public class CampaignEncounterFlow : MonoBehaviour
 
     private void Awake()
     {
-        if (encounters == null || caravanParty == null || wallet == null || channel == null || arenaScenes == null || arenaScenes.Length == 0)
+        if (encounters == null || caravanParty == null || wallet == null || inventory == null || channel == null || arenaScenes == null || arenaScenes.Length == 0)
         {
             Debug.LogError("CampaignEncounterFlow: a serialized reference is not assigned.", this);
             enabled = false;
@@ -94,6 +96,9 @@ public class CampaignEncounterFlow : MonoBehaviour
 
         arenaScene = arenaScenes[UnityEngine.Random.Range(0, arenaScenes.Length)];
         var encounter = new EncounterData(arenaScene, enemyParty.Loot, true);
+        // What of the goods the cargo can take is settled now (the cargo does not change during the fight), so the end
+        // screen can say it.
+        inventory.PlanAdd(enemyParty.Loot.Goods, encounter.LootTaken, encounter.LootLost);
         for (int i = 0; i < caravanParty.Members.Count; i++)
         {
             encounter.PlayerSide.Add(caravanParty.Members[i].Copy());
@@ -158,18 +163,7 @@ public class CampaignEncounterFlow : MonoBehaviour
         if (encounter != null && encounter.HasResult && encounter.Winner == Team.Player)
         {
             caravanParty.ApplyHealth(encounter.PlayerHealthAfter);
-            if (encounter.Loot > 0)
-            {
-                WalletResult deposit = wallet.TryDeposit(encounter.Loot);
-                if (deposit == WalletResult.Accepted)
-                {
-                    caravanParty.RecordLoot(encounter.Loot);
-                }
-                else
-                {
-                    Debug.LogError("CampaignEncounterFlow: the loot of " + encounter.Loot + " U.V. was refused by the wallet (" + deposit + ").", this);
-                }
-            }
+            CollectLoot(encounter);
 
             lastBand = CountOtherBands(enemy) == 0;
             if (enemy != null)
@@ -190,6 +184,42 @@ public class CampaignEncounterFlow : MonoBehaviour
         {
             AllBandsDefeated();
         }
+    }
+
+    // The money goes to the wallet and the goods that fit (settled when the encounter began) to the cargo. The statistic
+    // counts the value really gathered. A refusal here would be a bug, since everything was checked beforehand.
+    private void CollectLoot(EncounterData encounter)
+    {
+        long gathered = 0;
+        int uv = encounter.Loot.Uv;
+        if (uv > 0)
+        {
+            WalletResult deposit = wallet.TryDeposit(uv);
+            if (deposit == WalletResult.Accepted)
+            {
+                gathered += uv;
+            }
+            else
+            {
+                Debug.LogError("CampaignEncounterFlow: the loot of " + uv + " U.V. was refused by the wallet (" + deposit + ").", this);
+            }
+        }
+
+        for (int i = 0; i < encounter.LootTaken.Count; i++)
+        {
+            GoodStack stack = encounter.LootTaken[i];
+            InventoryResult added = inventory.TryAdd(stack.Good, stack.Quantity);
+            if (added == InventoryResult.Accepted)
+            {
+                gathered += stack.BaseValue;
+            }
+            else
+            {
+                Debug.LogError("CampaignEncounterFlow: " + stack.Quantity + " x " + stack.Good.Id + " of the loot was refused by the cargo (" + added + ").", this);
+            }
+        }
+
+        caravanParty.RecordLoot((int)System.Math.Min(gathered, int.MaxValue));
     }
 
     // The enemy bands still on the map, apart from the one just beaten.

@@ -45,7 +45,7 @@ public class CombatSpawner : MonoBehaviour
         encounter = channel.Current;
         if (encounter == null || !encounter.ReturnToMap)
         {
-            encounter = new EncounterData(gameObject.scene.name, 0, false);
+            encounter = new EncounterData(gameObject.scene.name, LootResult.Empty, false);
             for (int i = 0; i < testPlayerSide.Count; i++)
             {
                 encounter.PlayerSide.Add(testPlayerSide[i].Copy());

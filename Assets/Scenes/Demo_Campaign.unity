@@ -221,7 +221,7 @@ MonoBehaviour:
     definition: {fileID: 11400000, guid: a16d3c5633103cd448bb19217e11a52a, type: 2}
     currentHealth: 0
     aiProfile: {fileID: 11400000, guid: 84aa4f984bdb3744fbe4880bc263a8ed, type: 2}
-  loot: 2500
+  lootTable: {fileID: 11400000, guid: d35b17131fa119e4399445b8d10cb229, type: 2}
 --- !u!1 &16750934
 GameObject:
   m_ObjectHideFlags: 0
@@ -252,6 +252,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BandTargeting
   caravanTeam: {fileID: 2733532370329639513}
+  wealthScale: {fileID: 11400000, guid: 5cad32a92df4c354585423b7a526e178, type: 2}
   viewCamera: {fileID: 0}
   ring: {fileID: 123706807}
   label: {fileID: 2014720867}
@@ -3360,7 +3361,7 @@ MonoBehaviour:
     definition: {fileID: 11400000, guid: a16d3c5633103cd448bb19217e11a52a, type: 2}
     currentHealth: 0
     aiProfile: {fileID: 11400000, guid: 046a07f4c21c45945aa8d9160cbae4a5, type: 2}
-  loot: 1500
+  lootTable: {fileID: 11400000, guid: cbbc3e00afb0f8448a566ee347d97144, type: 2}
 --- !u!1 &464924743
 GameObject:
   m_ObjectHideFlags: 0
@@ -4013,7 +4014,7 @@ MonoBehaviour:
     definition: {fileID: 11400000, guid: 4c97199af40300c4dabff21090ed1ddf, type: 2}
     currentHealth: 0
     aiProfile: {fileID: 11400000, guid: 046a07f4c21c45945aa8d9160cbae4a5, type: 2}
-  loot: 4000
+  lootTable: {fileID: 11400000, guid: 3642f52310b303a4cb214b2909152901, type: 2}
 --- !u!1 &603229895
 GameObject:
   m_ObjectHideFlags: 0
@@ -4997,6 +4998,7 @@ MonoBehaviour:
   clockLabel: {fileID: 1755504200}
   messageLabel: {fileID: 1543718973}
   townRest: {fileID: 675263630}
+  encounterFlow: {fileID: 1095158888}
   party: {fileID: 2733532370329639517}
   partyLabel: {fileID: 917970773}
   messageDuration: 4
@@ -5828,7 +5830,7 @@ MonoBehaviour:
     definition: {fileID: 11400000, guid: 4c97199af40300c4dabff21090ed1ddf, type: 2}
     currentHealth: 0
     aiProfile: {fileID: 11400000, guid: 046a07f4c21c45945aa8d9160cbae4a5, type: 2}
-  loot: 4500
+  lootTable: {fileID: 11400000, guid: 1d3966a5d0d55b049bd19bf4a797611e, type: 2}
 --- !u!1 &808748271
 GameObject:
   m_ObjectHideFlags: 0
@@ -7115,7 +7117,7 @@ MonoBehaviour:
     definition: {fileID: 11400000, guid: 4c97199af40300c4dabff21090ed1ddf, type: 2}
     currentHealth: 0
     aiProfile: {fileID: 11400000, guid: 046a07f4c21c45945aa8d9160cbae4a5, type: 2}
-  loot: 7000
+  lootTable: {fileID: 11400000, guid: 82eb4c294169ac7479fcb52c1aaa00fb, type: 2}
 --- !u!1 &1000095684
 GameObject:
   m_ObjectHideFlags: 0
@@ -7781,6 +7783,7 @@ MonoBehaviour:
   encounters: {fileID: 675263626}
   caravanParty: {fileID: 2733532370329639517}
   wallet: {fileID: 2733532370329639520}
+  inventory: {fileID: 2733532370329639519}
   channel: {fileID: 11400000, guid: 96f59e5905690954f8e65cfa69958de4, type: 2}
   arenaScenes:
   - Combat_Arena
@@ -12214,7 +12217,7 @@ MonoBehaviour:
     definition: {fileID: 11400000, guid: a16d3c5633103cd448bb19217e11a52a, type: 2}
     currentHealth: 0
     aiProfile: {fileID: 11400000, guid: 84aa4f984bdb3744fbe4880bc263a8ed, type: 2}
-  loot: 3000
+  lootTable: {fileID: 11400000, guid: c1f7c20649d69294b9330c7d42dc2cf6, type: 2}
 --- !u!1 &1633599900
 GameObject:
   m_ObjectHideFlags: 0
@@ -13788,6 +13791,51 @@ Transform:
   - {fileID: 1805920430}
   - {fileID: 1909662367}
   - {fileID: 1854694678}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1872740804
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1872740806}
+  - component: {fileID: 1872740805}
+  m_Layer: 0
+  m_Name: BandLoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1872740805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1872740804}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4b0bd7c477bd27439a3c0a1939e49b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BandLootSetup
+  seed: 0
+--- !u!4 &1872740806
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1872740804}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1899505597
@@ -15868,7 +15916,7 @@ MonoBehaviour:
     definition: {fileID: 11400000, guid: 4c97199af40300c4dabff21090ed1ddf, type: 2}
     currentHealth: 0
     aiProfile: {fileID: 0}
-  loot: 0
+  lootTable: {fileID: 0}
 --- !u!114 &2733532370329639518
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15992,3 +16040,4 @@ SceneRoots:
   - {fileID: 474250889}
   - {fileID: 493977060}
   - {fileID: 2038860611}
+  - {fileID: 1872740806}

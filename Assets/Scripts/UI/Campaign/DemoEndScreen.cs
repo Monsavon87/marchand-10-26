@@ -56,7 +56,7 @@ public class DemoEndScreen : MonoBehaviour
 
     private void OnAllBandsDefeated()
     {
-        detailsText.text = "Toutes les bandes de brigands sont vaincues.\nButin total : " + MoneyFormat.WithUnit(party.Gathered)
+        detailsText.text = "Toutes les bandes de brigands sont vaincues.\nValeur totale du butin : " + MoneyFormat.WithUnit(party.Gathered)
             + "\n\nMerci d'avoir joué !";
         root.SetActive(true);
         UiLayering.BringToFront(root.transform);

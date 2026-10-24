@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60807937bb2b0d8478af2f0eaf5366df, type: 3}
+  m_Name: LootWealthScale_Default
+  m_EditorClassIdentifier: Assembly-CSharp::LootWealthScale
+  tiers:
+  - label: Maigre
+    below: 2500
+  - label: Modeste
+    below: 5000
+  - label: Correct
+    below: 8000
+  - label: Riche
+    below: 12000
+  - label: "Tr\xE8s riche"
+    below: 0

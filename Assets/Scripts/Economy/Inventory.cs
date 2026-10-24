@@ -56,6 +56,53 @@ public class Inventory : MonoBehaviour
         return Mathf.Min(MaxAddableByMass(good), MaxAddableByVolume(good));
     }
 
+    /// <summary>
+    /// Works out what of a list of goods would fit if all of them were added, without adding anything: the goods are
+    /// taken in order of value (the dearest stack first), each as many units as the room left in mass AND in volume
+    /// allows, so the cheapest are the ones left out. 'accepted' and 'refused' are filled (cleared first) with the
+    /// units that fit and those that do not. The two together always make the list that was asked.
+    /// </summary>
+    public void PlanAdd(IReadOnlyList<GoodStack> wanted, List<GoodStack> accepted, List<GoodStack> refused)
+    {
+        accepted.Clear();
+        refused.Clear();
+        var sorted = new List<GoodStack>(wanted);
+        // Insertion sort: stable, so goods of equal value keep their order.
+        for (int i = 1; i < sorted.Count; i++)
+        {
+            GoodStack item = sorted[i];
+            int j = i - 1;
+            while (j >= 0 && sorted[j].BaseValue < item.BaseValue)
+            {
+                sorted[j + 1] = sorted[j];
+                j--;
+            }
+
+            sorted[j + 1] = item;
+        }
+
+        float massLeft = configured ? capacity.MaxMass - TotalMass : 0f;
+        float volumeLeft = configured ? capacity.MaxVolume - TotalVolume : 0f;
+        for (int i = 0; i < sorted.Count; i++)
+        {
+            GoodStack stack = sorted[i];
+            int fits = IsUsable(stack.Good)
+                ? Mathf.Min(stack.Quantity, Mathf.Min(Fit(massLeft, stack.Good.MassPerUnit), Fit(volumeLeft, stack.Good.VolumePerUnit)))
+                : 0;
+            if (fits > 0)
+            {
+                accepted.Add(new GoodStack(stack.Good, fits));
+                massLeft -= fits * stack.Good.MassPerUnit;
+                volumeLeft -= fits * stack.Good.VolumePerUnit;
+            }
+
+            if (fits < stack.Quantity)
+            {
+                refused.Add(new GoodStack(stack.Good, stack.Quantity - fits));
+            }
+        }
+    }
+
     /// <summary>Would adding units of a good be accepted, and if not why? Changes nothing.</summary>
     public InventoryResult CheckAdd(GoodDefinition good, int quantity)
     {

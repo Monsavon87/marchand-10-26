@@ -64,6 +64,7 @@ public class ScenarioResult
     public int Defeats;
     public int UnitsLost;
     public int LootTotal;
+    public int LootLostValue;
     public int ReplacementCost;
     public int RefusedTrades;
     public string EndReason = string.Empty;

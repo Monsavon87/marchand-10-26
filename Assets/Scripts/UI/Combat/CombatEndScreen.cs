@@ -60,9 +60,13 @@ public class CombatEndScreen : MonoBehaviour
         detailsShown = true;
         string text = "Vos pertes : " + (encounter.PlayerLosses.Count == 0 ? "aucune" : string.Join(", ", encounter.PlayerLosses))
             + "\nPertes ennemies : " + (encounter.EnemyLosses.Count == 0 ? "aucune" : string.Join(", ", encounter.EnemyLosses));
-        if (encounter.Winner == Team.Player && encounter.Loot > 0)
+        if (encounter.Winner == Team.Player)
         {
-            text += "\nButin : " + MoneyFormat.WithUnit(encounter.Loot);
+            string loot = LootMessages.Report(encounter.Loot.Uv, encounter.LootTaken, encounter.LootLost);
+            if (loot.Length > 0)
+            {
+                text += "\n" + loot;
+            }
         }
 
         detailsText.text = text;

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 /// <summary>What a simulated fight on the road came to.</summary>
 public readonly struct FightOutcome
 {
-    public FightOutcome(bool happened, bool won, int loot, int unitsLost)
+    public FightOutcome(bool happened, bool won, LootResult loot, int unitsLost)
     {
         Happened = happened;
         Won = won;
@@ -14,14 +14,14 @@ public readonly struct FightOutcome
 
     public bool Happened { get; }
     public bool Won { get; }
-    public int Loot { get; }
+    public LootResult Loot { get; }
     public int UnitsLost { get; }
 }
 
 /// <summary>
 /// A model of the fights on the road, rolled with the seeded dice (no arena is loaded): each trip has a chance of
 /// meeting one of the bands that are left on the map, the chance of winning shrinks with the share of the party that
-/// is still standing, a victory pays the band's loot (each band can be beaten once, as in the game) and may cost some
+/// is still standing, a victory pays the band's loot, rolled from its table when the campaign starts (each band can be beaten once, as in the game) and may cost some
 /// units, a defeat ends the campaign (the game over of the map). The party's size is a count here: the real roster is
 /// not touched.
 /// </summary>
@@ -29,14 +29,20 @@ public class SimulationCombat
 {
     private readonly SimulationSettings settings;
     private readonly Random dice;
-    private readonly List<int> bandLoots;
+    private readonly List<LootResult> bandLoots;
     private readonly int fullSize;
 
-    public SimulationCombat(SimulationSettings settings, Random dice, IEnumerable<int> bandLoots, int fullSize)
+    public SimulationCombat(SimulationSettings settings, Random dice, IEnumerable<LootTable> bandTables, int fullSize)
     {
         this.settings = settings;
         this.dice = dice;
-        this.bandLoots = new List<int>(bandLoots);
+        // Each band gets its loot when the campaign starts, rolled from its table with the same dice.
+        this.bandLoots = new List<LootResult>();
+        foreach (LootTable table in bandTables)
+        {
+            this.bandLoots.Add(LootRoller.Roll(table, dice));
+        }
+
         this.fullSize = Math.Max(1, fullSize);
         Alive = this.fullSize;
     }
@@ -73,10 +79,10 @@ public class SimulationCombat
         double winChance = settings.BaseWinChance * Alive / fullSize;
         if (dice.NextDouble() >= winChance)
         {
-            return new FightOutcome(true, false, 0, 0);
+            return new FightOutcome(true, false, LootResult.Empty, 0);
         }
 
-        int loot = bandLoots[band];
+        LootResult loot = bandLoots[band];
         bandLoots.RemoveAt(band);
         int lost = Math.Min(Alive - 1, dice.Next(settings.MaxLossesOnWin + 1));
         Alive -= lost;
