@@ -30,6 +30,18 @@ public class PartyMember
         }
     }
 
+    /// <summary>The unit's maximum hit points (1 when it has no definition).</summary>
+    public int MaxHealth => definition != null ? definition.MaxHealth : 1;
+
+    /// <summary>True when the unit has lost hit points.</summary>
+    public bool IsWounded => StartingHealth < MaxHealth;
+
+    /// <summary>Sets the hit points (never above the maximum; the maximum is stored as 0, "full health").</summary>
+    public void SetHealth(int hitPoints)
+    {
+        currentHealth = hitPoints >= MaxHealth ? 0 : Mathf.Max(1, hitPoints);
+    }
+
     public PartyMember Copy()
     {
         return (PartyMember)MemberwiseClone();

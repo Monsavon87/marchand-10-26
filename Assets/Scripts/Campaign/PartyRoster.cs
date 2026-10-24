@@ -46,13 +46,42 @@ public class PartyRoster : MonoBehaviour
         }
     }
 
-    /// <summary>Every member gets all its hit points back (a rest in town).</summary>
-    public void HealAll()
+    /// <summary>True when at least one member has lost hit points.</summary>
+    public bool HasWounded
     {
+        get
+        {
+            for (int i = 0; i < members.Count; i++)
+            {
+                if (members[i].IsWounded)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// One day of natural healing for every member (see HealingRules). Returns the hit points given back in all.
+    /// </summary>
+    public int RegenerateDay(HealingSettings settings)
+    {
+        int given = 0;
         for (int i = 0; i < members.Count; i++)
         {
-            members[i].currentHealth = 0;
+            PartyMember member = members[i];
+            int before = member.StartingHealth;
+            int after = HealingRules.NextHealth(before, member.MaxHealth, settings.RegenPercentPerDay, settings.RegenCapPercent);
+            if (after != before)
+            {
+                member.SetHealth(after);
+                given += after - before;
+            }
         }
+
+        return given;
     }
 
     /// <summary>Gives the band the loot rolled from its table (done once, when the band is created).</summary>

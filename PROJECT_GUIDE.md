@@ -115,12 +115,13 @@ Un script = une responsabilité, rangé par fonctionnalité. Chaque classe a un 
 | `BandRespawner`                | Fait revenir les bandes battues : délai tiré en jours du monde (`DayStarted`), retour à leur point de départ (ou un point de leur route) à plus de 50 m de la caravane et hors de la vue du joueur, même composition, nouveau butin ; réglages dans `BandRespawnSettings` |
 | `DemoGoal`                     | But de la démo : 100 jours (`DemoGoalSettings`) ; à la fin, tient la carte et lève `Finished` avec la richesse finale (argent + cargaison au prix de base) |
 | `PointOfInterest`              | Une ville de la carte (données et test de clic)                                                                                                             |
-| `TownRest`, `TownRecruitment`  | Repos en ville (PV rendus) et recrutement                                                                                                                   |
+| `TownRest`, `TownRecruitment`  | Arrivée en ville (l'événement qui ouvre la fenêtre de ville ; elle ne soigne plus rien) et recrutement |
+| `PartyRegeneration`, `HealingRules`, `TownHospital` | Régénération naturelle du groupe (8 % des PV max par jour du monde, plafonnée à 80 %), la règle de calcul pure, et l'hôpital (soin payé en U.V., 25 par PV rendu, par unité ou pour tout le groupe) ; réglages dans `HealingSettings` |
 | `CampaignHud`                  | Horloge, message, état du temps                                                                                                                             |
 
 ### Données (`Data/`) — les ScriptableObjects (voir § 5)
 
-`UnitDefinition`, `AIProfile`, `CombatSettings`, `CombatRulesSettings`, `AttackZoneSettings`, `ActionTimingSettings`, `TerrainSettings`, `RecruitmentSettings`, `EncounterChannel` / `EncounterData`, `GameHelp`, `PartyMember`, et pour l'économie `GoodDefinition`, `GoodCatalog`, `TownDefinition`, `CargoCapacity`, `PricingSettings`, `EconomySettings`, et pour le butin `LootTable` (valeur totale et ressources d'une bande) et `LootWealthScale` (les mots Maigre à Très riche).
+`UnitDefinition`, `AIProfile`, `CombatSettings`, `CombatRulesSettings`, `AttackZoneSettings`, `ActionTimingSettings`, `TerrainSettings`, `HealingSettings`, `RecruitmentSettings`, `EncounterChannel` / `EncounterData`, `GameHelp`, `PartyMember`, et pour l'économie `GoodDefinition`, `GoodCatalog`, `TownDefinition`, `CargoCapacity`, `PricingSettings`, `EconomySettings`, et pour le butin `LootTable` (valeur totale et ressources d'une bande) et `LootWealthScale` (les mots Maigre à Très riche).
 
 ### Économie (`Economy/`)
 
@@ -149,6 +150,7 @@ Un script = une responsabilité, rangé par fonctionnalité. Chaque classe a un 
 | `Campaign/TownFunctionWindow`                                                                                    | Base d'une fenêtre de fonction de ville (ouvrir, fermer, « Retour à la ville »)                               |
 | `Campaign/MarketWindow`, `MarketRowView`                                                                         | Fenêtre du marché à deux onglets : Acheter (ce que la ville offre, colonne Achat) et Vendre (toutes les marchandises, colonnes Vente et Profit/u ; disposition des colonnes dans `MarketColumns`), sélection, quantité 1 +1 +10 Max, aperçu avec le profit de la vente, boutons, refus expliqués)                                      |
 | `Campaign/RecruitmentWindow`                                                                                     | Fenêtre de recrutement                                                                                        |
+| `Campaign/HospitalWindow`                                                                                        | Fenêtre de l'hôpital : une ligne par unité (PV, prix du soin complet, bouton) et un bouton pour tout le groupe, refus avec la raison |
 | `Campaign/InventoryPanel`, `TradeHud`                                                                            | Cargaison (touche I) ; U.V. et cargaison en permanence sur la carte                                           |
 | `Campaign/GameOverScreen`, `DemoEndScreen`, `BandTargeting`, `TownLabel`, `CampaignMenuButtons`, `LabeledButton` | Fin de partie, fin de démo, niveau de richesse du butin de la bande survolée, nom des villes, boutons Menu / Aide                   |
 | `Combat/*`                                                                                                       | Panneau de l'unité, barre d'ordres, boutons d'action, bandeau d'unités, barres de vie, écran de fin de combat |
@@ -203,6 +205,7 @@ Tout se règle dans des ScriptableObjects (`Assets/ScriptableObjects/`) :
 | Les règles de combat, zones, durées d'actions              | `Rules_Default`, `Zones_Default`, `ActionTiming_Default`, `CombatSettings_*` |
 | Les terrains (coût de chemin, vitesse)                     | `TerrainSettings`                                                            |
 | Les offres et le prix de recrutement, la taille du groupe  | `RecruitmentSettings`                                                        |
+| La régénération (% par jour, plafond) et le prix du soin par PV | `HealingSettings_Default` |
 | Le texte de l'aide                                         | `GameHelp`                                                                   |
 | Un prix de base, une masse, un volume                      | `Economy/Goods/Good_*`                                                       |
 | Ce que produit / consomme une ville, son stock cible       | `Economy/Towns/Town_*`                                                       |
@@ -267,7 +270,7 @@ Lancer : entrer en Play Mode dans `Demo_Campaign`, puis appeler `EconomySimulato
 
 ## 10. Où en est-on, et la suite
 
-Fait : démo jouable (v0.1.0), économie E1 à E9, butin en marchandises (F1), marché à onglets et profit (F2), retour des bandes et nouveau but de la démo (F3).
+Fait : démo jouable (v0.1.0), économie E1 à E9, butin en marchandises (F1), marché à onglets et profit (F2), retour des bandes et nouveau but de la démo (F3), soin naturel et hôpital (F4).
 
 À décider avec le responsable du jeu :
 

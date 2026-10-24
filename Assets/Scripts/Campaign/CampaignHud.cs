@@ -151,12 +151,18 @@ public class CampaignHud : MonoBehaviour
 
     private void OnTownReached(PointOfInterest town)
     {
-        ShowMessage("Arrivé à " + town.DisplayName);
+        // With a town-arrival component (townRest), its own event writes the message, which may mention the hospital.
+        if (townRest == null)
+        {
+            ShowMessage("Arrivé à " + town.DisplayName);
+        }
     }
 
     private void OnRested(PointOfInterest town)
     {
-        ShowMessage("Arrivé à " + town.DisplayName + " : votre groupe se repose et récupère tous ses PV.");
+        // The hospital is mentioned only when the group has lost hit points.
+        bool wounded = party != null && party.HasWounded;
+        ShowMessage("Arrivé à " + town.DisplayName + (wounded ? " : passez à l'hôpital pour soigner vos troupes." : "."));
     }
 
     private void OnEncounterResolved(EncounterData encounter)

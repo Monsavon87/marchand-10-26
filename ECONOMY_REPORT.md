@@ -261,6 +261,7 @@ Pistes déduites des anomalies ci-dessus :
 - Le marchand simulé est un optimiseur à courte vue (le meilleur profit par jour du prochain trajet) : un humain peut faire mieux (enchaîner des routes) ou moins bien.
 - Les combats sont un modèle tiré au sort (chance de rencontre, chance de victoire, pertes) dont les valeurs sont des hypothèses de `SimulationSettings`, pas des mesures : le taux de défaites du scénario C en dépend entièrement. Les vrais combats, eux, ne sont pas joués.
 - Le profit d'un trajet avec combat comprend la vente des marchandises ramassées (elles se mélangent à la cargaison) : ces trajets sont exclus du contrôle de rendement par trajet.
+- Les blessures et leur soin (régénération, hôpital) ne sont pas modélisés : un combat gagné ne coûte que les unités perdues.
 - Les bandes sont supposées immobiles et rencontrées au hasard sur la route ; les patrouilles réelles ne sont pas modélisées.
 - Le temps passé en ville est nul (comme dans le jeu) ; le recrutement se paie directement, sans passer par la fenêtre de recrutement.
 - Les durées de trajet sont celles du chemin NavMesh à vitesse de base ralentie par les terrains traversés ; un détour décidé par le joueur n'est pas simulé.

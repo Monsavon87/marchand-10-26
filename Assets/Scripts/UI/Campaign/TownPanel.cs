@@ -3,8 +3,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// The town's main window, opened when the caravan reaches a town (after its rest): the generic information (the
-/// town, the rest, the group, the money and the cargo) and one button per town function (market, recruitment...), each
+/// The town's main window, opened when the caravan reaches a town: the generic information (the
+/// town, a note when the group is wounded, the group, the money and the cargo) and one button per town function (market, recruitment...), each
 /// opening its own window in place of this one; a window's own button brings the player back here. The map is
 /// paused while any of it is open, so no patrol reaches the caravan meanwhile. What each function does is its own
 /// window's business: this one only shows the town and goes from window to window.
@@ -188,7 +188,8 @@ public class TownPanel : MonoBehaviour
 
     private void Refresh()
     {
-        text.Clear().Append("Votre groupe s'est reposé : tous ses PV sont rendus.\n\nGroupe (")
+        // The hospital is mentioned only when the group has lost hit points.
+        text.Clear().Append(party.HasWounded ? "Vos troupes ont perdu des PV : passez à l'hôpital pour les soigner.\n\n" : string.Empty).Append("Groupe (")
             .Append(party.Members.Count).Append(" / ").Append(capacity.MaxSize).Append(") : ");
         for (int i = 0; i < party.Members.Count; i++)
         {
