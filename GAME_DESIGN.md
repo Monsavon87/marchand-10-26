@@ -156,6 +156,7 @@ Dernière mise à jour : 2026-10-23 (gestion du combat).
 - **Le temps de la carte n'avance que pendant les déplacements de la caravane** (décision du 2026-10-24) : pas d'évolution des prix en pause, ni quand la caravane reste en ville. On introduira sans doute plus tard un passage du temps en ville, **sur décision du joueur**.
 - L'économie avance avec le temps de la carte (CampaignClock) ; elle ne dépend ni du combat ni de l'interface. Toutes les valeurs sont dans des ScriptableObjects ; toute opération sur l'argent, l'inventaire ou les stocks passe par un point d'entrée unique et atomique.
 - **Marchandises (étape E1, valeurs de départ à ajuster)** : prix de base d'une unité de mesure, en U.V. / masse en kg / volume en L. Blé : muid, 960, 75, 100 (stable). Sel : sac, 300, 25, 20. Vin : amphore, 520, 30, 40. Huile : amphore, 2400, 28, 40. Tissu : balle, 2400, 40, 120. Cuir : ballot, 1500, 30, 80. Fer : barre, 700, 10, 3. Outils : caisse, 3000, 20, 40. Épices : sac, 15000, 5, 12. Argent : lingot, 23000, 1, 0,1 (stable).
+- **Inventaire et capacité (étape E2)** : la caravane porte des marchandises (quantités entières) dans la limite d'une capacité en masse (kg) ET en volume (L) ; un ajout qui dépasse l'une des deux est refusé avec sa raison (masse en premier si les deux sont dépassées). Valeurs de départ de la caravane : 600 kg et 1 000 L (à ajuster).
 
 ## 7. Méthode de travail (rappel)
 

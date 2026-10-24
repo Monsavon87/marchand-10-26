@@ -5256,7 +5256,7 @@ MonoBehaviour:
     m_FontStyle: 1
     m_BestFit: 0
     m_MinSize: 10
-    m_MaxSize: 40
+    m_MaxSize: 64
     m_Alignment: 4
     m_AlignByGeometry: 0
     m_RichText: 1
@@ -5869,6 +5869,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6294835999223347834, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2733532370329639517}
+    - targetCorrespondingSourceObject: {fileID: 6294835999223347834, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2733532370329639519}
+    - targetCorrespondingSourceObject: {fileID: 6294835999223347834, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2733532370329639518}
   m_SourcePrefab: {fileID: 100100000, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
 --- !u!114 &2733532370329639512 stripped
 MonoBehaviour:
@@ -5941,6 +5947,35 @@ MonoBehaviour:
     currentHealth: 0
     aiProfile: {fileID: 0}
   loot: 0
+--- !u!114 &2733532370329639518
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2733532370329639516}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53025df42cd8b4a43b0e02e27e0f698a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryDebugInput
+  inventory: {fileID: 2733532370329639519}
+  catalog: {fileID: 11400000, guid: 0c4d3bbc498a84945bdb1249d423f4ff, type: 2}
+  quantity: 1
+--- !u!114 &2733532370329639519
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2733532370329639516}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eda8375bf7024a1478ffda03158d9253, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Inventory
+  catalog: {fileID: 11400000, guid: 0c4d3bbc498a84945bdb1249d423f4ff, type: 2}
+  capacity: {fileID: 11400000, guid: b8818854fd596ee4cb2ba7f1bf92dd62, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
