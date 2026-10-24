@@ -3416,7 +3416,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CampaignClock
   caravan: {fileID: 2733532370329639512}
-  caravanTerrain: {fileID: 2733532370329639514}
   minutesPerMeter: 10
   startHour: 8
 --- !u!4 &675263629
@@ -3490,7 +3489,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CampaignPause
   pauseKey: 1
+  waitKey: 34
   banner: {fileID: 1833398941}
+  caravan: {fileID: 2733532370329639512}
+  travel: {fileID: 675263627}
+  encounters: {fileID: 675263626}
+  flow: {fileID: 1095158888}
 --- !u!1 &681525954
 GameObject:
   m_ObjectHideFlags: 0
@@ -3525,6 +3529,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CampaignHud
   clock: {fileID: 675263628}
+  pause: {fileID: 675263633}
   travel: {fileID: 675263627}
   encounters: {fileID: 675263626}
   clockLabel: {fileID: 1755504200}
@@ -9680,17 +9685,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d71cb4dcc2ae8c64aafcec62dc947984, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnitTeam
---- !u!114 &2733532370329639514 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2554556261334824436, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
-  m_PrefabInstance: {fileID: 2733532370329639511}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2733532370329639516}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4389f25a7231ac14db9e6541757627c5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UnitTerrainEffects
 --- !u!114 &2733532370329639515 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5451973146153742400, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}

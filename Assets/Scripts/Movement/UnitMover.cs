@@ -86,6 +86,9 @@ public class UnitMover : MonoBehaviour
     /// <summary>Walking speed now, in m/s: the speed set on the agent times the terrain multiplier.</summary>
     public float Speed => baseSpeed * speedMultiplier;
 
+    /// <summary>The walking speed set on the agent at startup, in m/s, before any terrain multiplier.</summary>
+    public float BaseSpeed => baseSpeed;
+
     /// <summary>True while an accepted order is waiting for the agent to start (idle-obstacle mode wake-up).</summary>
     public bool IsStarting => isWakingUp;
 

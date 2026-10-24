@@ -4,28 +4,42 @@ using UnityEngine.InputSystem;
 using Object = UnityEngine.Object;
 
 /// <summary>
-/// Pause of the campaign map: the pause key freezes everything that moves (caravan, patrols) and shows a banner;
-/// pressed again, the map goes on. A window that needs the map frozen while it is open (a town, the help page)
-/// holds the pause through SetHeld, independently of the player's own pause and of the other windows: the map
-/// goes on only when no window holds it any more.
+/// Decides whether the campaign map's time flows, and is the only one to set the map's Time.timeScale. The world
+/// (patrols, calendar, markets later) is frozen while the caravan has no action in progress; it flows while the
+/// caravan has one (a move, a chase), or while the player chooses to let time pass with the wait key. The pause key
+/// freezes it whatever happens, and a window that needs the map still while it is open (a town, the help page)
+/// holds it through SetHeld, independently of the pause and of the other windows: the map goes on only when
+/// nothing holds it. Letting time pass ends by itself when an encounter starts, when the caravan reaches a town
+/// and on a game over.
 /// </summary>
 public class CampaignPause : MonoBehaviour
 {
     [Tooltip("Keys are physical positions (US layout).")]
     [SerializeField] private Key pauseKey = Key.Space;
+    [SerializeField] private Key waitKey = Key.T;
     [Tooltip("Shown while the player has paused the map.")]
     [SerializeField] private GameObject banner;
+    [Tooltip("The caravan: its moves are the actions that make the world's time flow.")]
+    [SerializeField] private UnitMover caravan;
+    [Header("Ends letting time pass")]
+    [SerializeField] private CampaignTravel travel;
+    [SerializeField] private CampaignEncounters encounters;
+    [SerializeField] private CampaignEncounterFlow flow;
 
     private readonly HashSet<Object> holders = new HashSet<Object>();
     private bool pausedByPlayer;
+    private bool waiting;
 
+    public CampaignTimeState State { get; private set; } = CampaignTimeState.Frozen;
     public bool IsPaused => pausedByPlayer || holders.Count > 0;
+    /// <summary>True while the player lets time pass.</summary>
+    public bool IsWaiting => waiting;
 
     private void Start()
     {
-        if (banner == null)
+        if (banner == null || caravan == null || travel == null || encounters == null || flow == null)
         {
-            Debug.LogError("CampaignPause: banner is not assigned.", this);
+            Debug.LogError("CampaignPause: a serialized reference is not assigned.", this);
             enabled = false;
             return;
         }
@@ -33,14 +47,60 @@ public class CampaignPause : MonoBehaviour
         Apply();
     }
 
+    private void OnEnable()
+    {
+        if (travel != null)
+        {
+            travel.TownReached += OnTownReached;
+        }
+
+        if (encounters != null)
+        {
+            encounters.EncounterStarted += OnEncounterStarted;
+        }
+
+        if (flow != null)
+        {
+            flow.GameOver += StopWaiting;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (travel != null)
+        {
+            travel.TownReached -= OnTownReached;
+        }
+
+        if (encounters != null)
+        {
+            encounters.EncounterStarted -= OnEncounterStarted;
+        }
+
+        if (flow != null)
+        {
+            flow.GameOver -= StopWaiting;
+        }
+    }
+
     private void Update()
     {
         Keyboard keyboard = Keyboard.current;
-        if (keyboard != null && keyboard[pauseKey].wasPressedThisFrame)
+        if (keyboard != null)
         {
-            pausedByPlayer = !pausedByPlayer;
-            Apply();
+            if (keyboard[pauseKey].wasPressedThisFrame)
+            {
+                pausedByPlayer = !pausedByPlayer;
+            }
+
+            // Letting time pass is a choice made on the map itself: not while paused or while a window is open.
+            if (keyboard[waitKey].wasPressedThisFrame && !IsPaused)
+            {
+                waiting = !waiting;
+            }
         }
+
+        Apply();
     }
 
     /// <summary>
@@ -57,12 +117,44 @@ public class CampaignPause : MonoBehaviour
         }
     }
 
+    /// <summary>The player stops letting time pass (the world freezes again unless the caravan has an action).</summary>
+    public void StopWaiting()
+    {
+        waiting = false;
+    }
+
+    private void OnTownReached(PointOfInterest town)
+    {
+        StopWaiting();
+    }
+
+    private void OnEncounterStarted(UnitTeam band)
+    {
+        StopWaiting();
+    }
+
     private void Apply()
     {
-        Time.timeScale = IsPaused ? 0f : 1f;
-        if (banner != null)
+        CampaignTimeState next;
+        if (pausedByPlayer)
         {
-            banner.SetActive(pausedByPlayer);
+            next = CampaignTimeState.Paused;
         }
+        else if (holders.Count > 0)
+        {
+            next = CampaignTimeState.Held;
+        }
+        else if (caravan.IsMoving || caravan.IsStarting)
+        {
+            next = CampaignTimeState.Moving;
+        }
+        else
+        {
+            next = waiting ? CampaignTimeState.Waiting : CampaignTimeState.Frozen;
+        }
+
+        State = next;
+        Time.timeScale = next == CampaignTimeState.Moving || next == CampaignTimeState.Waiting ? 1f : 0f;
+        banner.SetActive(next == CampaignTimeState.Paused);
     }
 }

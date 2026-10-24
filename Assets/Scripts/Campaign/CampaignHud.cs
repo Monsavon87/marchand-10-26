@@ -7,6 +7,8 @@ using UnityEngine;
 public class CampaignHud : MonoBehaviour
 {
     [SerializeField] private CampaignClock clock;
+    [Tooltip("Optional: writes what the map's time is doing (frozen, running...) next to the clock.")]
+    [SerializeField] private CampaignPause pause;
     [SerializeField] private CampaignTravel travel;
     [SerializeField] private CampaignEncounters encounters;
     [SerializeField] private UnityEngine.UI.Text clockLabel;
@@ -88,7 +90,8 @@ public class CampaignHud : MonoBehaviour
         }
 
         nextRefresh = Time.unscaledTime + refreshInterval;
-        clockLabel.text = "Jour " + clock.Day + "  -  " + clock.Hour.ToString("00") + "h" + clock.Minute.ToString("00");
+        clockLabel.text = "Jour " + clock.Day + "  -  " + clock.Hour.ToString("00") + "h" + clock.Minute.ToString("00")
+            + (pause != null ? TimeStateText(pause.State) : string.Empty);
         if (party != null && partyLabel != null)
         {
             RefreshParty();
@@ -124,6 +127,17 @@ public class CampaignHud : MonoBehaviour
         }
 
         partyLabel.text = text.ToString();
+    }
+
+    // What the map's time is doing, in a smaller size next to the clock. Nothing to say while it runs because of a move.
+    private static string TimeStateText(CampaignTimeState state)
+    {
+        switch (state)
+        {
+            case CampaignTimeState.Frozen: return "   <size=20>Temps figé - T : laisser le temps passer</size>";
+            case CampaignTimeState.Waiting: return "   <size=20>Le temps passe - T : s'arrêter</size>";
+            default: return string.Empty;
+        }
     }
 
     private void OnTownReached(PointOfInterest town)
