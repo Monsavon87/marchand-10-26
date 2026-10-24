@@ -347,3 +347,12 @@ Projet Unity 6 (URP, 3D) : marchand-10-2026-mistral.
 - Première version numérotée (décision : chaque démo a un numéro de version, pour rattacher les bugs et retours des bêta-testeurs). Commit 485d3f2. Build Windows réussi (128 Mo, 0 erreur ; les 510 avertissements viennent des shaders du package Sentis `com.unity.ai.inference`). L'exécutable démarre et tourne 12 s sans erreur.
 - Archive : `Builds/Marchand_Demo_Windows_v0.1.0.zip` (49 Mo). Effets de bord du build annulés.
 - Écran d'accueil : la version du jeu (`Application.version`, via `VersionLabel`) est affichée en bas à droite (« Version 0.1.0 »). Pas encore dans le zip v0.1 (ajout fait après le build).
+
+## Économie : cadrage (2026-10-24)
+- Décisions notées dans GAME_DESIGN.md §6 bis : une seule monnaie (U.V.) pour tout, économie sur Demo_Campaign (5 villes), temps de la carte seulement pendant les déplacements (pas d'évolution des prix en pause ni en ville ; passage du temps en ville sur décision du joueur à prévoir). Commit de sécurité c6be014 avant de commencer. Étape E1 (marchandises) : plan présenté, en attente de la validation des prix et masses.
+
+## Économie E1 : marchandises
+- Scripts (`Assets/Scripts/Data/`) : `GoodDefinition` (id, nom, catégorie, prix de base entier en U.V., cours stable, unité, masse en kg, volume en L ; `Validate()`), `GoodCatalog` (liste, recherche par id `TryGetGood`, contrôle d'intégrité en avertissements console : entrée vide, id en double, prix / masse / volume <= 0). Données seules, aucune logique de jeu.
+- Assets (`Assets/ScriptableObjects/Economy/`) : 10 `Good_*.asset` (blé, sel, vin, huile, tissu, cuir, fer, outils, épices, argent) et `GoodCatalog_Default.asset`. Valeurs de départ dans GAME_DESIGN.md §6 bis, à ajuster.
+- Vérifié : compilation propre ; recherche par id OK ; contrôle d'intégrité testé sur un catalogue volontairement cassé non sauvegardé (4 problèmes injectés : id en double, prix 0, masse négative, entrée vide) ; catalogue réel : 0 problème. Play de Test_Movement, Test_Combat et Test_Campaign : console sans erreur ni avertissement. Rien n'est encore branché au jeu ; les « pièces » ne sont pas encore converties en U.V.
+

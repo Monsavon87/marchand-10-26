@@ -149,6 +149,14 @@ Dernière mise à jour : 2026-10-23 (gestion du combat).
 - **Fin de la démo** : quand toutes les bandes sont vaincues, écran « Démo terminée » avec le butin total et un retour au menu. La défaite garde l'écran « Fin de partie » (Recommencer ou Menu principal).
 - La touche de debug K est désactivée dans les arènes de démo. Distribution : exécutable Windows compressé, pour itch.io.
 
+## 6 bis. Économie (en cours, décisions du 2026-10-23)
+- **Une seule monnaie : l'U.V.** (unité de valeur), toujours un nombre entier, jamais de décimaux. Elle remplace les « pièces » **partout** (butin des bandes, recrutement, réserve de la caravane) : leurs montants seront revus dans l'unité nouvelle.
+- Repères : 1 follis = 40 U.V. ; 1 muid de blé = 960 U.V. (cours stable). Blé et métaux monétaires à cours fixe ; les autres marchandises suivent l'offre et la demande.
+- Périmètre du prototype : 8 à 10 marchandises, 1 convoi (la caravane). Carte retenue : **Demo_Campaign, avec ses 5 villes** (et non 4).
+- **Le temps de la carte n'avance que pendant les déplacements de la caravane** (décision du 2026-10-24) : pas d'évolution des prix en pause, ni quand la caravane reste en ville. On introduira sans doute plus tard un passage du temps en ville, **sur décision du joueur**.
+- L'économie avance avec le temps de la carte (CampaignClock) ; elle ne dépend ni du combat ni de l'interface. Toutes les valeurs sont dans des ScriptableObjects ; toute opération sur l'argent, l'inventaire ou les stocks passe par un point d'entrée unique et atomique.
+- **Marchandises (étape E1, valeurs de départ à ajuster)** : prix de base d'une unité de mesure, en U.V. / masse en kg / volume en L. Blé : muid, 960, 75, 100 (stable). Sel : sac, 300, 25, 20. Vin : amphore, 520, 30, 40. Huile : amphore, 2400, 28, 40. Tissu : balle, 2400, 40, 120. Cuir : ballot, 1500, 30, 80. Fer : barre, 700, 10, 3. Outils : caisse, 3000, 20, 40. Épices : sac, 15000, 5, 12. Argent : lingot, 23000, 1, 0,1 (stable).
+
 ## 7. Méthode de travail (rappel)
 
 - Une étape à la fois, plan validé avant de coder, vérifications à trois niveaux, rapport honnête. Détails dans `CLAUDE.md`.
