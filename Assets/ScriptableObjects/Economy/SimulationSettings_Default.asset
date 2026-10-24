@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bf4d41e42865814aae49b818f2d9f6b, type: 3}
+  m_Name: SimulationSettings_Default
+  m_EditorClassIdentifier: Assembly-CSharp::SimulationSettings
+  days: 100
+  seed: 1
+  startingCapital: 10000
+  maxIdleDays: 10
+  extraSeeds: 9
+  encounterChancePerDay: 0.15
+  baseWinChance: 0.75
+  maxLossesOnWin: 2
+  growthWindowDays: 30
+  stuckShare: 0.5
+  maxTripReturn: 1.5

@@ -28,6 +28,9 @@ public class CampaignClock : MonoBehaviour
     /// </summary>
     public event Action<int> DayStarted = delegate { };
 
+    /// <summary>Game minutes that pass per meter the caravan walks at its base speed.</summary>
+    public float MinutesPerMeter => minutesPerMeter;
+
     /// <summary>Game minutes elapsed since day 1, 00:00.</summary>
     public float TotalMinutes => totalMinutes;
     public int Day => 1 + (int)(totalMinutes / MinutesPerDay);
