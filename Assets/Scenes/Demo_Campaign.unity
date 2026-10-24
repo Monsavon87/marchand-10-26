@@ -9648,6 +9648,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6294835999223347834, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
       insertIndex: -1
       addedObject: {fileID: 2733532370329639520}
+    - targetCorrespondingSourceObject: {fileID: 6294835999223347834, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2733532370329639523}
+    - targetCorrespondingSourceObject: {fileID: 6294835999223347834, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2733532370329639522}
+    - targetCorrespondingSourceObject: {fileID: 6294835999223347834, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2733532370329639521}
   m_SourcePrefab: {fileID: 100100000, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
 --- !u!114 &2733532370329639512 stripped
 MonoBehaviour:
@@ -9735,6 +9744,7 @@ MonoBehaviour:
   inventory: {fileID: 2733532370329639519}
   catalog: {fileID: 11400000, guid: 0c4d3bbc498a84945bdb1249d423f4ff, type: 2}
   quantity: 1
+  ignoreWhileHeld: 1000000024000000i
 --- !u!114 &2733532370329639519
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9762,6 +9772,57 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Wallet
   startingBalance: 0
+--- !u!114 &2733532370329639521
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2733532370329639516}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20b96abf08ff4644dadd3cf3ea21362e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TradeDebugInput
+  tradeService: {fileID: 2733532370329639523}
+  priceView: {fileID: 474250888}
+  wallet: {fileID: 2733532370329639520}
+  inventory: {fileID: 2733532370329639519}
+  catalog: {fileID: 11400000, guid: 0c4d3bbc498a84945bdb1249d423f4ff, type: 2}
+  buyKey: 16
+  sellKey: 36
+  quantity: 1
+--- !u!114 &2733532370329639522
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2733532370329639516}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 019536938c12b564f963c7108d857ffb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TradeJournal
+  tradeService: {fileID: 2733532370329639523}
+  maxEntries: 500
+  logToConsole: 1
+--- !u!114 &2733532370329639523
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2733532370329639516}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3b93a3d8a2b49a34e9c3c6bb24c26be9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TradeService
+  wallet: {fileID: 2733532370329639520}
+  inventory: {fileID: 2733532370329639519}
+  pricingSettings: {fileID: 11400000, guid: 28a03b57240b3c741acc5ff93a117526, type: 2}
+  clock: {fileID: 675263628}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -146,7 +146,9 @@ public class MarketDebugView : MonoBehaviour
             {
                 if (!markets[m].Definition.TryGetEntry(good, out GoodStockProfile entry))
                 {
-                    cells[g, m] = "-";
+                    // Not in the profile: the town has stock only if somebody sold it some.
+                    int extra = markets[m].GetStock(good);
+                    cells[g, m] = extra > 0 ? extra + " (hors profil)" : "-";
                     continue;
                 }
 

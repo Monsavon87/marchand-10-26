@@ -18,6 +18,8 @@ public class InventoryDebugInput : MonoBehaviour
     [SerializeField] private GoodCatalog catalog;
     [Tooltip("Units added or removed by each key press.")]
     [Min(1)] [SerializeField] private int quantity = 1;
+    [Tooltip("The digits do nothing while one of these keys is held, so another debug input can use the same digits.")]
+    [SerializeField] private Key[] ignoreWhileHeld = System.Array.Empty<Key>();
 
     private void Start()
     {
@@ -34,6 +36,14 @@ public class InventoryDebugInput : MonoBehaviour
         if (keyboard == null)
         {
             return;
+        }
+
+        for (int i = 0; i < ignoreWhileHeld.Length; i++)
+        {
+            if (keyboard[ignoreWhileHeld[i]].isPressed)
+            {
+                return;
+            }
         }
 
         bool shift = keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed;

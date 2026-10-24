@@ -34,6 +34,9 @@ public class PriceDebugView : MonoBehaviour
     private bool dirty = true;
     private GUIStyle style;
 
+    /// <summary>The town whose prices are shown (null until the view has started). The trade debug keys act on it.</summary>
+    public Market SelectedMarket => markets.Count > 0 ? markets[townIndex] : null;
+
     private void Start()
     {
         if (settings == null)
@@ -125,7 +128,7 @@ public class PriceDebugView : MonoBehaviour
         GUILayout.BeginArea(new Rect(Screen.width - width - 10f, 80f, width, height), GUI.skin.box);
         Market market = markets[townIndex];
         GUILayout.Label("Prix de " + market.TownName + " (" + market.Definition.ProfileName + ") - " + toggleKey
-            + " affiche/masque, " + previousTownKey + "/" + nextTownKey + " change de ville, * = prix fixe", style);
+            + " affiche/masque, " + previousTownKey + "/" + nextTownKey + " change de ville, * = prix fixe, ~ = hors profil (la ville l'achète quand même)", style);
 
         GUILayout.BeginHorizontal();
         GUILayout.Label(string.Empty, style, GUILayout.Width(NameWidth));
@@ -158,15 +161,15 @@ public class PriceDebugView : MonoBehaviour
     private void Rebuild()
     {
         Market market = markets[townIndex];
-        IReadOnlyList<GoodStockProfile> entries = market.Entries;
-        rowNames = new string[entries.Count];
-        cells = new string[entries.Count, ColumnCount];
-        for (int g = 0; g < entries.Count; g++)
+        IReadOnlyList<GoodDefinition> goods = market.AllGoods;
+        rowNames = new string[goods.Count];
+        cells = new string[goods.Count, ColumnCount];
+        for (int g = 0; g < goods.Count; g++)
         {
-            GoodDefinition good = entries[g].good;
-            int target = entries[g].targetStock;
+            GoodDefinition good = goods[g];
+            int target = market.GetTarget(good);
             int stock = market.GetStock(good);
-            rowNames[g] = good.DisplayName + (good.StablePrice ? " *" : string.Empty);
+            rowNames[g] = good.DisplayName + (good.StablePrice ? " *" : string.Empty) + (market.IsInProfile(good) ? string.Empty : " ~");
 
             int buyOne = rules.BuyUnitPrice(good, stock, target);
             int sellOne = rules.SellUnitPrice(good, stock, target);

@@ -28,17 +28,24 @@ public class Wallet : MonoBehaviour
         return amount <= Balance;
     }
 
-    /// <summary>Adds money. Accepted, or the reason why nothing was added.</summary>
-    public WalletResult TryDeposit(int amount)
+    /// <summary>Would depositing this amount be accepted, and if not why? Changes nothing.</summary>
+    public WalletResult CheckDeposit(int amount)
     {
         if (amount <= 0)
         {
             return WalletResult.InvalidAmount;
         }
 
-        if (amount > int.MaxValue - Balance)
+        return amount > int.MaxValue - Balance ? WalletResult.Overflow : WalletResult.Accepted;
+    }
+
+    /// <summary>Adds money. Accepted, or the reason why nothing was added.</summary>
+    public WalletResult TryDeposit(int amount)
+    {
+        WalletResult check = CheckDeposit(amount);
+        if (check != WalletResult.Accepted)
         {
-            return WalletResult.Overflow;
+            return check;
         }
 
         Balance += amount;

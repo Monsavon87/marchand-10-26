@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// The market of a town: the stock of each good it trades, taken from its TownDefinition when the game starts.
-/// Sits on the same object as the town's PointOfInterest. The stock is never negative. TryAddStock and
-/// TryRemoveStock are the only ways to change it, each all-or-nothing; only the trade service (a later step) is
-/// meant to call them. Pure data plus its rules: it knows nothing about prices or the interface.
+/// The market of a town: the stock of each good, started from the town's TownDefinition. Sits on the same object
+/// as the town's PointOfInterest. The town buys every good of the catalog: a good outside its profile simply has no
+/// stock until somebody sells it some. The stock is never negative. TryAddStock and TryRemoveStock are the only
+/// ways to change it, each all-or-nothing, and CheckAddStock / CheckRemoveStock answer the same question without
+/// changing anything; only the trade service is meant to call the Try methods. Pure data plus its rules: it knows
+/// nothing about prices or the interface.
 /// </summary>
 public class Market : MonoBehaviour
 {
@@ -28,7 +30,10 @@ public class Market : MonoBehaviour
     public PointOfInterest Town => town;
     public TownDefinition Definition => definition;
     public string TownName => town != null ? town.DisplayName : name;
+    /// <summary>The goods the town trades (its profile).</summary>
     public IReadOnlyList<GoodStockProfile> Entries => definition.Entries;
+    /// <summary>Every good the town buys and sells: the whole catalog.</summary>
+    public IReadOnlyList<GoodDefinition> AllGoods => catalog.Goods;
 
     private void Awake()
     {
@@ -66,20 +71,28 @@ public class Market : MonoBehaviour
         AllMarkets.Remove(this);
     }
 
-    /// <summary>True when the town trades this good.</summary>
-    public bool IsTraded(GoodDefinition good)
+    /// <summary>True when the good is in the town's profile (the town makes or uses it).</summary>
+    public bool IsInProfile(GoodDefinition good)
     {
-        return good != null && stocks.ContainsKey(good);
+        return good != null && definition.TryGetEntry(good, out _);
     }
 
-    /// <summary>Units of this good in stock (0 when none, or when the town does not trade it).</summary>
+    /// <summary>Units of this good in stock (0 when none).</summary>
     public int GetStock(GoodDefinition good)
     {
         return good != null && stocks.TryGetValue(good, out int stock) ? stock : 0;
     }
 
-    /// <summary>Adds units to the stock. Accepted, or the reason why nothing was added.</summary>
-    public MarketResult TryAddStock(GoodDefinition good, int quantity)
+    /// <summary>The stock the price of this good is measured against: the profile's target, or the default one.</summary>
+    public int GetTarget(GoodDefinition good)
+    {
+        return good != null && definition.TryGetEntry(good, out GoodStockProfile entry)
+            ? entry.targetStock
+            : definition.DefaultTargetStock;
+    }
+
+    /// <summary>Would adding this quantity to the stock be accepted? Changes nothing.</summary>
+    public MarketResult CheckAddStock(GoodDefinition good, int quantity)
     {
         MarketResult invalid = CheckRequest(good, quantity);
         if (invalid != MarketResult.Accepted)
@@ -87,13 +100,31 @@ public class Market : MonoBehaviour
             return invalid;
         }
 
-        int stock = stocks[good];
-        if (quantity > int.MaxValue - stock)
+        return quantity > int.MaxValue - GetStock(good) ? MarketResult.Overflow : MarketResult.Accepted;
+    }
+
+    /// <summary>Would taking this quantity from the stock be accepted? Changes nothing.</summary>
+    public MarketResult CheckRemoveStock(GoodDefinition good, int quantity)
+    {
+        MarketResult invalid = CheckRequest(good, quantity);
+        if (invalid != MarketResult.Accepted)
         {
-            return MarketResult.Overflow;
+            return invalid;
         }
 
-        stocks[good] = stock + quantity;
+        return quantity > GetStock(good) ? MarketResult.InsufficientStock : MarketResult.Accepted;
+    }
+
+    /// <summary>Adds units to the stock. Accepted, or the reason why nothing was added.</summary>
+    public MarketResult TryAddStock(GoodDefinition good, int quantity)
+    {
+        MarketResult check = CheckAddStock(good, quantity);
+        if (check != MarketResult.Accepted)
+        {
+            return check;
+        }
+
+        stocks[good] = GetStock(good) + quantity;
         Changed();
         return MarketResult.Accepted;
     }
@@ -101,19 +132,13 @@ public class Market : MonoBehaviour
     /// <summary>Takes units from the stock. Accepted, or the reason why nothing was taken.</summary>
     public MarketResult TryRemoveStock(GoodDefinition good, int quantity)
     {
-        MarketResult invalid = CheckRequest(good, quantity);
-        if (invalid != MarketResult.Accepted)
+        MarketResult check = CheckRemoveStock(good, quantity);
+        if (check != MarketResult.Accepted)
         {
-            return invalid;
+            return check;
         }
 
-        int stock = stocks[good];
-        if (quantity > stock)
-        {
-            return MarketResult.InsufficientStock;
-        }
-
-        stocks[good] = stock - quantity;
+        stocks[good] = GetStock(good) - quantity;
         Changed();
         return MarketResult.Accepted;
     }
@@ -131,7 +156,7 @@ public class Market : MonoBehaviour
                 continue;
             }
 
-            if (!catalog.TryGetGood(entry.good.Id, out GoodDefinition known) || known != entry.good)
+            if (!IsKnown(entry.good))
             {
                 Debug.LogWarning("Market '" + TownName + "': the good '" + entry.good.name + "' is not in the catalog.", this);
                 problems++;
@@ -141,6 +166,11 @@ public class Market : MonoBehaviour
         return problems;
     }
 
+    private bool IsKnown(GoodDefinition good)
+    {
+        return catalog.TryGetGood(good.Id, out GoodDefinition known) && known == good;
+    }
+
     private MarketResult CheckRequest(GoodDefinition good, int quantity)
     {
         if (!configured)
@@ -148,9 +178,9 @@ public class Market : MonoBehaviour
             return MarketResult.NotConfigured;
         }
 
-        if (!IsTraded(good))
+        if (good == null || !IsKnown(good))
         {
-            return MarketResult.NotTraded;
+            return MarketResult.UnknownGood;
         }
 
         return quantity > 0 ? MarketResult.Accepted : MarketResult.InvalidQuantity;

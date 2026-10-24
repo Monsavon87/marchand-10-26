@@ -28,9 +28,12 @@ public class TownDefinition : ScriptableObject
     [Tooltip("What kind of town it is (Agricole, Portuaire...), for the debug view.")]
     [SerializeField] private string profileName = "Profil";
     [SerializeField] private List<GoodStockProfile> entries = new List<GoodStockProfile>();
+    [Tooltip("The town buys every good, even one it does not trade. For those goods it has no stock at first, and this is the target stock their price is measured against. More than 0.")]
+    [Min(1)] [SerializeField] private int defaultTargetStock = 10;
 
     public string ProfileName => profileName;
     public IReadOnlyList<GoodStockProfile> Entries => entries;
+    public int DefaultTargetStock => defaultTargetStock;
 
     /// <summary>Finds the entry of a good. False (and null) when the town does not trade it.</summary>
     public bool TryGetEntry(GoodDefinition good, out GoodStockProfile entry)
@@ -52,6 +55,12 @@ public class TownDefinition : ScriptableObject
     public int Validate()
     {
         int problems = 0;
+        if (defaultTargetStock <= 0)
+        {
+            Debug.LogWarning("TownDefinition '" + name + "': the default target stock must be more than 0.", this);
+            problems++;
+        }
+
         var seen = new HashSet<GoodDefinition>();
         for (int i = 0; i < entries.Count; i++)
         {

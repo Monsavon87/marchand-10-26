@@ -56,8 +56,8 @@ public class Inventory : MonoBehaviour
         return Mathf.Min(MaxAddableByMass(good), MaxAddableByVolume(good));
     }
 
-    /// <summary>Adds units of a good. Accepted, or the precise reason why nothing was added.</summary>
-    public InventoryResult TryAdd(GoodDefinition good, int quantity)
+    /// <summary>Would adding units of a good be accepted, and if not why? Changes nothing.</summary>
+    public InventoryResult CheckAdd(GoodDefinition good, int quantity)
     {
         InventoryResult invalid = CheckRequest(good, quantity);
         if (invalid != InventoryResult.Accepted)
@@ -73,6 +73,18 @@ public class Inventory : MonoBehaviour
         if (quantity > MaxAddableByVolume(good))
         {
             return InventoryResult.VolumeExceeded;
+        }
+
+        return InventoryResult.Accepted;
+    }
+
+    /// <summary>Adds units of a good. Accepted, or the precise reason why nothing was added.</summary>
+    public InventoryResult TryAdd(GoodDefinition good, int quantity)
+    {
+        InventoryResult check = CheckAdd(good, quantity);
+        if (check != InventoryResult.Accepted)
+        {
+            return check;
         }
 
         quantities[good] = GetQuantity(good) + quantity;
