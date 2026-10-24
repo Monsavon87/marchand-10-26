@@ -924,6 +924,7 @@ GameObject:
   - component: {fileID: 129024136}
   - component: {fileID: 129024135}
   - component: {fileID: 129024134}
+  - component: {fileID: 129024139}
   m_Layer: 0
   m_Name: Town_Port-Brume
   m_TagString: Untagged
@@ -1062,6 +1063,21 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 129024132}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &129024139
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 129024132}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1df119a4305a55044b565e43de8651f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Market
+  town: {fileID: 129024134}
+  definition: {fileID: 11400000, guid: f70bbcb76daafbb4fb57cc73f6f03d07, type: 2}
+  catalog: {fileID: 11400000, guid: 0c4d3bbc498a84945bdb1249d423f4ff, type: 2}
 --- !u!1 &130781614
 GameObject:
   m_ObjectHideFlags: 0
@@ -1916,6 +1932,7 @@ GameObject:
   - component: {fileID: 346525007}
   - component: {fileID: 346525006}
   - component: {fileID: 346525005}
+  - component: {fileID: 346525010}
   m_Layer: 0
   m_Name: Town_Aubeterre
   m_TagString: Untagged
@@ -2054,6 +2071,21 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 346525003}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &346525010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 346525003}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1df119a4305a55044b565e43de8651f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Market
+  town: {fileID: 346525005}
+  definition: {fileID: 11400000, guid: 7283546d3cdae214d922ba76e95be45f, type: 2}
+  catalog: {fileID: 11400000, guid: 0c4d3bbc498a84945bdb1249d423f4ff, type: 2}
 --- !u!1 &353557389
 GameObject:
   m_ObjectHideFlags: 0
@@ -2272,6 +2304,7 @@ GameObject:
   - component: {fileID: 431133067}
   - component: {fileID: 431133066}
   - component: {fileID: 431133065}
+  - component: {fileID: 431133070}
   m_Layer: 0
   m_Name: Town_Hautmont
   m_TagString: Untagged
@@ -2410,6 +2443,21 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 431133063}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &431133070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 431133063}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1df119a4305a55044b565e43de8651f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Market
+  town: {fileID: 431133065}
+  definition: {fileID: 11400000, guid: 4b9591db5ebbe8b4ba425ca3aaa0c80a, type: 2}
+  catalog: {fileID: 11400000, guid: 0c4d3bbc498a84945bdb1249d423f4ff, type: 2}
 --- !u!1001 &457025557
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2519,6 +2567,7 @@ GameObject:
   - component: {fileID: 472363749}
   - component: {fileID: 472363748}
   - component: {fileID: 472363747}
+  - component: {fileID: 472363752}
   m_Layer: 0
   m_Name: Town_Bourg-Val
   m_TagString: Untagged
@@ -2657,6 +2706,21 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 472363745}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &472363752
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 472363745}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1df119a4305a55044b565e43de8651f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Market
+  town: {fileID: 472363747}
+  definition: {fileID: 11400000, guid: 1928009e18d505e4292557d2b0b577e6, type: 2}
+  catalog: {fileID: 11400000, guid: 0c4d3bbc498a84945bdb1249d423f4ff, type: 2}
 --- !u!1001 &498030093
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3652,6 +3716,52 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &752871204
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 752871206}
+  - component: {fileID: 752871205}
+  m_Layer: 0
+  m_Name: MarketDebug
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &752871205
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 752871204}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6be5b0c012b09b740bc25ebf1a883449, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MarketDebugView
+  catalog: {fileID: 11400000, guid: 0c4d3bbc498a84945bdb1249d423f4ff, type: 2}
+  toggleKey: 96
+--- !u!4 &752871206
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 752871204}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &777722963
 GameObject:
   m_ObjectHideFlags: 0
@@ -5275,6 +5385,7 @@ GameObject:
   - component: {fileID: 1181104109}
   - component: {fileID: 1181104108}
   - component: {fileID: 1181104106}
+  - component: {fileID: 1181104111}
   m_Layer: 0
   m_Name: Town_Carrefour
   m_TagString: Untagged
@@ -5413,6 +5524,21 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1181104104}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1181104111
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1181104104}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1df119a4305a55044b565e43de8651f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Market
+  town: {fileID: 1181104106}
+  definition: {fileID: 11400000, guid: c7c5b213e20d8dc4e99e2dfa7049a972, type: 2}
+  catalog: {fileID: 11400000, guid: 0c4d3bbc498a84945bdb1249d423f4ff, type: 2}
 --- !u!114 &1200298892
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9611,3 +9737,4 @@ SceneRoots:
   - {fileID: 783895924}
   - {fileID: 457025557}
   - {fileID: 16750936}
+  - {fileID: 752871206}
