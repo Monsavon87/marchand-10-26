@@ -5,7 +5,10 @@ using UnityEngine;
 /// <summary>
 /// The goods a convoy carries: a whole quantity per good, within the convoy's capacity in mass and in volume.
 /// TryAdd and TryRemove are the only ways to change the stock, and each is all-or-nothing: a refused operation
-/// changes nothing and says why. Pure data plus its rules; it knows nothing about prices, towns or the interface.
+/// changes nothing and says why. It also keeps what each good cost
+/// (the total paid for the units carried, at the average of what was paid: 5 units at 200 then 5 at 300 cost 2 500 in all, 250
+/// each), so a sale can say what it earned over what it cost. Goods that cost nothing (a band's loot) are added with a cost of
+/// 0 and bring the average down. Pure data plus its rules; it knows nothing about prices, towns or the interface.
 /// </summary>
 public class Inventory : MonoBehaviour
 {
@@ -16,6 +19,7 @@ public class Inventory : MonoBehaviour
     [SerializeField] private CargoCapacity capacity;
 
     private readonly Dictionary<GoodDefinition, int> quantities = new Dictionary<GoodDefinition, int>();
+    private readonly Dictionary<GoodDefinition, long> costs = new Dictionary<GoodDefinition, long>();
     private bool configured;
 
     /// <summary>Raised after the stock changed (an add or a remove that was accepted).</summary>
@@ -45,6 +49,27 @@ public class Inventory : MonoBehaviour
         }
 
         return quantities.TryGetValue(good, out int quantity) ? quantity : 0;
+    }
+
+    /// <summary>What the units of this good carried cost in all, in U.V. (0 when none, or when they cost nothing).</summary>
+    public long GetTotalCost(GoodDefinition good)
+    {
+        return good != null && costs.TryGetValue(good, out long cost) ? cost : 0L;
+    }
+
+    /// <summary>
+    /// What 'quantity' units of this good cost, at the average of what the units carried cost (the whole cost when
+    /// 'quantity' is all of them, rounded down otherwise). 0 when none are carried. Changes nothing.
+    /// </summary>
+    public long CostOf(GoodDefinition good, int quantity)
+    {
+        int owned = GetQuantity(good);
+        if (owned <= 0 || quantity <= 0)
+        {
+            return 0L;
+        }
+
+        return quantity >= owned ? GetTotalCost(good) : GetTotalCost(good) * quantity / owned;
     }
 
     /// <summary>
@@ -125,8 +150,11 @@ public class Inventory : MonoBehaviour
         return InventoryResult.Accepted;
     }
 
-    /// <summary>Adds units of a good. Accepted, or the precise reason why nothing was added.</summary>
-    public InventoryResult TryAdd(GoodDefinition good, int quantity)
+    /// <summary>
+    /// Adds units of a good, with what they cost in all ('cost', in U.V.; 0 for goods that cost nothing). Accepted, or
+    /// the precise reason why nothing was added.
+    /// </summary>
+    public InventoryResult TryAdd(GoodDefinition good, int quantity, int cost = 0)
     {
         InventoryResult check = CheckAdd(good, quantity);
         if (check != InventoryResult.Accepted)
@@ -134,7 +162,13 @@ public class Inventory : MonoBehaviour
             return check;
         }
 
+        if (cost < 0)
+        {
+            return InventoryResult.InvalidQuantity;
+        }
+
         quantities[good] = GetQuantity(good) + quantity;
+        costs[good] = GetTotalCost(good) + cost;
         Recompute();
         return InventoryResult.Accepted;
     }
@@ -142,6 +176,16 @@ public class Inventory : MonoBehaviour
     /// <summary>Removes units of a good. Accepted, or the reason why nothing was removed.</summary>
     public InventoryResult TryRemove(GoodDefinition good, int quantity)
     {
+        return TryRemove(good, quantity, out _);
+    }
+
+    /// <summary>
+    /// Removes units of a good, and says what they cost (see CostOf): that cost leaves the total, so what stays keeps
+    /// the same average. Accepted, or the reason why nothing was removed ('removedCost' is then 0).
+    /// </summary>
+    public InventoryResult TryRemove(GoodDefinition good, int quantity, out long removedCost)
+    {
+        removedCost = 0L;
         InventoryResult invalid = CheckRequest(good, quantity);
         if (invalid != InventoryResult.Accepted)
         {
@@ -154,13 +198,16 @@ public class Inventory : MonoBehaviour
             return InventoryResult.NotEnough;
         }
 
+        removedCost = CostOf(good, quantity);
         if (quantity == owned)
         {
             quantities.Remove(good);
+            costs.Remove(good);
         }
         else
         {
             quantities[good] = owned - quantity;
+            costs[good] = GetTotalCost(good) - removedCost;
         }
 
         Recompute();

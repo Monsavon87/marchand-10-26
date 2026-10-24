@@ -91,6 +91,20 @@ public class Market : MonoBehaviour
         return good != null && definition.TryGetEntry(good, out _);
     }
 
+    /// <summary>
+    /// True when the town has something to sell of this good: units in stock, or a production of it (so a good the town
+    /// makes stays listed even on the day it runs out). A good the town only uses, with nothing in stock, is not offered.
+    /// </summary>
+    public bool IsOffered(GoodDefinition good)
+    {
+        if (good == null)
+        {
+            return false;
+        }
+
+        return GetStock(good) > 0 || (definition.TryGetEntry(good, out GoodStockProfile entry) && entry.productionPerDay > 0);
+    }
+
     /// <summary>Units of this good in stock (0 when none).</summary>
     public int GetStock(GoodDefinition good)
     {

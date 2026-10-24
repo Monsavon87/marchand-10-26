@@ -51,7 +51,14 @@ public static class TradeMessages
     public static string Describe(TradeRecord record)
     {
         return (record.Kind == TradeKind.Buy ? "Acheté : " : "Vendu : ") + record.Quantity + " " + record.Good.DisplayName
-            + (record.Kind == TradeKind.Buy ? " pour " : " contre ") + MoneyFormat.WithUnit(record.Amount);
+            + (record.Kind == TradeKind.Buy ? " pour " : " contre ") + MoneyFormat.WithUnit(record.Amount)
+            + (record.Kind == TradeKind.Sell ? "  -  profit : " + SignedMoney(record.Profit) : string.Empty);
+    }
+
+    /// <summary>An amount with its sign: "+120 U.V." or "-40 U.V." (a plain minus, which the default font draws).</summary>
+    public static string SignedMoney(int amount)
+    {
+        return (amount > 0 ? "+" : string.Empty) + MoneyFormat.WithUnit(amount);
     }
 
     /// <summary>The sentence for a whole result: the refusal reason, or what was done (with what limited a "maximum").</summary>

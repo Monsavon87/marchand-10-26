@@ -114,6 +114,31 @@ public class TradeService : MonoBehaviour
     }
 
     /// <summary>
+    /// What one unit of this good carried cost the player, at the average of what the units carried cost, rounded
+    /// (0 when none is carried, or when it cost nothing). Changes nothing.
+    /// </summary>
+    public int AverageCost(GoodDefinition good)
+    {
+        int owned = configured && good != null ? inventory.GetQuantity(good) : 0;
+        return owned > 0 ? (int)Math.Round((double)inventory.GetTotalCost(good) / owned) : 0;
+    }
+
+    /// <summary>
+    /// What selling one unit of this good here would earn over what it cost (negative: a loss); 0 when none is carried.
+    /// The reading of a resale: it holds no rule, the price and the cost come from the pricing and the cargo. Changes
+    /// nothing.
+    /// </summary>
+    public int UnitProfit(Market market, GoodDefinition good)
+    {
+        if (!configured || market == null || good == null || inventory.GetQuantity(good) <= 0)
+        {
+            return 0;
+        }
+
+        return UnitPrice(TradeKind.Sell, market, good) - AverageCost(good);
+    }
+
+    /// <summary>
     /// What a trade would come to, without doing it: whether it would go through or why not, the total, and the
     /// money and cargo room left afterwards. Changes nothing.
     /// </summary>
@@ -142,8 +167,9 @@ public class TradeService : MonoBehaviour
         }
 
         int sign = kind == TradeKind.Buy ? 1 : -1;
+        int cost = kind == TradeKind.Sell ? (int)Math.Min(inventory.CostOf(good, quantity), int.MaxValue) : 0;
         return new TradePreview(status, kind, good, quantity, total, balance - sign * total,
-            massLeft - sign * quantity * good.MassPerUnit, volumeLeft - sign * quantity * good.VolumePerUnit, available, missing);
+            massLeft - sign * quantity * good.MassPerUnit, volumeLeft - sign * quantity * good.VolumePerUnit, available, missing, cost);
     }
 
     /// <summary>
@@ -353,7 +379,7 @@ public class TradeService : MonoBehaviour
             return Failed(TradeKind.Buy, good, quantity, "the town's stock could not be taken");
         }
 
-        if (inventory.TryAdd(good, quantity) != InventoryResult.Accepted)
+        if (inventory.TryAdd(good, quantity, total) != InventoryResult.Accepted)
         {
             bool undone = market.TryAddStock(good, quantity) == MarketResult.Accepted;
             undone &= wallet.TryDeposit(total) == WalletResult.Accepted;
@@ -367,31 +393,31 @@ public class TradeService : MonoBehaviour
     // The cargo, then the town's stock, then the money; a later failure undoes the earlier steps.
     private TradeResult ApplySell(Market market, GoodDefinition good, int quantity, int total)
     {
-        if (inventory.TryRemove(good, quantity) != InventoryResult.Accepted)
+        if (inventory.TryRemove(good, quantity, out long removedCost) != InventoryResult.Accepted)
         {
             return Failed(TradeKind.Sell, good, quantity, "the cargo could not be taken");
         }
 
         if (market.TryAddStock(good, quantity) != MarketResult.Accepted)
         {
-            Undo(inventory.TryAdd(good, quantity) == InventoryResult.Accepted);
+            Undo(inventory.TryAdd(good, quantity, (int)removedCost) == InventoryResult.Accepted);
             return Failed(TradeKind.Sell, good, quantity, "the town's stock could not be added");
         }
 
         if (wallet.TryDeposit(total) != WalletResult.Accepted)
         {
             bool undone = market.TryRemoveStock(good, quantity) == MarketResult.Accepted;
-            undone &= inventory.TryAdd(good, quantity) == InventoryResult.Accepted;
+            undone &= inventory.TryAdd(good, quantity, (int)removedCost) == InventoryResult.Accepted;
             Undo(undone);
             return Failed(TradeKind.Sell, good, quantity, "the payment could not be deposited");
         }
 
-        return Completed(TradeKind.Sell, market, good, quantity, total);
+        return Completed(TradeKind.Sell, market, good, quantity, total, total - (int)removedCost);
     }
 
-    private TradeResult Completed(TradeKind kind, Market market, GoodDefinition good, int quantity, int total)
+    private TradeResult Completed(TradeKind kind, Market market, GoodDefinition good, int quantity, int total, int profit = 0)
     {
-        Traded(new TradeRecord(clock.Day, kind, market.TownName, good, quantity, total));
+        Traded(new TradeRecord(clock.Day, kind, market.TownName, good, quantity, total, profit));
         return new TradeResult(TradeStatus.Done, kind, good, quantity, quantity, total, TradeStatus.Done);
     }
 

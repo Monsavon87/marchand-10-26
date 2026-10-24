@@ -8,7 +8,7 @@
 public readonly struct TradePreview
 {
     public TradePreview(TradeStatus status, TradeKind kind, GoodDefinition good, int quantity, int amount,
-        int balanceAfter, float massLeftAfter, float volumeLeftAfter, int available, int moneyMissing)
+        int balanceAfter, float massLeftAfter, float volumeLeftAfter, int available, int moneyMissing, int cost = 0)
     {
         Status = status;
         Kind = kind;
@@ -20,6 +20,7 @@ public readonly struct TradePreview
         VolumeLeftAfter = volumeLeftAfter;
         Available = available;
         MoneyMissing = moneyMissing;
+        Cost = cost;
     }
 
     public TradeStatus Status { get; }
@@ -38,6 +39,16 @@ public readonly struct TradePreview
     public int Available { get; }
     /// <summary>U.V. the player lacks to afford it (0 when the money is enough).</summary>
     public int MoneyMissing { get; }
+
+    /// <summary>
+    /// Selling: what the units sold cost the player (at the average of what the units carried cost; 0 for goods that cost
+    /// nothing, such as loot, or when it cannot be worked out). Buying: 0.
+    /// </summary>
+    public int Cost { get; }
+    /// <summary>Selling: what the sale earns over what its units cost (negative: a loss). Buying: 0.</summary>
+    public int Profit => Kind == TradeKind.Sell && Success ? Amount - Cost : 0;
+    /// <summary>The profit as a share of the cost, rounded, in percent; 0 when the units cost nothing.</summary>
+    public int ProfitPercent => Cost > 0 ? (int)System.Math.Round(Profit * 100.0 / Cost) : 0;
 
     public bool Success => Status == TradeStatus.Done;
 }
