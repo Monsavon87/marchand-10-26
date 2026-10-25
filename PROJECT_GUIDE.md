@@ -107,7 +107,7 @@ Un script = une responsabilité, rangé par fonctionnalité. Chaque classe a un 
 | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CampaignPause`                | **Seul propriétaire de `Time.timeScale` sur la carte** ; états `CampaignTimeState` (voir § 4.1)                                                             |
 | `CampaignClock`                | Calendrier de la carte ; événement `DayStarted` ; `AdvanceMinutes`                                                                                          |
-| `CampaignTravel`               | Clic sur une ville = aller à son entrée ; événement `TownReached`                                                                                           |
+| `CampaignTravel`               | Clic sur une ville = aller à son entrée ; événement `TownReached` (qui vide aussi la file d'ordres de la caravane)                                                                                           |
 | `CampaignEncounters`           | Détecte le contact caravane / ennemi                                                                                                                        |
 | `CampaignEncounterFlow`        | Rencontre → combat → retour : construit `EncounterData`, endort la carte, charge l'arène, applique le résultat (survivants, butin, bande mise de côté, défaite) |
 | `PartyRoster`, `PartyCapacity` | Les unités d'un groupe (avec leurs PV ; butin d'une bande) et la taille maximale du groupe                                                                  |
@@ -122,7 +122,7 @@ Un script = une responsabilité, rangé par fonctionnalité. Chaque classe a un 
 
 ### Données (`Data/`) — les ScriptableObjects (voir § 5)
 
-`UnitDefinition`, `AIProfile`, `CombatSettings`, `CombatRulesSettings`, `AttackZoneSettings`, `ActionTimingSettings`, `TerrainSettings`, `HealingSettings`, `PayrollSettings`, `RecruitmentSettings`, `EncounterChannel` / `EncounterData`, `GameHelp`, `PartyMember`, et pour l'économie `GoodDefinition`, `GoodCatalog`, `TownDefinition`, `CargoCapacity`, `PricingSettings`, `EconomySettings`, et pour le butin `LootTable` (valeur totale et ressources d'une bande) et `LootWealthScale` (les mots Maigre à Très riche).
+`UnitDefinition`, `AIProfile`, `CombatSettings`, `CombatRulesSettings`, `AttackZoneSettings`, `ActionTimingSettings`, `TerrainSettings`, `HealingSettings`, `PayrollSettings`, `OrderQueueSettings`, `RecruitmentSettings`, `EncounterChannel` / `EncounterData`, `GameHelp`, `PartyMember`, et pour l'économie `GoodDefinition`, `GoodCatalog`, `TownDefinition`, `CargoCapacity`, `PricingSettings`, `EconomySettings`, et pour le butin `LootTable` (valeur totale et ressources d'une bande) et `LootWealthScale` (les mots Maigre à Très riche).
 
 ### Économie (`Economy/`)
 
@@ -208,6 +208,7 @@ Tout se règle dans des ScriptableObjects (`Assets/ScriptableObjects/`) :
 | Les terrains (coût de chemin, vitesse)                     | `TerrainSettings`                                                            |
 | Les offres et le prix de recrutement, la taille du groupe  | `RecruitmentSettings`                                                        |
 | La régénération (% par jour, plafond) et le prix du soin par PV | `HealingSettings_Default` |
+| La taille de la file d'ordres sur la carte (Maj + clic) | `OrderQueueSettings_Map` (en combat : `CombatSettings.MaxQueuedOrders`) |
 | Le salaire par jour d'une unité | `UnitDefinition.dailyWage` (`Def_*`) |
 | Les jours de paie offerts, la dette qui bloque le recrutement | `PayrollSettings_Default` |
 | Le texte de l'aide                                         | `GameHelp`                                                                   |
@@ -275,7 +276,7 @@ Lancer : entrer en Play Mode dans `Demo_Campaign`, puis appeler `EconomySimulato
 
 ## 10. Où en est-on, et la suite
 
-Fait : démo jouable (v0.1.0), économie E1 à E9, butin en marchandises (F1), marché à onglets et profit (F2), retour des bandes et nouveau but de la démo (F3), soin naturel et hôpital (F4), salaires du groupe et dette (F5).
+Fait : démo jouable (v0.1.0), économie E1 à E9, butin en marchandises (F1), marché à onglets et profit (F2), retour des bandes et nouveau but de la démo (F3), soin naturel et hôpital (F4), salaires du groupe et dette (F5), file d'ordres sur la carte.
 
 À décider avec le responsable du jeu :
 

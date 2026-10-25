@@ -34,6 +34,8 @@ public class ActionController : MonoBehaviour
     [SerializeField] private CombatRulesProvider rulesProvider;
     [Tooltip("The scene's combat manager: gives the length of the order queue and the recovery after actions. Without it there is no queue.")]
     [SerializeField] private CombatManager combat;
+    [Tooltip("Optional: gives a queue of orders outside combat (the campaign map). Without a combat manager or these settings there is no queue.")]
+    [SerializeField] private OrderQueueSettings queueSettings;
     [SerializeField] private bool logActions = true;
 
     private readonly List<QueuedOrder> queue = new List<QueuedOrder>();
@@ -69,7 +71,8 @@ public class ActionController : MonoBehaviour
     // The attack this unit makes: shooting for a ranged weapon, striking otherwise.
     private UnitAction AttackFor => stats != null && stats.IsRanged ? shootAction : attackAction;
 
-    private int MaxQueuedOrders => combat != null && combat.Settings != null ? combat.Settings.MaxQueuedOrders : 0;
+    private int MaxQueuedOrders => combat != null && combat.Settings != null ? combat.Settings.MaxQueuedOrders
+        : queueSettings != null ? queueSettings.MaxOrders : 0;
 
     /// <summary>Raised when a request was accepted and the action starts.</summary>
     public event Action<UnitAction> ActionStarted = delegate { };
@@ -181,7 +184,19 @@ public class ActionController : MonoBehaviour
     /// <summary>Lines up a walk behind the current order (starts it at once if the unit is free).</summary>
     public bool EnqueueMove(Vector3 destination)
     {
+        // The queue keeps the clicked point: the gate recognizes a town when the order starts.
         return Enqueue(new QueuedOrder { Kind = ActionKind.Move, Point = destination });
+    }
+
+    /// <summary>Lines up a chase of a moving unit behind the current order (a walk that follows its target).</summary>
+    public bool EnqueueChase(Transform target)
+    {
+        if (target == null)
+        {
+            return false;
+        }
+
+        return Enqueue(new QueuedOrder { Kind = ActionKind.Move, Point = target.position, Target = target });
     }
 
     /// <summary>Lines up a wait behind the current order.</summary>
@@ -230,6 +245,12 @@ public class ActionController : MonoBehaviour
         mover.FaceTowards(attacker.position);
     }
 
+    /// <summary>Drops the queued orders only: the action in progress goes on.</summary>
+    public void ClearQueue()
+    {
+        queue.Clear();
+    }
+
     /// <summary>Cancels the action in progress and drops the queue. The unit stops.</summary>
     public void Cancel()
     {
@@ -267,7 +288,7 @@ public class ActionController : MonoBehaviour
         {
             if (queue[i].Kind == ActionKind.Move)
             {
-                point = queue[i].Point;
+                point = QueuedWalkPoint(queue[i]);
                 found = true;
             }
             else if (queue[i].Kind == ActionKind.Attack && queue[i].Target != null)
@@ -313,7 +334,7 @@ public class ActionController : MonoBehaviour
         {
             if (queue[i].Kind == ActionKind.Move)
             {
-                buffer[count++] = queue[i].Point;
+                buffer[count++] = QueuedWalkPoint(queue[i]);
             }
             else if (queue[i].Kind == ActionKind.Attack && queue[i].Target != null)
             {
@@ -412,6 +433,17 @@ public class ActionController : MonoBehaviour
         return true;
     }
 
+    // A queued walk leads to its point (a town to its entrance, as the gate says); a queued chase to where its target is now.
+    private Vector3 QueuedWalkPoint(QueuedOrder order)
+    {
+        if (order.Target != null)
+        {
+            return order.Target.position;
+        }
+
+        return gate != null ? gate.ResolveDestination(order.Point) : order.Point;
+    }
+
     // Starts the next queued order that can still be done; the ones that cannot (a dead target...) are skipped.
     private void StartNext()
     {
@@ -432,6 +464,18 @@ public class ActionController : MonoBehaviour
         switch (order.Kind)
         {
             case ActionKind.Move:
+                if (order.Target != null)
+                {
+                    // A queued chase: skipped when its target is gone (a beaten band is deactivated).
+                    if (!order.Target.gameObject.activeInHierarchy)
+                    {
+                        Log("Poursuite abandonnée : " + order.Target.name + " a disparu");
+                        return false;
+                    }
+
+                    return RunAction(chaseAction, new ActionTarget(order.Target.position, order.Target), out reason);
+                }
+
                 return RunAction(moveAction, new ActionTarget(order.Point), out reason);
 
             case ActionKind.Wait:

@@ -8,6 +8,8 @@ using UnityEngine;
 public class CampaignTravel : MoveOrderGate
 {
     [SerializeField] private UnitMover caravan;
+    [Tooltip("The caravan's orders: arriving in a town drops what was lined up behind (Shift + click).")]
+    [SerializeField] private ActionController caravanActions;
 
     private PointOfInterest destinationTown;
 
@@ -32,9 +34,9 @@ public class CampaignTravel : MoveOrderGate
 
     private void Start()
     {
-        if (caravan == null)
+        if (caravan == null || caravanActions == null)
         {
-            Debug.LogError("CampaignTravel: caravan is not assigned.", this);
+            Debug.LogError("CampaignTravel: a serialized reference is not assigned.", this);
             enabled = false;
         }
     }
@@ -97,6 +99,7 @@ public class CampaignTravel : MoveOrderGate
         offset.y = 0f;
         if (offset.magnitude <= town.ArrivalRadius)
         {
+            caravanActions.ClearQueue();
             TownReached(town);
         }
     }

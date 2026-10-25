@@ -5370,6 +5370,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CampaignTravel
   caravan: {fileID: 2733532370329639512}
+  caravanActions: {fileID: 2733532370329639515}
 --- !u!114 &675263628
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5586,6 +5587,7 @@ MonoBehaviour:
   party: {fileID: 2733532370329639517}
   partyLabel: {fileID: 917970773}
   payroll: {fileID: 304521187}
+  caravanActions: {fileID: 2733532370329639515}
   messageDuration: 4
   refreshInterval: 0.1
 --- !u!114 &681525956
@@ -17856,6 +17858,10 @@ PrefabInstance:
       propertyPath: gate
       value: 
       objectReference: {fileID: 675263627}
+    - target: {fileID: 5451973146153742400, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
+      propertyPath: queueSettings
+      value: 
+      objectReference: {fileID: 11400000, guid: f923ee52f65f6ef40a1e5fc836feb7f5, type: 2}
     - target: {fileID: 6294835999223347834, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
       propertyPath: m_Name
       value: Caravan

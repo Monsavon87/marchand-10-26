@@ -26,6 +26,8 @@ public class CampaignHud : MonoBehaviour
     [SerializeField] private UnityEngine.UI.Text partyLabel;
     [Tooltip("Optional: says when the wages were paid, or not paid (debt).")]
     [SerializeField] private PartyPayroll payroll;
+    [Tooltip("Optional: the caravan's orders. Says how many orders wait in its queue next to the clock.")]
+    [SerializeField] private ActionController caravanActions;
     [Tooltip("Seconds a message stays on screen.")]
     [SerializeField] private float messageDuration = 4f;
     [Tooltip("Seconds between two refreshes of the clock text.")]
@@ -117,7 +119,8 @@ public class CampaignHud : MonoBehaviour
 
         nextRefresh = Time.unscaledTime + refreshInterval;
         clockLabel.text = "Jour " + (goal != null ? Mathf.Min(clock.Day, goal.Days) : clock.Day) + (goal != null ? " / " + goal.Days : string.Empty) + "  -  " + clock.Hour.ToString("00") + "h" + clock.Minute.ToString("00")
-            + (pause != null ? TimeStateText(pause.State) : string.Empty);
+            + (pause != null ? TimeStateText(pause.State) : string.Empty)
+            + (caravanActions != null && caravanActions.QueuedCount > 0 ? "   <size=20>File : " + caravanActions.QueuedCount + (caravanActions.QueuedCount > 1 ? " ordres" : " ordre") + " (X : annuler)</size>" : string.Empty);
         if (party != null && partyLabel != null)
         {
             RefreshParty();

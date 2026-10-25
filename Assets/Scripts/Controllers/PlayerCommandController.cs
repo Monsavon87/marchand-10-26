@@ -154,7 +154,7 @@ public class PlayerCommandController : MonoBehaviour
     }
 
     // Campaign map: the selected units walk after the clicked enemy, wherever it goes.
-    private static bool TryChase(UnitTeam clicked, System.Collections.Generic.IReadOnlyList<SelectableUnit> units)
+    private bool TryChase(UnitTeam clicked, System.Collections.Generic.IReadOnlyList<SelectableUnit> units)
     {
         bool anyChase = false;
         for (int i = 0; i < units.Count; i++)
@@ -166,7 +166,7 @@ public class PlayerCommandController : MonoBehaviour
                 continue;
             }
 
-            anyChase |= actions.RequestChase(clicked.transform, out _);
+            anyChase |= IsQueueing() ? actions.EnqueueChase(clicked.transform) : actions.RequestChase(clicked.transform, out _);
         }
 
         return anyChase;
