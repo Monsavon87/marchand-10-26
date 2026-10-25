@@ -63,7 +63,7 @@ public class TradePlanner
     /// each judged route is noted in the result. 'budget' is the most the purchase may cost (the money the merchant
     /// accepts to spend: what it has, minus what it keeps for the wages).
     /// </summary>
-    public TradePlan Best(int hereIndex, SimulationStrategy strategy, float startMinutes, ScenarioResult result, long budget)
+    public TradePlan Best(int hereIndex, SimulationStrategy strategy, double startMinutes, ScenarioResult result, long budget)
     {
         Market here = markets[hereIndex];
         TradePlan best = default;
@@ -80,7 +80,8 @@ public class TradePlanner
 
             for (int d = 0; d < markets.Count; d++)
             {
-                if (d == hereIndex)
+                // The other town must buy the good (it is in its profile).
+                if (d == hereIndex || !markets[d].IsInProfile(good))
                 {
                     continue;
                 }
@@ -106,7 +107,7 @@ public class TradePlanner
     }
 
     private TradePlan Judge(Market from, Market to, int toIndex, GoodDefinition good, int maxBuy, float minutes,
-        SimulationStrategy strategy, float startMinutes, long budget)
+        SimulationStrategy strategy, double startMinutes, long budget)
     {
         int stockHere = from.GetStock(good);
         int targetHere = from.GetTarget(good);
@@ -148,9 +149,9 @@ public class TradePlanner
 
     // The stock of a town when the caravan arrives: one day of production, use and return to target for each
     // midnight crossed on the way (the same rule as the economy ticker).
-    private int StockOnArrival(Market market, GoodDefinition good, float startMinutes, float travelMinutes)
+    private int StockOnArrival(Market market, GoodDefinition good, double startMinutes, float travelMinutes)
     {
-        int midnights = (int)((startMinutes + travelMinutes) / MinutesPerDay) - (int)(startMinutes / MinutesPerDay);
+        int midnights = (int)Math.Floor((startMinutes + travelMinutes) / MinutesPerDay) - (int)Math.Floor(startMinutes / MinutesPerDay);
         // Outside the town's profile there is no target: what was sold to the town drains away (as in the ticker).
         int target = 0;
         int production = 0;

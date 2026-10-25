@@ -16,6 +16,7 @@ public static class TradeMessages
             case TradeStatus.OverMass: return "Trop lourd : la capacité en masse de la caravane serait dépassée.";
             case TradeStatus.OverVolume: return "Trop volumineux : la capacité en volume de la caravane serait dépassée.";
             case TradeStatus.NotEnoughGoods: return "Vous n'avez pas assez de cette marchandise.";
+            case TradeStatus.NotBoughtHere: return "Cette ville n'en achète pas : elle n'en produit ni n'en consomme.";
             case TradeStatus.TooLarge: return "Quantité ou montant trop grand.";
             case TradeStatus.InternalError: return "Échange annulé : erreur interne.";
             default: return status.ToString();

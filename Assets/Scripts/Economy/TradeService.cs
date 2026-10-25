@@ -91,6 +91,12 @@ public class TradeService : MonoBehaviour
             return 0;
         }
 
+        // A town buys only the goods of its profile: no selling price for the others.
+        if (kind == TradeKind.Sell && !market.IsInProfile(good))
+        {
+            return 0;
+        }
+
         int stock = market.GetStock(good);
         int target = market.GetTarget(good);
         return kind == TradeKind.Buy ? rules.BuyUnitPrice(good, stock, target) : rules.SellUnitPrice(good, stock, target);
@@ -110,7 +116,7 @@ public class TradeService : MonoBehaviour
         }
 
         int stock = market.GetStock(good);
-        if (kind == TradeKind.Buy && quantity > stock)
+        if ((kind == TradeKind.Buy && quantity > stock) || (kind == TradeKind.Sell && !market.IsInProfile(good)))
         {
             return TrendReading.Unknown;
         }
@@ -146,7 +152,7 @@ public class TradeService : MonoBehaviour
     /// </summary>
     public int UnitProfit(Market market, GoodDefinition good)
     {
-        if (!configured || market == null || good == null || inventory.GetQuantity(good) <= 0)
+        if (!configured || market == null || good == null || inventory.GetQuantity(good) <= 0 || !market.IsInProfile(good))
         {
             return 0;
         }
@@ -201,7 +207,7 @@ public class TradeService : MonoBehaviour
             return 0;
         }
 
-        return kind == TradeKind.Buy ? MaxBuy(market, good, out limit) : MaxSell(good, out limit);
+        return kind == TradeKind.Buy ? MaxBuy(market, good, out limit) : MaxSell(market, good, out limit);
     }
 
     private int MaxBuy(Market market, GoodDefinition good, out TradeStatus limit)
@@ -246,8 +252,14 @@ public class TradeService : MonoBehaviour
         return low;
     }
 
-    private int MaxSell(GoodDefinition good, out TradeStatus limit)
+    private int MaxSell(Market market, GoodDefinition good, out TradeStatus limit)
     {
+        if (!market.IsInProfile(good))
+        {
+            limit = TradeStatus.NotBoughtHere;
+            return 0;
+        }
+
         int owned = inventory.GetQuantity(good);
         if (owned <= 0)
         {
@@ -345,6 +357,12 @@ public class TradeService : MonoBehaviour
         if (inventory.GetQuantity(good) < quantity)
         {
             return TradeStatus.NotEnoughGoods;
+        }
+
+        // A town buys only what it makes or uses (its profile).
+        if (!market.IsInProfile(good))
+        {
+            return TradeStatus.NotBoughtHere;
         }
 
         switch (market.CheckAddStock(good, quantity))

@@ -75,7 +75,8 @@ public static class SimulationReportWriter
         bool noInfinite = longB <= 1.1 && (double.IsNaN(longC) || longC <= 1.1)
             && GrowthWithoutLimit(run.ReferenceLong, settings.GrowthWindowDays).Length == 0
             && run.Scenarios.All(s => s.EndingBalance < int.MaxValue / 2);
-        bool lootOk = run.Loop.LootShare >= settings.LootShareMin && run.Loop.LootShare <= settings.LootShareMax;
+        // On the mean of the seeds: a single run that ends on its first fight says nothing of the weight of the loot.
+        bool lootOk = meanShare >= settings.LootShareMin && meanShare <= settings.LootShareMax;
 
         text.AppendLine("## 0. Verdict");
         text.AppendLine();
@@ -86,8 +87,9 @@ public static class SimulationReportWriter
             + " | " + Verdict(profitPositive) + " |");
         text.AppendLine("| Profit borné (dernière tranche de " + settings.GrowthWindowDays + " jours ≤ " + Ratio(settings.BoundedGrowthRatio) + " × la deuxième) | B : × " + Ratio(ratioB)
             + " ; C : " + (double.IsNaN(ratioC) ? "partie trop courte" : "× " + Ratio(ratioC)) + " | " + Verdict(bounded) + " |");
-        text.AppendLine("| Butin qui pèse sans dominer (" + Percent(settings.LootShareMin) + " à " + Percent(settings.LootShareMax) + " des recettes) | C : " + Percent(run.Loop.LootShare)
-            + " ; moyenne des " + seeds.Count + " graines : " + Percent(meanShare) + " | " + Verdict(lootOk) + " |");
+        text.AppendLine("| Butin qui pèse sans dominer (" + Percent(settings.LootShareMin) + " à " + Percent(settings.LootShareMax) + " des recettes, moyenne des graines) | moyenne des " + seeds.Count
+            + " graines : " + Percent(meanShare) + " (de " + Percent(seeds.Min(s => s.LootShare)) + " à " + Percent(seeds.Max(s => s.LootShare)) + ") ; graine " + run.Loop.Seed + " seule : " + LootShareText(run.Loop)
+            + " | " + Verdict(lootOk) + " |");
         text.AppendLine("| Aucun profit infini (" + settings.LongRunDays + " jours : dernier tiers ≤ 1,1 × le tiers du milieu, pas de dépassement) | B : × " + Ratio(longB)
             + " ; C : " + (double.IsNaN(longC) ? "partie arrêtée avant la fin" : "× " + Ratio(longC)) + " | " + Verdict(noInfinite) + " |");
         text.AppendLine();
@@ -204,7 +206,7 @@ public static class SimulationReportWriter
 
     private static void AppendOffProfile(StringBuilder text, SimulationRun run)
     {
-        text.AppendLine("## 3 bis. Ventes hors profil (une ville qui ne produit ni ne consomme la marchandise et l'achète seulement)");
+        text.AppendLine("## 3 bis. Ventes hors profil (interdites : une ville n'achète que ce qu'elle produit ou consomme ; ce tableau doit rester à 0)");
         text.AppendLine();
         text.AppendLine("| Scénario | Trajets hors profil | Part des trajets | Profit de ces trajets | Part du profit du commerce | Dont épices |");
         text.AppendLine("|---|---:|---:|---:|---:|---:|");
@@ -226,7 +228,7 @@ public static class SimulationReportWriter
         text.AppendLine("## 4. Évolution des prix (scénario B)");
         text.AppendLine();
         text.AppendLine("Prix médian (sans écart acheteur/vendeur) : moyenne, minimum et maximum sur la durée, par ville. `profil` = la ville produit ou consomme la marchandise ; "
-            + "`hors profil` = elle l'achète seulement, son stock tend vers 0. Entre parenthèses : part des jours au prix plancher (×" + pricing.MinFactor.ToString("0.##", CultureInfo.InvariantCulture)
+            + "`hors profil` = elle ne l'achète pas (une ville n'achète que ce qu'elle produit ou consomme) : ce prix n'est jamais appliqué. Entre parenthèses : part des jours au prix plancher (×" + pricing.MinFactor.ToString("0.##", CultureInfo.InvariantCulture)
             + ") / plafond (×" + pricing.MaxFactor.ToString("0.##", CultureInfo.InvariantCulture) + ").");
         text.AppendLine();
         for (int g = 0; g < goods.Count; g++)
@@ -238,7 +240,7 @@ public static class SimulationReportWriter
             text.AppendLine("|---|---|---:|---:|---:|---:|---:|---:|");
             foreach (PriceSeries s in reference.Series.Where(x => x.Good == good))
             {
-                text.AppendLine("| " + s.Town + " | " + (s.InProfile ? "profil" : "hors profil") + " | " + Money((long)s.MidMean) + " | " + Money(s.MidMin) + " | " + Money(s.MidMax)
+                text.AppendLine("| " + s.Town + " | " + (s.InProfile ? "profil" : "hors profil (n'achète pas)") + " | " + Money((long)s.MidMean) + " | " + Money(s.MidMin) + " | " + Money(s.MidMax)
                     + " | " + s.StockMin + "-" + s.StockMax + " | " + Percent(Share(s.DaysAtFloor, s.Samples)) + " / " + Percent(Share(s.DaysAtCeiling, s.Samples))
                     + " | " + Percent(Share(s.DaysZeroStock, s.Samples)) + " |");
             }
@@ -284,6 +286,8 @@ public static class SimulationReportWriter
             + " (perdu faute de place : " + Money(c.LootLostValue) + "), soit " + Percent(c.LootShare) + " des recettes.");
         text.AppendLine("- Soins : " + c.HitPointsRegenerated + " PV rendus par la régénération, " + c.HitPointsHealed + " PV à l'hôpital (" + c.HospitalVisits + " visite(s), " + Money(c.HealingCost) + ").");
         text.AppendLine("- Recrues : " + c.Recruits + " (" + Money(c.RecruitCost) + ") ; recrutement refusé pour dette : " + c.RecruitsRefusedForDebt + " fois ; plus grosse dette : " + Money(c.MaxDebt) + ".");
+        text.AppendLine("- Marchandises restées en cargaison à la fin (au prix de base) : " + Money(c.EndingCargoValue) + " ; moyenne sur les " + run.LoopSeeds().Count + " graines : "
+            + Money((long)run.LoopSeeds().Average(s => (double)s.EndingCargoValue)) + " (butin qu'aucune ville du chemin n'achetait, ou cargaison du trajet perdu).");
         text.AppendLine("- Groupe à la fin : " + c.EndingParty + ". Fin : " + c.EndReason);
         text.AppendLine();
 
@@ -516,13 +520,13 @@ public static class SimulationReportWriter
                 continue;
             }
 
-            if (Share(s.DaysAtCeiling, s.Samples) >= settings.StuckShare)
+            // Outside its profile a town does not buy the good: that price is never used.
+            if (s.InProfile && Share(s.DaysAtCeiling, s.Samples) >= settings.StuckShare)
             {
-                found.Add((s.InProfile ? "**Prix collé au plafond**" : "Prix au plafond car stock vide (hors profil)") + " : " + s.Good.DisplayName + " à " + s.Town
-                    + " (" + Percent(Share(s.DaysAtCeiling, s.Samples)) + " des jours).");
+                found.Add("**Prix collé au plafond** : " + s.Good.DisplayName + " à " + s.Town + " (" + Percent(Share(s.DaysAtCeiling, s.Samples)) + " des jours).");
             }
 
-            if (Share(s.DaysAtFloor, s.Samples) >= settings.StuckShare)
+            if (s.InProfile && Share(s.DaysAtFloor, s.Samples) >= settings.StuckShare)
             {
                 found.Add("**Prix collé au plancher** : " + s.Good.DisplayName + " à " + s.Town + " (" + Percent(Share(s.DaysAtFloor, s.Samples)) + " des jours).");
             }
@@ -658,6 +662,12 @@ public static class SimulationReportWriter
         });
         checks.Add(new Check
         {
+            Name = "Aucune vente à une ville hors de son profil (une ville n'achète que ce qu'elle produit ou consomme)",
+            Passed = every.All(s => s.Trips.All(t => !t.ToOffProfile)),
+            Detail = every.Sum(s => s.Trips.Count(t => t.ToOffProfile)) + " trajet(s) hors profil sur " + every.Sum(s => s.Trips.Count)
+        });
+        checks.Add(new Check
+        {
             Name = "T6. Pas de dépassement (soldes bien sous la limite des entiers)",
             Passed = every.All(s => s.EndingBalance < int.MaxValue / 2 && s.Sales < long.MaxValue / 4),
             Detail = "solde le plus haut : " + Money(every.Max(s => (long)s.EndingBalance))
@@ -737,14 +747,14 @@ public static class SimulationReportWriter
             yield return "**Salaires** : ils mangent " + Percent(wageShare) + " de la marge du commerce : les baisser, ou le commerce ne vaut presque plus le voyage.";
         }
 
-        double share = c.LootShare;
+        double share = seeds.Average(s => s.LootShare);
         if (share > settings.LootShareMax)
         {
-            yield return "**Butin** : " + Percent(share) + " des recettes (au-dessus de " + Percent(settings.LootShareMax) + ") : baisser la valeur des tables de butin ou allonger le délai de retour des bandes.";
+            yield return "**Butin** : " + Percent(share) + " des recettes en moyenne (au-dessus de " + Percent(settings.LootShareMax) + ") : baisser la valeur des tables de butin ou allonger le délai de retour des bandes.";
         }
         else if (share < settings.LootShareMin)
         {
-            yield return "**Butin** : " + Percent(share) + " des recettes (sous " + Percent(settings.LootShareMin) + ") : les combats rapportent peu face au commerce ; relever les tables ou raccourcir le délai de retour.";
+            yield return "**Butin** : " + Percent(share) + " des recettes en moyenne (sous " + Percent(settings.LootShareMin) + ") : les combats rapportent peu face au commerce ; relever les tables ou raccourcir le délai de retour.";
         }
 
         int lost = seeds.Count(s => s.Defeats > 0);
@@ -824,9 +834,7 @@ public static class SimulationReportWriter
         text.AppendLine("- Les bandes sont rencontrées au hasard sur la route ; leurs patrouilles et leur errance réelles ne sont pas modélisées.");
         text.AppendLine("- Le temps passé en ville est nul (comme dans le jeu) ; l'hôpital et le recrutement se paient directement, sans passer par leurs fenêtres.");
         text.AppendLine("- Les durées de trajet sont celles du chemin NavMesh à vitesse de base ralentie par les terrains traversés ; un détour décidé par le joueur n'est pas simulé.");
-        text.AppendLine("- Toutes les parties s'enchaînent sur le vrai calendrier, qui compte les minutes en `float` : après quelques milliers de jours simulés, sa précision tombe vers la demi-minute et peut décaler un passage de minuit. "
-            + "Le rapport est donc reproductible pour une **première exécution dans une session de jeu neuve** (c'est ainsi qu'il est produit) ; une deuxième exécution dans la même session peut changer légèrement les dernières parties (la sensibilité). "
-            + "Sans effet sur une partie de 100 jours (144 000 minutes, précision au centième de minute).");
+        text.AppendLine("- Toutes les parties s'enchaînent sur le vrai calendrier (en double précision) : le rapport est identique d'une exécution à l'autre, quel que soit le jour où elle commence.");
         text.AppendLine();
     }
 

@@ -45,7 +45,8 @@ public class MarketRowView : MonoBehaviour
         townStockText.text = MoneyFormat.Number(townStock);
         ownedText.text = owned > 0 ? MoneyFormat.Number(owned) : "-";
         buyText.text = buyPrice > 0 ? MoneyFormat.Number(buyPrice) : "rupture";
-        sellText.text = MoneyFormat.Number(sellPrice);
+        // 0: the town does not buy this good.
+        sellText.text = sellPrice > 0 ? MoneyFormat.Number(sellPrice) : "-";
         if (showProfit)
         {
             profitText.text = TradeSign(unitProfit);

@@ -7,11 +7,13 @@ using UnityEngine;
 /// nonstop. It follows the world's time, not the caravan's distance: it runs when the world runs (the caravan has
 /// an action, or the player lets time pass) and stands still when the world is frozen or paused (see
 /// CampaignPause). Slow terrain slows the caravan down but not the calendar. Read-only for everybody else.
+/// The minutes are counted in double precision: a float loses the fraction of a minute added each frame once the
+/// count reaches a few hundred days, and the campaigns are meant to last much longer.
 /// </summary>
 public class CampaignClock : MonoBehaviour
 {
-    private const float MinutesPerHour = 60f;
-    private const float MinutesPerDay = 1440f;
+    private const double MinutesPerHour = 60.0;
+    private const double MinutesPerDay = 1440.0;
 
     [SerializeField] private UnitMover caravan;
     [Tooltip("Game minutes that pass per meter the caravan walks at its base speed. With the speed, it sets the pace of the world's time.")]
@@ -19,7 +21,7 @@ public class CampaignClock : MonoBehaviour
     [Tooltip("Hour of the day (0-24) when the campaign starts, on day 1.")]
     [SerializeField] private float startHour = 8f;
 
-    private float totalMinutes;
+    private double totalMinutes;
     private float minutesPerSecond;
 
     /// <summary>
@@ -32,8 +34,8 @@ public class CampaignClock : MonoBehaviour
     public float MinutesPerMeter => minutesPerMeter;
 
     /// <summary>Game minutes elapsed since day 1, 00:00.</summary>
-    public float TotalMinutes => totalMinutes;
-    public int Day => 1 + (int)(totalMinutes / MinutesPerDay);
+    public double TotalMinutes => totalMinutes;
+    public int Day => 1 + (int)Math.Floor(totalMinutes / MinutesPerDay);
     public int Hour => (int)(totalMinutes % MinutesPerDay / MinutesPerHour);
     public int Minute => (int)(totalMinutes % MinutesPerHour);
 
@@ -67,15 +69,15 @@ public class CampaignClock : MonoBehaviour
     /// Moves the calendar forward by this many game minutes at once (a debug jump, later the time the player lets
     /// pass in town). Every day it crosses raises DayStarted, so the rest of the world follows.
     /// </summary>
-    public void AdvanceMinutes(float minutes)
+    public void AdvanceMinutes(double minutes)
     {
-        if (minutes > 0f)
+        if (minutes > 0.0)
         {
             AddMinutes(minutes);
         }
     }
 
-    private void AddMinutes(float minutes)
+    private void AddMinutes(double minutes)
     {
         int before = Day;
         totalMinutes += minutes;

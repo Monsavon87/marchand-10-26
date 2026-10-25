@@ -5,8 +5,10 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// The market window of a town, with two tabs: Buy and Sell. Both show every good in a table (what the town has, what
-/// the player has, the two prices, what a unit sold here would earn over what it cost, where the price is heading), a
+/// The market window of a town, with two tabs: Buy (what the town offers) and Sell (what it buys: the goods of its
+/// profile, and what the player carries, so a good the town does not buy is seen with the reason). Both show a table
+/// (what the town has, what the player has, the price, what a unit sold here would earn over what it cost, where the
+/// price is heading), a
 /// selection with its quantity (1, +1, +10, Max) and, for the tab in use, a preview of what the trade would come to, the
 /// button to do it and the reason written when it cannot be done. Max is the most that can be bought in the Buy tab and
 /// everything owned in the Sell tab. It works only through the trade service and the events (a trade, the money, the
@@ -270,10 +272,11 @@ public class MarketWindow : TownFunctionWindow
             int owned = inventory.GetQuantity(good);
             row.Show(market.GetStock(good), owned,
                 tradeService.UnitPrice(TradeKind.Buy, market, good), tradeService.UnitPrice(TradeKind.Sell, market, good),
-                tradeService.GetTrend(market, good, tab, Quantity), owned > 0, tradeService.UnitProfit(market, good));
-            // Buy tab: only what the town offers (in stock or made there), with the buying price. Sell tab: everything the
-            // town buys, which is every good, with the selling price and the profit.
-            row.gameObject.SetActive(!buying || market.IsOffered(good));
+                tradeService.GetTrend(market, good, tab, Quantity), owned > 0 && market.IsInProfile(good), tradeService.UnitProfit(market, good));
+            // Buy tab: only what the town offers (in stock or made there), with the buying price. Sell tab: what the town
+            // buys (the goods of its profile), with the selling price and the profit, and what the player carries, so a
+            // good the town does not buy is still seen, with the reason.
+            row.gameObject.SetActive(IsListed(good, buying));
             row.SetTab(buying);
             row.SetSelected(good == selected);
         }
@@ -305,7 +308,7 @@ public class MarketWindow : TownFunctionWindow
     // The selected good must be one of the lines listed in the tab in use; if not, the first listed one is chosen.
     private void EnsureSelectionListed(bool buying)
     {
-        if (!buying || market.IsOffered(selected))
+        if (IsListed(selected, buying))
         {
             return;
         }
@@ -313,12 +316,18 @@ public class MarketWindow : TownFunctionWindow
         IReadOnlyList<GoodDefinition> goods = market.AllGoods;
         for (int i = 0; i < goods.Count; i++)
         {
-            if (market.IsOffered(goods[i]))
+            if (IsListed(goods[i], buying))
             {
                 selected = goods[i];
                 return;
             }
         }
+    }
+
+    // Buy tab: what the town offers. Sell tab: what it buys, and what the player carries.
+    private bool IsListed(GoodDefinition good, bool buying)
+    {
+        return buying ? market.IsOffered(good) : market.IsInProfile(good) || inventory.GetQuantity(good) > 0;
     }
 
     private void ShowPreview(TradePreview preview, Text previewText, Text reasonText, Button button)

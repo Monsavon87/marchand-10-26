@@ -106,7 +106,7 @@ Un script = une responsabilité, rangé par fonctionnalité. Chaque classe a un 
 | Script                         | Rôle                                                                                                                                                        |
 | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CampaignPause`                | **Seul propriétaire de `Time.timeScale` sur la carte** ; états `CampaignTimeState` (voir § 4.1)                                                             |
-| `CampaignClock`                | Calendrier de la carte ; événement `DayStarted` ; `AdvanceMinutes`                                                                                          |
+| `CampaignClock`                | Calendrier de la carte (minutes en `double`) ; événement `DayStarted` ; `AdvanceMinutes`                                                                                          |
 | `CampaignTravel`               | Clic sur une ville = aller à son entrée ; événement `TownReached` (qui vide aussi la file d'ordres de la caravane)                                                                                           |
 | `CampaignEncounters`           | Détecte le contact caravane / ennemi                                                                                                                        |
 | `CampaignEncounterFlow`        | Rencontre → combat → retour : construit `EncounterData`, endort la carte, charge l'arène, applique le résultat (survivants, butin, bande mise de côté, défaite) |
@@ -272,10 +272,11 @@ Lancer : entrer en Play Mode dans `Demo_Campaign` (session neuve), puis appeler 
 - **Tests au clavier simulé** : dans une longue session de Play, les touches simulées finissent par ne plus être vues ; relancer le Play. Les touches I et Échap n'ont été testées qu'indirectement.
 - **Namespace** : dans un script éditeur, écrire `UnityEngine.UI.Image` (alias `UImage`) pour éviter la collision avec un autre type `Image`.
 - **Paie et calendrier du simulateur** : `EconomySimulator` avance le vrai calendrier ; il coupe la vraie paie (`PartyPayroll.enabled = false`) pendant la simulation et paie lui-même son groupe simulé, puis la remet. Tout nouveau coût quotidien du jeu prélevé sur le Wallet doit être coupé ou suivi de la même façon, et ajouté au grand livre (`ScenarioResult.LedgerBalance`), sinon le contrôle T2 échoue.
-- **Précision du calendrier** : `CampaignClock` compte les minutes en `float`. Le simulateur enchaîne des milliers de jours : un rapport n'est reproductible que pour la première exécution d'une session neuve. Une partie de jeu de 100 jours n'est pas concernée.
+- **Précision du calendrier** : `CampaignClock` compte les minutes en `double` : ne pas revenir à un `float` (la fraction de minute ajoutée à chaque image se perd dès quelques centaines de jours, et les rapports du simulateur ne seraient plus reproductibles).
 - **`NavMeshPath` dans un champ** : le créer dans `Awake` ou `Start`, jamais dans l'initialiseur d'un champ de MonoBehaviour (exception au chargement).
 - **Tests qui avancent le calendrier** : au-delà du jour 100, `DemoGoal` termine la démo et fige la carte (état Held, bandes immobiles) : rester sous 100 jours ou relancer le Play.
 - **Tester une défaite de bande sans combat** : désactiver la bande et appeler `OnBandDefeated` du `BandRespawner` par `SendMessage` (l'événement du flux ne peut pas être levé de l'extérieur).
+- **Une ville n'achète que son profil** : `TradeService` refuse une vente hors profil (`TradeStatus.NotBoughtHere`) ; tout nouvel acheteur (simulateur, interface, quête) doit passer par lui ou tester `Market.IsInProfile`, et `TradePlanner` ne vise que des villes qui achètent.
 - **Test dans la scène du jeu** : `CampaignEncounterFlow` endort tous les objets racine de la scène sauf le sien. Tout nouvel objet racine de `Demo_Campaign` dort donc pendant un combat ; ne pas y mettre ce qui doit rester éveillé.
 
 ---
@@ -286,7 +287,7 @@ Fait : démo jouable (v0.1.0), économie E1 à E9, butin en marchandises (F1), m
 
 À décider avec le responsable du jeu :
 
-1. **Réglages d'équilibrage** d'après `ECONOMY_REPORT.md` : bornes de prix (le profit repose trop sur des épices revendues à une ville qui n'en a pas), `defaultTargetStock` des profils, butin des bandes (maintenant en U.V. et en marchandises, à rejuger sur le rapport), prix des recrues.
+1. **Réglages d'équilibrage** d'après `ECONOMY_REPORT.md` : bornes de prix (marge théorique de 262 %), profils des villes (une ville n'achète plus que son profil : les routes rentables sont celles du profil), butin des bandes (maintenant en U.V. et en marchandises, à rejuger sur le rapport), prix des recrues.
 2. **Départ de la partie** : avec seulement la part en U.V. du plus petit butin (≈ 600 U.V.), le marchand simulé se bloque ; avec la valeur complète (marchandises vendues), il s'en sort (rapport, § 5 bis). À juger en jouant : faut-il un petit capital de départ ?
 3. **Partie manuelle** : la jouer depuis 0 U.V. pour juger du rythme (le simulateur ne peut pas le faire).
 4. Points de design non tranchés : liste du § 8 de `GAME_DESIGN.md` (initiative, aggro, course, ouïe, équilibrage des unités, dialogue avant combat, arène intérieure).

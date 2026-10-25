@@ -154,6 +154,8 @@ public class ScenarioResult
     /// <summary>The group at the end ("Fantassin 40/40, ...").</summary>
     public string EndingParty = string.Empty;
     public int EndingPartySize;
+    /// <summary>Goods left in the cargo at the end, at base price (goods of loot that no town on the way bought).</summary>
+    public long EndingCargoValue;
     public int StartingPartySize;
     public int RefusedTrades;
     public string EndReason = string.Empty;

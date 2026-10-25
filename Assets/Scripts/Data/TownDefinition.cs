@@ -28,7 +28,7 @@ public class TownDefinition : ScriptableObject
     [Tooltip("What kind of town it is (Agricole, Portuaire...), for the debug view.")]
     [SerializeField] private string profileName = "Profil";
     [SerializeField] private List<GoodStockProfile> entries = new List<GoodStockProfile>();
-    [Tooltip("The town buys every good, even one it does not trade. For those goods it has no stock at first, and this is the target stock their price is measured against. More than 0.")]
+    [Tooltip("The town buys only the goods of its profile. For the others it has no stock, and this is only the target their (unused) price would be measured against. More than 0.")]
     [Min(1)] [SerializeField] private int defaultTargetStock = 10;
 
     public string ProfileName => profileName;

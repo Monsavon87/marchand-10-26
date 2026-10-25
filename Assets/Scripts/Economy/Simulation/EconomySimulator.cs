@@ -233,7 +233,7 @@ public class EconomySimulator : MonoBehaviour
         PriceSeries[,] series = CreateSeries(result);
         int fullHealth = Math.Min(settings.TargetPartySize, recruitment.MaxSize) * (recruitDefinition != null ? recruitDefinition.MaxHealth : 1);
 
-        float startMinutes = clock.TotalMinutes;
+        double startMinutes = clock.TotalMinutes;
         ticker.DayApplied += OnDayApplied;
         pendingSeries = series;
         Sample(series);
@@ -329,7 +329,12 @@ public class EconomySimulator : MonoBehaviour
         result.EndingDebt = debt;
         result.EndingParty = party.Describe();
         result.EndingPartySize = party.Count;
-        result.DaysElapsed = Mathf.Max(1, Mathf.CeilToInt((clock.TotalMinutes - startMinutes) / MinutesPerDay));
+        for (int g = 0; g < goods.Count; g++)
+        {
+            result.EndingCargoValue += (long)goods[g].BasePrice * inventory.GetQuantity(goods[g]);
+        }
+
+        result.DaysElapsed = Math.Max(1, (int)Math.Ceiling((clock.TotalMinutes - startMinutes) / MinutesPerDay));
         if (string.IsNullOrEmpty(result.EndReason))
         {
             result.EndReason = "Terminé : " + days + " jours écoulés.";
@@ -455,6 +460,12 @@ public class EconomySimulator : MonoBehaviour
     {
         for (int g = 0; g < goods.Count; g++)
         {
+            // A town buys only the goods of its profile: the others stay in the cargo (goods found in loot).
+            if (!town.IsInProfile(goods[g]))
+            {
+                continue;
+            }
+
             for (int attempt = 0; attempt < 5 && inventory.GetQuantity(goods[g]) > 0; attempt++)
             {
                 TradeResult sold = tradeService.SellMax(town, goods[g]);
@@ -594,8 +605,8 @@ public class EconomySimulator : MonoBehaviour
     // stock, an empty cargo and an empty wallet. The calendar is moved first (it makes the markets live a day).
     private void ResetWorld()
     {
-        float into = clock.TotalMinutes % MinutesPerDay;
-        float toStart = StartHour * 60f - into;
+        double into = clock.TotalMinutes % MinutesPerDay;
+        double toStart = StartHour * 60.0 - into;
         clock.AdvanceMinutes(toStart > 1f ? toStart : toStart + MinutesPerDay);
 
         if (wallet.Balance > 0)
