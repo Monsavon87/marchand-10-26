@@ -44,6 +44,7 @@
 ## Interface (UI)
 - Toute fenêtre qui s'ouvre passe au premier plan : elle appelle `UiLayering.BringToFront` à l'ouverture, pour que le résultat ne dépende jamais de l'ordre des objets dans la scène. Les affichages permanents de l'écran (horloge, groupe, U.V. et cargaison) restent en dessous de toutes les fenêtres.
 - Une nouvelle fenêtre ou un nouvel affichage = vérifier à l'écran (capture) qu'il est bien au-dessus ou au-dessous de ce qu'il faut.
+- La page d'aide a une place limitée : le principe tient en 5 ou 6 lignes de 140 caractères au plus. Quand une étape y ajoute du texte, vérifier par capture que rien ne déborde sur les listes de contrôles (résumer plutôt qu'empiler).
 
 ## Compétences Unity
 - Avant de toucher à l'UI, URP, post-processing, NavMesh, physique, audio ou packages, utilise le skill Unity correspondant si disponible.
