@@ -5589,7 +5589,6 @@ MonoBehaviour:
   payroll: {fileID: 304521187}
   caravanActions: {fileID: 2733532370329639515}
   startMessage: 'Trouvez le voleur pour vous lancer : son butin sera votre premier capital.'
-  startMessageDuration: 12
   messageDuration: 4
   refreshInterval: 0.1
 --- !u!114 &681525956
