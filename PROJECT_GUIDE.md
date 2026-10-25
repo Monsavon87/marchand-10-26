@@ -117,11 +117,12 @@ Un script = une responsabilité, rangé par fonctionnalité. Chaque classe a un 
 | `PointOfInterest`              | Une ville de la carte (données et test de clic)                                                                                                             |
 | `TownRest`, `TownRecruitment`  | Arrivée en ville (l'événement qui ouvre la fenêtre de ville ; elle ne soigne plus rien) et recrutement |
 | `PartyRegeneration`, `HealingRules`, `TownHospital` | Régénération naturelle du groupe (8 % des PV max par jour du monde, plafonnée à 80 %), la règle de calcul pure, et l'hôpital (soin payé en U.V., 25 par PV rendu, par unité ou pour tout le groupe) ; réglages dans `HealingSettings` |
+| `PartyPayroll`, `IDailyCost`, `WageCost` | Paie des salaires du groupe à chaque début de jour (`DayStarted`), 7 jours offerts, dette si solde insuffisant (payée en premier ensuite) ; `IDailyCost` est le point d'extension pour d'autres coûts quotidiens (seul `WageCost` existe) ; réglages dans `PayrollSettings` |
 | `CampaignHud`                  | Horloge, message, état du temps                                                                                                                             |
 
 ### Données (`Data/`) — les ScriptableObjects (voir § 5)
 
-`UnitDefinition`, `AIProfile`, `CombatSettings`, `CombatRulesSettings`, `AttackZoneSettings`, `ActionTimingSettings`, `TerrainSettings`, `HealingSettings`, `RecruitmentSettings`, `EncounterChannel` / `EncounterData`, `GameHelp`, `PartyMember`, et pour l'économie `GoodDefinition`, `GoodCatalog`, `TownDefinition`, `CargoCapacity`, `PricingSettings`, `EconomySettings`, et pour le butin `LootTable` (valeur totale et ressources d'une bande) et `LootWealthScale` (les mots Maigre à Très riche).
+`UnitDefinition`, `AIProfile`, `CombatSettings`, `CombatRulesSettings`, `AttackZoneSettings`, `ActionTimingSettings`, `TerrainSettings`, `HealingSettings`, `PayrollSettings`, `RecruitmentSettings`, `EncounterChannel` / `EncounterData`, `GameHelp`, `PartyMember`, et pour l'économie `GoodDefinition`, `GoodCatalog`, `TownDefinition`, `CargoCapacity`, `PricingSettings`, `EconomySettings`, et pour le butin `LootTable` (valeur totale et ressources d'une bande) et `LootWealthScale` (les mots Maigre à Très riche).
 
 ### Économie (`Economy/`)
 
@@ -152,6 +153,7 @@ Un script = une responsabilité, rangé par fonctionnalité. Chaque classe a un 
 | `Campaign/RecruitmentWindow`                                                                                     | Fenêtre de recrutement                                                                                        |
 | `Campaign/HospitalWindow`                                                                                        | Fenêtre de l'hôpital : une ligne par unité (PV, prix du soin complet, bouton) et un bouton pour tout le groupe, refus avec la raison |
 | `Campaign/InventoryPanel`, `TradeHud`                                                                            | Cargaison (touche I) ; U.V. et cargaison en permanence sur la carte                                           |
+| `Campaign/PayrollHud`                                                                                            | Ligne « Salaires : X U.V. par jour » et « Dette » en rouge, sur la carte (événementielle) |
 | `Campaign/GameOverScreen`, `DemoEndScreen`, `BandTargeting`, `TownLabel`, `CampaignMenuButtons`, `LabeledButton` | Fin de partie, fin de démo, niveau de richesse du butin de la bande survolée, nom des villes, boutons Menu / Aide                   |
 | `Combat/*`                                                                                                       | Panneau de l'unité, barre d'ordres, boutons d'action, bandeau d'unités, barres de vie, écran de fin de combat |
 | `HelpPanel`, `Menu/MainMenu`, `Menu/VersionLabel`, `PathPreview`, `CursorTextures`                               | Aide, écran-titre, numéro de version, ligne de trajet, curseurs                                               |
@@ -206,6 +208,8 @@ Tout se règle dans des ScriptableObjects (`Assets/ScriptableObjects/`) :
 | Les terrains (coût de chemin, vitesse)                     | `TerrainSettings`                                                            |
 | Les offres et le prix de recrutement, la taille du groupe  | `RecruitmentSettings`                                                        |
 | La régénération (% par jour, plafond) et le prix du soin par PV | `HealingSettings_Default` |
+| Le salaire par jour d'une unité | `UnitDefinition.dailyWage` (`Def_*`) |
+| Les jours de paie offerts, la dette qui bloque le recrutement | `PayrollSettings_Default` |
 | Le texte de l'aide                                         | `GameHelp`                                                                   |
 | Un prix de base, une masse, un volume                      | `Economy/Goods/Good_*`                                                       |
 | Ce que produit / consomme une ville, son stock cible       | `Economy/Towns/Town_*`                                                       |
@@ -264,13 +268,14 @@ Lancer : entrer en Play Mode dans `Demo_Campaign`, puis appeler `EconomySimulato
 - **Versions de démo** : toujours au format x.y.z (`PlayerSettings.bundleVersion`), zip nommé `Marchand_Demo_Windows_vX.Y.Z.zip`, version et commit notés dans `PROJECT_LOG.md`.
 - **Tests au clavier simulé** : dans une longue session de Play, les touches simulées finissent par ne plus être vues ; relancer le Play. Les touches I et Échap n'ont été testées qu'indirectement.
 - **Namespace** : dans un script éditeur, écrire `UnityEngine.UI.Image` (alias `UImage`) pour éviter la collision avec un autre type `Image`.
+- **Paie et calendrier du simulateur** : `EconomySimulator` avance le vrai calendrier, donc la vraie paie se déclenche ; il suit `PartyPayroll.Settled` pour garder son solde attendu et remet la dette à zéro entre scénarios. Tout nouveau coût quotidien prélevé sur le Wallet doit être suivi de la même façon.
 - **Test dans la scène du jeu** : `CampaignEncounterFlow` endort tous les objets racine de la scène sauf le sien. Tout nouvel objet racine de `Demo_Campaign` dort donc pendant un combat ; ne pas y mettre ce qui doit rester éveillé.
 
 ---
 
 ## 10. Où en est-on, et la suite
 
-Fait : démo jouable (v0.1.0), économie E1 à E9, butin en marchandises (F1), marché à onglets et profit (F2), retour des bandes et nouveau but de la démo (F3), soin naturel et hôpital (F4).
+Fait : démo jouable (v0.1.0), économie E1 à E9, butin en marchandises (F1), marché à onglets et profit (F2), retour des bandes et nouveau but de la démo (F3), soin naturel et hôpital (F4), salaires du groupe et dette (F5).
 
 À décider avec le responsable du jeu :
 

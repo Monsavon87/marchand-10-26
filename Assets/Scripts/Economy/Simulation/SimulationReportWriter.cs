@@ -183,6 +183,8 @@ public static class SimulationReportWriter
         text.AppendLine("- Profit net : **" + Money(combat.NetProfit) + "** en " + combat.DaysElapsed + " jours (sans combat : " + Money(reference.NetProfit) + ").");
         text.AppendLine("- Combats : " + combat.Victories + " victoire(s), " + combat.Defeats + " défaite(s) ; unités perdues : " + combat.UnitsLost
             + " ; valeur du butin ramassé : " + Money(combat.LootTotal) + " (perdu faute de place : " + Money(combat.LootLostValue) + ") ; coût des remplacements : " + Money(combat.ReplacementCost) + ".");
+        text.AppendLine("- Salaires payés : " + Money(combat.WagesPaid) + " (sans combat : " + Money(reference.WagesPaid) + ") ; dette restante : " + Money(combat.EndingDebt)
+            + " (déjà retirée du profit net).");
         text.AppendLine("- Fin : " + combat.EndReason);
         text.AppendLine();
         var all = new List<ScenarioResult> { combat };
@@ -259,6 +261,8 @@ public static class SimulationReportWriter
         text.AppendLine("- Le profit d'un trajet avec combat comprend la vente des marchandises ramassées (elles se mélangent à la cargaison) : ces trajets sont exclus du contrôle de rendement par trajet.");
         text.AppendLine("- Les blessures et leur soin (régénération, hôpital) ne sont pas modélisés : un combat gagné ne coûte que les unités perdues.");
         text.AppendLine("- Les bandes sont supposées immobiles et rencontrées au hasard sur la route ; les patrouilles réelles ne sont pas modélisées.");
+        text.AppendLine("- Les salaires sont ceux du vrai groupe de la scène (sa composition réelle, pas les 4 unités du modèle de combat) et sont prélevés par la vraie paie à chaque minuit : "
+            + "le marchand simulé ne les prévoit pas, il dépense tout son argent en marchandises. Le calendrier ne revient jamais en arrière : seul le premier scénario profite des jours offerts.");
         text.AppendLine("- Le temps passé en ville est nul (comme dans le jeu) ; le recrutement se paie directement, sans passer par la fenêtre de recrutement.");
         text.AppendLine("- Les durées de trajet sont celles du chemin NavMesh à vitesse de base ralentie par les terrains traversés ; un détour décidé par le joueur n'est pas simulé.");
         text.AppendLine();

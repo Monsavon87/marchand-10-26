@@ -6,12 +6,12 @@ Simulation sans rendu de **100 jours**, graine **1**, capital de départ **10 00
 
 | Scénario | Profit net | Profit / jour | Trajets | Profit / trajet | Jours d'attente | Combats (V/D) | Fin |
 |---|---:|---:|---:|---:|---:|---:|---|
-| A. Marchand glouton, sans combat | 208 446 U.V. | 2 063 U.V. | 93 | 2 241 U.V. | 0 | 0 / 0 | Terminé : 100 jours écoulés. |
-| B. Marchand prévoyant, sans combat | 170 183 U.V. | 1 684 U.V. | 95 | 1 791 U.V. | 0 | 0 / 0 | Terminé : 100 jours écoulés. |
-| B'. Même scénario B rejoué (contrôle de graine) | 170 183 U.V. | 1 684 U.V. | 95 | 1 791 U.V. | 0 | 0 / 0 | Terminé : 100 jours écoulés. |
-| C. Marchand prévoyant, avec combats | 22 378 U.V. | 1 316 U.V. | 14 | 1 598 U.V. | 0 | 3 / 1 | Défaite en combat sur la route Bourg-Val > Port-Brume (fin de la campagne). |
-| E. Départ réaliste (capital = argent du plus petit butin), sans combat | 1 283 U.V. | 80 U.V. | 5 | 256 U.V. | 11 | 0 / 0 | Bloqué : aucun trajet rentable pendant 10 jours (ville Bourg-Val). |
-| E2. Départ réaliste (capital = valeur complète du plus petit butin), sans combat | 168 385 U.V. | 1 667 U.V. | 95 | 1 772 U.V. | 0 | 0 / 0 | Terminé : 100 jours écoulés. |
+| A. Marchand glouton, sans combat | 199 421 U.V. | 1 974 U.V. | 93 | 2 144 U.V. | 0 | 0 / 0 | Terminé : 100 jours écoulés. |
+| B. Marchand prévoyant, sans combat | 160 683 U.V. | 1 590 U.V. | 95 | 1 691 U.V. | 0 | 0 / 0 | Terminé : 100 jours écoulés. |
+| B'. Même scénario B rejoué (contrôle de graine) | 160 683 U.V. | 1 590 U.V. | 95 | 1 691 U.V. | 0 | 0 / 0 | Terminé : 100 jours écoulés. |
+| C. Marchand prévoyant, avec combats | 20 858 U.V. | 1 226 U.V. | 14 | 1 489 U.V. | 0 | 3 / 1 | Défaite en combat sur la route Bourg-Val > Port-Brume (fin de la campagne). |
+| E. Départ réaliste (capital = argent du plus petit butin), sans combat | 469 U.V. | 24 U.V. | 8 | 58 U.V. | 11 | 0 / 0 | Bloqué : aucun trajet rentable pendant 10 jours (ville Bourg-Val). |
+| E2. Départ réaliste (capital = valeur complète du plus petit butin), sans combat | 158 667 U.V. | 1 570 U.V. | 95 | 1 670 U.V. | 0 | 0 / 0 | Terminé : 100 jours écoulés. |
 
 ## 2. Durées de trajet (jours de calendrier, distance en mètres)
 
@@ -181,8 +181,9 @@ Prix médian (sans écart acheteur/vendeur) : moyenne, minimum et maximum sur la
 
 Les combats sont tirés au sort (pas d'arène) : chance de rencontre par jour de voyage, chance de victoire réduite quand le groupe est amoindri, butin de chaque bande de la carte (tiré dans sa table, U.V. et marchandises ; une bande battue revient après le délai des réglages de retour avec un nouveau butin ; les marchandises qui ne rentrent pas dans la cargaison sont perdues, les plus chères entrent d'abord), unités perdues rachetées à la ville suivante au prix de la moins chère des recrues.
 
-- Profit net : **22 378 U.V.** en 17 jours (sans combat : 170 183 U.V.).
+- Profit net : **20 858 U.V.** en 17 jours (sans combat : 160 683 U.V.).
 - Combats : 3 victoire(s), 1 défaite(s) ; unités perdues : 2 ; valeur du butin ramassé : 13 767 U.V. (perdu faute de place : 0 U.V.) ; coût des remplacements : 6 000 U.V..
+- Salaires payés : 1 520 U.V. (sans combat : 9 500 U.V.) ; dette restante : 0 U.V. (déjà retirée du profit net).
 - Fin : Défaite en combat sur la route Bourg-Val > Port-Brume (fin de la campagne).
 
 Trajets avec un combat (graine 1) : 3 victoire(s), 2 unité(s) perdue(s), butin 13 767 U.V., remplacements 6 000 U.V..
@@ -198,26 +199,26 @@ Effet de la chance (même scénario, 10 graines) :
 
 | Graine | Profit net | Jours | Victoires | Défaites | Unités perdues | Valeur du butin | Butin perdu | Remplacements | Fin |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| 1 | 22 378 U.V. | 17 | 3 | 1 | 2 | 13 767 U.V. | 0 U.V. | 6 000 U.V. | Défaite en combat sur la route Bourg-Val > Port-Brume (fin de la campagne). |
-| 2 | 5 238 U.V. | 9 | 1 | 1 | 0 | 5 117 U.V. | 0 U.V. | 0 U.V. | Défaite en combat sur la route Bourg-Val > Aubeterre (fin de la campagne). |
-| 3 | 68 257 U.V. | 21 | 3 | 1 | 4 | 16 114 U.V. | 0 U.V. | 12 000 U.V. | Défaite en combat sur la route Bourg-Val > Aubeterre (fin de la campagne). |
-| 4 | -8 222 U.V. | 5 | 1 | 1 | 2 | 2 209 U.V. | 0 U.V. | 6 000 U.V. | Défaite en combat sur la route Hautmont > Aubeterre (fin de la campagne). |
-| 5 | 23 384 U.V. | 12 | 4 | 1 | 5 | 25 179 U.V. | 0 U.V. | 15 000 U.V. | Défaite en combat sur la route Aubeterre > Bourg-Val (fin de la campagne). |
-| 6 | -8 613 U.V. | 7 | 1 | 1 | 2 | 4 728 U.V. | 0 U.V. | 6 000 U.V. | Défaite en combat sur la route Bourg-Val > Hautmont (fin de la campagne). |
-| 7 | -7 456 U.V. | 7 | 0 | 1 | 0 | 0 U.V. | 0 U.V. | 0 U.V. | Défaite en combat sur la route Bourg-Val > Hautmont (fin de la campagne). |
-| 8 | -6 959 U.V. | 3 | 0 | 1 | 0 | 0 U.V. | 0 U.V. | 0 U.V. | Défaite en combat sur la route Bourg-Val > Aubeterre (fin de la campagne). |
-| 9 | -7 501 U.V. | 10 | 2 | 1 | 4 | 9 960 U.V. | 0 U.V. | 12 000 U.V. | Défaite en combat sur la route Bourg-Val > Hautmont (fin de la campagne). |
-| 10 | 27 643 U.V. | 12 | 2 | 1 | 0 | 11 621 U.V. | 0 U.V. | 0 U.V. | Défaite en combat sur la route Aubeterre > Bourg-Val (fin de la campagne). |
+| 1 | 20 858 U.V. | 17 | 3 | 1 | 2 | 13 767 U.V. | 0 U.V. | 6 000 U.V. | Défaite en combat sur la route Bourg-Val > Port-Brume (fin de la campagne). |
+| 2 | 4 478 U.V. | 9 | 1 | 1 | 0 | 5 117 U.V. | 0 U.V. | 0 U.V. | Défaite en combat sur la route Bourg-Val > Aubeterre (fin de la campagne). |
+| 3 | 57 117 U.V. | 21 | 3 | 1 | 4 | 16 114 U.V. | 0 U.V. | 12 000 U.V. | Défaite en combat sur la route Bourg-Val > Aubeterre (fin de la campagne). |
+| 4 | -8 602 U.V. | 5 | 1 | 1 | 2 | 2 209 U.V. | 0 U.V. | 6 000 U.V. | Défaite en combat sur la route Hautmont > Aubeterre (fin de la campagne). |
+| 5 | 22 339 U.V. | 12 | 4 | 1 | 5 | 25 179 U.V. | 0 U.V. | 15 000 U.V. | Défaite en combat sur la route Aubeterre > Bourg-Val (fin de la campagne). |
+| 6 | -9 278 U.V. | 7 | 1 | 1 | 2 | 4 728 U.V. | 0 U.V. | 6 000 U.V. | Défaite en combat sur la route Bourg-Val > Hautmont (fin de la campagne). |
+| 7 | -8 121 U.V. | 7 | 0 | 1 | 0 | 0 U.V. | 0 U.V. | 0 U.V. | Défaite en combat sur la route Bourg-Val > Hautmont (fin de la campagne). |
+| 8 | -7 149 U.V. | 3 | 0 | 1 | 0 | 0 U.V. | 0 U.V. | 0 U.V. | Défaite en combat sur la route Bourg-Val > Aubeterre (fin de la campagne). |
+| 9 | -8 356 U.V. | 10 | 2 | 1 | 4 | 9 960 U.V. | 0 U.V. | 12 000 U.V. | Défaite en combat sur la route Bourg-Val > Hautmont (fin de la campagne). |
+| 10 | 26 598 U.V. | 12 | 2 | 1 | 0 | 11 621 U.V. | 0 U.V. | 0 U.V. | Défaite en combat sur la route Aubeterre > Bourg-Val (fin de la campagne). |
 
-Parties perdues en combat : 10 sur 10. Profit net : minimum -8 613 U.V., moyenne 10 814 U.V., maximum 68 257 U.V..
+Parties perdues en combat : 10 sur 10. Profit net : minimum -9 278 U.V., moyenne 8 988 U.V., maximum 57 117 U.V..
 
 ## 5 bis. Le départ de la partie manuelle
 
 La caravane démarre avec **0 U.V.** : sans argent on ne peut rien acheter, la première somme vient du butin d'une bande (une partie en U.V., le reste en marchandises à revendre). Butin des bandes de la carte (valeur totale tirée dans la table de la bande, U.V. et marchandises au prix de base) : 1 500 U.V. à 3 000 U.V., 2 500 U.V. à 4 500 U.V., 3 000 U.V. à 6 000 U.V., 4 000 U.V. à 8 000 U.V., 4 500 U.V. à 8 500 U.V., 8 000 U.V. à 16 000 U.V.. La recrue la moins chère coûte 3 000 U.V..
 
-Scénario E : un marchand prévoyant qui part avec la seule part en U.V. du plus petit butin (600 U.V.) finit à 1 883 U.V. en 16 jours (5 trajets) ; il double son capital au jour 6. Bloqué : aucun trajet rentable pendant 10 jours (ville Bourg-Val).
+Scénario E : un marchand prévoyant qui part avec la seule part en U.V. du plus petit butin (600 U.V.) finit à 1 069 U.V. en 19 jours (8 trajets) ; il double son capital au jour 10. Bloqué : aucun trajet rentable pendant 10 jours (ville Bourg-Val).
 
-Scénario E2 : le même, en comptant aussi les marchandises de ce butin comme de l'argent (1 500 U.V.) finit à 169 885 U.V. en 101 jours (95 trajets) ; il double son capital au jour 7. Terminé : 100 jours écoulés.
+Scénario E2 : le même, en comptant aussi les marchandises de ce butin comme de l'argent (1 500 U.V.) finit à 160 167 U.V. en 101 jours (95 trajets) ; il double son capital au jour 7. Terminé : 100 jours écoulés.
 
 ## 6. Anomalies
 
@@ -263,6 +264,7 @@ Pistes déduites des anomalies ci-dessus :
 - Le profit d'un trajet avec combat comprend la vente des marchandises ramassées (elles se mélangent à la cargaison) : ces trajets sont exclus du contrôle de rendement par trajet.
 - Les blessures et leur soin (régénération, hôpital) ne sont pas modélisés : un combat gagné ne coûte que les unités perdues.
 - Les bandes sont supposées immobiles et rencontrées au hasard sur la route ; les patrouilles réelles ne sont pas modélisées.
+- Les salaires sont ceux du vrai groupe de la scène (sa composition réelle, pas les 4 unités du modèle de combat) et sont prélevés par la vraie paie à chaque minuit : le marchand simulé ne les prévoit pas, il dépense tout son argent en marchandises. Le calendrier ne revient jamais en arrière : seul le premier scénario profite des jours offerts.
 - Le temps passé en ville est nul (comme dans le jeu) ; le recrutement se paie directement, sans passer par la fenêtre de recrutement.
 - Les durées de trajet sont celles du chemin NavMesh à vitesse de base ralentie par les terrains traversés ; un détour décidé par le joueur n'est pas simulé.
 

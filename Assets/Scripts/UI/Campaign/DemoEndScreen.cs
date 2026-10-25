@@ -62,6 +62,7 @@ public class DemoEndScreen : MonoBehaviour
         string text = "Les " + goal.Days + " jours sont écoulés.\n\nRichesse finale : " + MoneyFormat.WithUnit((int)System.Math.Min(score.Total, int.MaxValue))
             + "\n(argent : " + MoneyFormat.WithUnit(score.Money)
             + (score.CargoCounted ? ", cargaison : " + MoneyFormat.WithUnit((int)System.Math.Min(score.CargoValue, int.MaxValue)) : string.Empty) + ")"
+            + (score.Debt > 0 ? "\nDette de salaires : -" + MoneyFormat.WithUnit(score.Debt) : string.Empty)
             + "\nValeur du butin ramassé : " + MoneyFormat.WithUnit(party.Gathered);
         if (respawner != null)
         {

@@ -11,6 +11,8 @@ public class TownRecruitment : MonoBehaviour
     [SerializeField] private Wallet wallet;
     [SerializeField] private PartyCapacity capacity;
     [SerializeField] private RecruitmentSettings settings;
+    [Tooltip("Optional: a debt on the payroll blocks recruitment.")]
+    [SerializeField] private PartyPayroll payroll;
 
     /// <summary>Raised after a unit joined the group.</summary>
     public event Action<PartyMember> Recruited = delegate { };
@@ -35,6 +37,12 @@ public class TownRecruitment : MonoBehaviour
         if (offer == null || offer.definition == null)
         {
             reason = "offre invalide";
+            return false;
+        }
+
+        if (payroll != null && payroll.DebtBlocksRecruitment && payroll.Debt > 0)
+        {
+            reason = "dette de " + MoneyFormat.WithUnit(payroll.Debt) + " à régler d'abord";
             return false;
         }
 

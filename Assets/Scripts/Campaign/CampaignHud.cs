@@ -24,6 +24,8 @@ public class CampaignHud : MonoBehaviour
     [Tooltip("Optional: shows the caravan's group (units and hit points).")]
     [SerializeField] private PartyRoster party;
     [SerializeField] private UnityEngine.UI.Text partyLabel;
+    [Tooltip("Optional: says when the wages were paid, or not paid (debt).")]
+    [SerializeField] private PartyPayroll payroll;
     [Tooltip("Seconds a message stays on screen.")]
     [SerializeField] private float messageDuration = 4f;
     [Tooltip("Seconds between two refreshes of the clock text.")]
@@ -66,6 +68,11 @@ public class CampaignHud : MonoBehaviour
         {
             encounterFlow.EncounterResolved += OnEncounterResolved;
         }
+
+        if (payroll != null)
+        {
+            payroll.Settled += OnPayrollSettled;
+        }
     }
 
     private void OnDisable()
@@ -88,6 +95,11 @@ public class CampaignHud : MonoBehaviour
         if (encounterFlow != null)
         {
             encounterFlow.EncounterResolved -= OnEncounterResolved;
+        }
+
+        if (payroll != null)
+        {
+            payroll.Settled -= OnPayrollSettled;
         }
     }
 
@@ -176,6 +188,22 @@ public class CampaignHud : MonoBehaviour
         if (loot.Length > 0)
         {
             ShowMessage("Victoire !  " + loot.Replace("\n", "  -  "), LootMessageDuration);
+        }
+    }
+
+    private void OnPayrollSettled(PayrollReport report)
+    {
+        if (report.DebtAfter > 0)
+        {
+            ShowMessage("Salaires impayés : dette de " + MoneyFormat.WithUnit(report.DebtAfter));
+        }
+        else if (report.DebtBefore > 0)
+        {
+            ShowMessage("Salaires et dette payés : -" + MoneyFormat.WithUnit(report.Paid));
+        }
+        else if (report.Paid > 0)
+        {
+            ShowMessage("Salaires payés : -" + MoneyFormat.WithUnit(report.Paid));
         }
     }
 

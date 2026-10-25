@@ -22,5 +22,5 @@ MonoBehaviour:
   deadZone: 0
   maxRange: 0
   attackTime: 2
+  dailyWage: 40
   moveSpeed: 1.4
-  actionTime: 6

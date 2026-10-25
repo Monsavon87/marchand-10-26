@@ -66,6 +66,10 @@ public class ScenarioResult
     public int LootTotal;
     public int LootLostValue;
     public int ReplacementCost;
+    /// <summary>Wages paid by the caravan's payroll during the run (the real calendar makes it fire).</summary>
+    public int WagesPaid;
+    /// <summary>Wages still owed at the end of the run.</summary>
+    public int EndingDebt;
     public int RefusedTrades;
     public string EndReason = string.Empty;
     public readonly List<TripRecord> Trips = new List<TripRecord>();
@@ -75,7 +79,7 @@ public class ScenarioResult
     // The balance at the end of every day, to cut the profit into slices of days.
     public readonly List<int> DailyBalance = new List<int>();
 
-    public int NetProfit => EndingBalance - StartingCapital;
+    public int NetProfit => EndingBalance - EndingDebt - StartingCapital;
     public double ProfitPerDay => DaysElapsed > 0 ? (double)NetProfit / DaysElapsed : 0.0;
 
     /// <summary>A short text that identifies the sequence of trips, to compare two runs.</summary>

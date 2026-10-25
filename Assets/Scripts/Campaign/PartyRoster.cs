@@ -14,6 +14,9 @@ public class PartyRoster : MonoBehaviour
     [Tooltip("Enemy bands: what the band can carry. Rolled once when the band is created (see BandLootSetup).")]
     [SerializeField] private LootTable lootTable;
 
+    /// <summary>Raised when the group gains or loses members (a recruit, a death, a band coming back).</summary>
+    public event System.Action MembersChanged = delegate { };
+
     public IReadOnlyList<PartyMember> Members => members;
     public LootTable LootTable => lootTable;
     /// <summary>The loot this band carries, rolled when it was created (empty until then, and for the caravan).</summary>
@@ -44,6 +47,8 @@ public class PartyRoster : MonoBehaviour
                 members[i].currentHealth = healthAfter[i];
             }
         }
+
+        MembersChanged();
     }
 
     /// <summary>True when at least one member has lost hit points.</summary>
@@ -104,12 +109,15 @@ public class PartyRoster : MonoBehaviour
         {
             members.Add(newMembers[i].Copy());
         }
+
+        MembersChanged();
     }
 
     /// <summary>A new member joins the group (a recruit).</summary>
     public void AddMember(PartyMember member)
     {
         members.Add(member);
+        MembersChanged();
     }
 
     public bool HasMemberNamed(string memberName)

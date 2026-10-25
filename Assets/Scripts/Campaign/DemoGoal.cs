@@ -4,21 +4,24 @@ using UnityEngine;
 /// <summary>The player's wealth at some moment: the money and the cargo (goods at their base price).</summary>
 public readonly struct DemoScore
 {
-    public DemoScore(int day, int money, long cargoValue, bool cargoCounted)
+    public DemoScore(int day, int money, long cargoValue, bool cargoCounted, int debt = 0)
     {
         Day = day;
         Money = money;
         CargoValue = cargoValue;
         CargoCounted = cargoCounted;
+        Debt = debt;
     }
 
     public int Day { get; }
     public int Money { get; }
     public long CargoValue { get; }
     public bool CargoCounted { get; }
+    /// <summary>What the caravan still owes (unpaid wages), in U.V.</summary>
+    public int Debt { get; }
 
-    /// <summary>The score: the money, plus the cargo when the settings count it.</summary>
-    public long Total => Money + (CargoCounted ? CargoValue : 0L);
+    /// <summary>The score: the money, plus the cargo when the settings count it, minus the debt.</summary>
+    public long Total => Money + (CargoCounted ? CargoValue : 0L) - Debt;
 }
 
 /// <summary>
@@ -35,6 +38,8 @@ public class DemoGoal : MonoBehaviour
     [SerializeField] private GoodCatalog catalog;
     [Tooltip("Optional: the map is held still when the demo ends.")]
     [SerializeField] private CampaignPause pause;
+    [Tooltip("Optional: the debt of unpaid wages is taken off the final wealth.")]
+    [SerializeField] private PartyPayroll payroll;
 
     /// <summary>Raised once, when the last day is over, with the final wealth.</summary>
     public event Action<DemoScore> Finished = delegate { };
@@ -78,7 +83,7 @@ public class DemoGoal : MonoBehaviour
             cargo += (long)good.BasePrice * inventory.GetQuantity(good);
         }
 
-        return new DemoScore(Math.Min(clock.Day, Days), wallet.Balance, cargo, settings.CountCargo);
+        return new DemoScore(Math.Min(clock.Day, Days), wallet.Balance, cargo, settings.CountCargo, payroll != null ? payroll.Debt : 0);
     }
 
     // Day 1 is the first day: the demo is over when day (Days + 1) begins.

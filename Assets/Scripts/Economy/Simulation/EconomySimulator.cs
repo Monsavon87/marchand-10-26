@@ -31,6 +31,8 @@ public class EconomySimulator : MonoBehaviour
     [SerializeField] private Transform caravan;
     [Tooltip("Gives the size of the party and the price of a replacement unit.")]
     [SerializeField] private TownRecruitment recruitment;
+    [Tooltip("Optional: the caravan's payroll. The real calendar makes it fire during the simulation: its wages are counted.")]
+    [SerializeField] private PartyPayroll payroll;
     [Tooltip("Where the report is written, relative to the project folder.")]
     [SerializeField] private string reportPath = "ECONOMY_REPORT.md";
 
@@ -128,6 +130,11 @@ public class EconomySimulator : MonoBehaviour
         float startMinutes = clock.TotalMinutes;
         int startDay = clock.Day;
         ticker.DayApplied += OnDayApplied;
+        if (payroll != null)
+        {
+            payroll.Settled += OnPayrollSettled;
+        }
+
         pendingSeries = series;
         Sample(series);
         result.DailyBalance.Add(wallet.Balance);
@@ -214,6 +221,12 @@ public class EconomySimulator : MonoBehaviour
         }
 
         ticker.DayApplied -= OnDayApplied;
+        if (payroll != null)
+        {
+            payroll.Settled -= OnPayrollSettled;
+            result.EndingDebt = payroll.Debt;
+        }
+
         pendingSeries = null;
         result.EndingBalance = wallet.Balance;
         result.DaysElapsed = Mathf.Max(1, Mathf.CeilToInt((clock.TotalMinutes - startMinutes) / MinutesPerDay));
@@ -278,6 +291,16 @@ public class EconomySimulator : MonoBehaviour
         {
             Sample(pendingSeries);
             current.DailyBalance.Add(wallet.Balance);
+        }
+    }
+
+    // The payroll took its wages from the wallet: the expected balance follows, so the invariant stays meaningful.
+    private void OnPayrollSettled(PayrollReport report)
+    {
+        expectedBalance -= report.Paid;
+        if (current != null)
+        {
+            current.WagesPaid += report.Paid;
         }
     }
 
@@ -346,6 +369,11 @@ public class EconomySimulator : MonoBehaviour
         if (wallet.Balance > 0)
         {
             wallet.TryWithdraw(wallet.Balance);
+        }
+
+        if (payroll != null)
+        {
+            payroll.ClearDebt();
         }
 
         for (int g = 0; g < goods.Count; g++)

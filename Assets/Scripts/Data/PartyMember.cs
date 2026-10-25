@@ -33,6 +33,9 @@ public class PartyMember
     /// <summary>The unit's maximum hit points (1 when it has no definition).</summary>
     public int MaxHealth => definition != null ? definition.MaxHealth : 1;
 
+    /// <summary>What the unit costs each world day (0 without a definition).</summary>
+    public int DailyWage => definition != null ? definition.DailyWage : 0;
+
     /// <summary>True when the unit has lost hit points.</summary>
     public bool IsWounded => StartingHealth < MaxHealth;
 

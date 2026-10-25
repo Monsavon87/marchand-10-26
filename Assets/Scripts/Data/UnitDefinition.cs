@@ -31,6 +31,10 @@ public class UnitDefinition : ScriptableObject
     [Tooltip("How long one attack takes, in seconds. It is spent from the unit's action time, so it also limits how fast a unit can strike.")]
     [Min(0.1f)] [SerializeField] private float attackTime = 2f;
 
+    [Header("Economy")]
+    [Tooltip("What the unit costs the caravan each world day it is in the group, in U.V. (the wages, see PartyPayroll). Not used by enemies.")]
+    [Min(0)] [SerializeField] private int dailyWage;
+
     [Header("Movement")]
     [Tooltip("Walking speed, in meters per second.")]
     [Min(0.1f)] [SerializeField] private float moveSpeed = 1.4f;
@@ -46,6 +50,7 @@ public class UnitDefinition : ScriptableObject
     public float MaxRange => maxRange;
     public float AttackTime => attackTime;
     public float MoveSpeed => moveSpeed;
+    public int DailyWage => dailyWage;
 
     /// <summary>True for a ranged unit (it has a maximum range).</summary>
     public bool IsRanged => maxRange > 0f;
