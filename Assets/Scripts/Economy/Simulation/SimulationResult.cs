@@ -66,6 +66,8 @@ public struct ScenarioOptions
     public bool Recruits;
     /// <summary>Days of the run (0 = the settings' days).</summary>
     public int Days;
+    /// <summary>The run starts with this loot (rolled with the seed): its U.V. are the capital, its goods are in the cargo.</summary>
+    public LootTable StartingLoot;
     /// <summary>Chance that going around a band fails (negative = the settings' chance): the sensitivity runs change it.</summary>
     public float AvoidFailure;
 
@@ -93,6 +95,8 @@ public class SimulationRun
     public readonly List<ScenarioResult> OtherSeeds = new List<ScenarioResult>();
     public ScenarioResult Start;
     public ScenarioResult StartWithGoods;
+    /// <summary>The real start (0 U.V. plus the thief's loot) on every seed.</summary>
+    public readonly List<ScenarioResult> StarterSeeds = new List<ScenarioResult>();
     public ScenarioResult LoopNoHospital;
     public ScenarioResult LoopNoRecruits;
     public ScenarioResult LoopNoWages;
@@ -126,6 +130,9 @@ public class ScenarioResult
     public bool Combat;
     public int Seed;
     public int StartingCapital;
+    /// <summary>The goods of the starting loot, at base price (0 without a starting loot).</summary>
+    public long StartingGoodsValue;
+    public string StartingLootText = string.Empty;
     public int EndingBalance;
     public int DaysElapsed;
     public int IdleDays;
@@ -149,6 +156,8 @@ public class ScenarioResult
     // StartingCapital + Sales - Purchases + LootUv - WagesPaid - HealingCost - RecruitCost (checked at each step).
     public long Purchases;
     public long Sales;
+    /// <summary>Part of the sales made in town outside a trip (cargo left over: goods of a loot), not in any trip's revenue.</summary>
+    public long CargoSoldInTown;
     public long LootUv;
     /// <summary>Wages paid by the simulated payroll (the group of the run, the game's rule).</summary>
     public int WagesPaid;

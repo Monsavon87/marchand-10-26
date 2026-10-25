@@ -25,6 +25,8 @@ public class SimulationSettings : ScriptableObject
     [SerializeField] private int seed = 1;
     [Tooltip("U.V. the merchant starts with (the real game starts with 0: the first money comes from loot).")]
     [Min(0)] [SerializeField] private int startingCapital = 10000;
+    [Tooltip("The loot of the first band the player is sent after (the thief): the real start of the game is 0 U.V. plus this loot, rolled on every seed.")]
+    [SerializeField] private LootTable starterLoot;
     [Tooltip("Days the merchant waits in a town when no trip is worth it, before the run is declared stuck.")]
     [Min(1)] [SerializeField] private int maxIdleDays = 10;
     [Tooltip("Other seeds tried with the fights on, to see how much luck changes the result.")]
@@ -59,6 +61,8 @@ public class SimulationSettings : ScriptableObject
     [Range(0, 100)] [SerializeField] private int hospitalThresholdPercent = 60;
     [Tooltip("In town (runs with fights), the merchant recruits the cheapest offer up to this size, without debt and keeping the reserve. A full group of this size of the cheapest recruit is the reference strength of the fights.")]
     [Min(1)] [SerializeField] private int targetPartySize = 4;
+    [Tooltip("The merchant recruits only when, after paying the recruit, it still has this many U.V. to trade with on top of the reserve (it does not spend its trading money on soldiers).")]
+    [Min(0)] [SerializeField] private int tradingCapitalKeptOnRecruit = 3000;
     [Tooltip("Other chances that going around a band fails, tried on every seed of the full loop, to see how much the survival rests on this hypothesis.")]
     [SerializeField] private float[] sensitivityAvoidFailures = { 0.15f, 0.30f };
     [Tooltip("Days of the long runs, to see whether the profit ever stops growing.")]
@@ -83,6 +87,7 @@ public class SimulationSettings : ScriptableObject
     public int Days => days;
     public int Seed => seed;
     public int StartingCapital => startingCapital;
+    public LootTable StarterLoot => starterLoot;
     public int MaxIdleDays => maxIdleDays;
     public int ExtraSeeds => extraSeeds;
     public float EncounterChancePerDay => encounterChancePerDay;
@@ -93,6 +98,7 @@ public class SimulationSettings : ScriptableObject
     public float SpendAllBelowReserves => spendAllBelowReserves;
     public int HospitalThresholdPercent => hospitalThresholdPercent;
     public int TargetPartySize => targetPartySize;
+    public int TradingCapitalKeptOnRecruit => tradingCapitalKeptOnRecruit;
     public int LongRunDays => longRunDays;
     public System.Collections.Generic.IReadOnlyList<float> SensitivityAvoidFailures => sensitivityAvoidFailures ?? System.Array.Empty<float>();
     public float FightThreshold => fightThreshold;

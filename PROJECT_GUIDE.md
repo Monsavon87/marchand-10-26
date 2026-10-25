@@ -214,6 +214,8 @@ Tout se règle dans des ScriptableObjects (`Assets/ScriptableObjects/`) :
 | Le salaire par jour d'une unité | `UnitDefinition.dailyWage` (`Def_*`) |
 | Les jours de paie offerts, la dette qui bloque le recrutement | `PayrollSettings_Default` |
 | Le texte de l'aide                                         | `GameHelp`                                                                   |
+| Le message au lancement de la carte | `CampaignHud.startMessage` (objet `CampaignCanvas` de `Demo_Campaign`) |
+| La première bande à battre (premier capital) | Le Voleur : `Enemy_6`, table `Loot_Voleur` ; le simulateur la lit dans `SimulationSettings.starterLoot` |
 | Un prix de base, une masse, un volume                      | `Economy/Goods/Good_*`                                                       |
 | Ce que produit / consomme une ville, son stock cible       | `Economy/Towns/Town_*`                                                       |
 | La courbe des prix, les bornes, l'écart acheteur / vendeur | `Economy/PricingSettings_Default`                                            |

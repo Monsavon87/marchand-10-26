@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c90223e44cf17647bee486df0881ff0, type: 3}
   m_Name: Loot_Pillards
   m_EditorClassIdentifier: Assembly-CSharp::LootTable
-  minValue: 3000
-  maxValue: 6000
+  minValue: 1950
+  maxValue: 3900
   uvWeight: 30
   goods:
   - good: {fileID: 11400000, guid: 3f3d675bb7ef82845a7e5b962b02c4f4, type: 2}

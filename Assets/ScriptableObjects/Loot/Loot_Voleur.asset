@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4c90223e44cf17647bee486df0881ff0, type: 3}
-  m_Name: Loot_Deserteur
+  m_Name: Loot_Voleur
   m_EditorClassIdentifier: Assembly-CSharp::LootTable
-  minValue: 1500
-  maxValue: 3000
+  minValue: 2500
+  maxValue: 3500
   uvWeight: 40
   goods:
   - good: {fileID: 11400000, guid: a86f47e590b62d3458b0664232a22757, type: 2}

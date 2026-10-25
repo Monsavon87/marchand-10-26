@@ -373,6 +373,43 @@ public static class SimulationReportWriter
         text.AppendLine();
         text.AppendLine(DescribeStart("Scénario E2 : le même, en comptant aussi les marchandises de ce butin comme de l'argent", run.StartWithGoods));
         text.AppendLine();
+        if (run.StarterSeeds.Count == 0)
+        {
+            return;
+        }
+
+        text.AppendLine("**Départ réel** : 0 U.V., puis le butin de la première bande que le jeu désigne (ses U.V. en caisse, ses marchandises en cargaison), avec toute la boucle (combats choisis, soins, recrues, salaires), sur "
+            + run.StarterSeeds.Count + " graines :");
+        text.AppendLine();
+        text.AppendLine("| Graine | Butin de départ | Profit net | Capital doublé au jour | Trajets | Recrues | V / D | Fin |");
+        text.AppendLine("|---:|---|---:|---:|---:|---:|---:|---|");
+        foreach (ScenarioResult s in run.StarterSeeds)
+        {
+            int doubling = DoublingDay(s);
+            text.AppendLine("| " + s.Seed + " | " + s.StartingLootText + " (" + Money(s.StartingCapital + s.StartingGoodsValue) + ") | " + Money(s.NetProfit) + " | "
+                + (doubling >= 0 ? doubling.ToString(CultureInfo.InvariantCulture) : "jamais") + " | " + s.Trips.Count + " | " + s.Recruits + " | " + s.Victories + " / " + s.Defeats + " | " + s.EndReason + " |");
+        }
+
+        int stuck = run.StarterSeeds.Count(s => s.EndReason.StartsWith("Bloqué", StringComparison.Ordinal));
+        text.AppendLine();
+        text.AppendLine("Départs bloqués : " + stuck + " sur " + run.StarterSeeds.Count + " ; perdus en combat : " + run.StarterSeeds.Count(s => s.Defeats > 0)
+            + " ; profit net moyen " + Money((long)run.StarterSeeds.Average(s => (double)s.NetProfit)) + ".");
+        text.AppendLine();
+    }
+
+    // The first day the money (net of debt) reached twice the starting capital and goods; -1 when it never did.
+    private static int DoublingDay(ScenarioResult run)
+    {
+        long start = run.StartingCapital + run.StartingGoodsValue;
+        for (int d = 0; d < run.DailyBalance.Count && start > 0; d++)
+        {
+            if (run.DailyBalance[d] >= 2 * start)
+            {
+                return d;
+            }
+        }
+
+        return -1;
     }
 
     private static string DescribeStart(string intro, ScenarioResult run)
@@ -628,6 +665,7 @@ public static class SimulationReportWriter
         var checks = new List<Check>();
         var every = new List<ScenarioResult>(run.Scenarios);
         every.AddRange(run.OtherSeeds);
+        every.AddRange(run.StarterSeeds);
         int failures = every.Sum(s => s.InvariantFailures.Count);
         checks.Add(new Check
         {

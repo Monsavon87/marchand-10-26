@@ -28,6 +28,8 @@ public class CampaignHud : MonoBehaviour
     [SerializeField] private PartyPayroll payroll;
     [Tooltip("Optional: the caravan's orders. Says how many orders wait in its queue next to the clock.")]
     [SerializeField] private ActionController caravanActions;
+    [Tooltip("Optional: shown when the map starts, to tell the player how to begin; it stays until the caravan's first order (needs caravanActions). Empty = nothing.")]
+    [TextArea] [SerializeField] private string startMessage = string.Empty;
     [Tooltip("Seconds a message stays on screen.")]
     [SerializeField] private float messageDuration = 4f;
     [Tooltip("Seconds between two refreshes of the clock text.")]
@@ -36,6 +38,7 @@ public class CampaignHud : MonoBehaviour
     private readonly System.Text.StringBuilder partyText = new System.Text.StringBuilder(128);
     private float nextRefresh;
     private float hideMessageTime;
+    private bool waitingFirstOrder;
 
     private void Start()
     {
@@ -47,6 +50,33 @@ public class CampaignHud : MonoBehaviour
         }
 
         messageLabel.text = string.Empty;
+        if (!string.IsNullOrEmpty(startMessage))
+        {
+            if (caravanActions == null)
+            {
+                Debug.LogError("CampaignHud: the start message needs caravanActions to know when the first order is given.", this);
+                return;
+            }
+
+            // It stays on screen until the player gives the caravan its first order.
+            ShowMessage(startMessage);
+            hideMessageTime = float.MaxValue;
+            waitingFirstOrder = true;
+        }
+    }
+
+    private void OnFirstOrder(UnitAction action)
+    {
+        if (!waitingFirstOrder)
+        {
+            return;
+        }
+
+        waitingFirstOrder = false;
+        if (messageLabel.text == startMessage)
+        {
+            messageLabel.text = string.Empty;
+        }
     }
 
     private void OnEnable()
@@ -75,6 +105,11 @@ public class CampaignHud : MonoBehaviour
         {
             payroll.Settled += OnPayrollSettled;
         }
+
+        if (caravanActions != null)
+        {
+            caravanActions.ActionStarted += OnFirstOrder;
+        }
     }
 
     private void OnDisable()
@@ -102,6 +137,11 @@ public class CampaignHud : MonoBehaviour
         if (payroll != null)
         {
             payroll.Settled -= OnPayrollSettled;
+        }
+
+        if (caravanActions != null)
+        {
+            caravanActions.ActionStarted -= OnFirstOrder;
         }
     }
 

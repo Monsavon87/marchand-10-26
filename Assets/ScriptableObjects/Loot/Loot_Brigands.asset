@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c90223e44cf17647bee486df0881ff0, type: 3}
   m_Name: Loot_Brigands
   m_EditorClassIdentifier: Assembly-CSharp::LootTable
-  minValue: 2500
-  maxValue: 4500
+  minValue: 1625
+  maxValue: 2925
   uvWeight: 40
   goods:
   - good: {fileID: 11400000, guid: d668abc1a3060804f80bb9f0ca82d3cc, type: 2}

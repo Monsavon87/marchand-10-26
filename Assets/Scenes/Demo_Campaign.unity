@@ -3861,7 +3861,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PartyRoster
   members:
-  - name: "D\xE9serteur"
+  - name: Voleur
     definition: {fileID: 11400000, guid: a16d3c5633103cd448bb19217e11a52a, type: 2}
     currentHealth: 0
     aiProfile: {fileID: 11400000, guid: 046a07f4c21c45945aa8d9160cbae4a5, type: 2}
@@ -5588,6 +5588,8 @@ MonoBehaviour:
   partyLabel: {fileID: 917970773}
   payroll: {fileID: 304521187}
   caravanActions: {fileID: 2733532370329639515}
+  startMessage: 'Trouvez le voleur pour vous lancer : son butin sera votre premier capital.'
+  startMessageDuration: 12
   messageDuration: 4
   refreshInterval: 0.1
 --- !u!114 &681525956

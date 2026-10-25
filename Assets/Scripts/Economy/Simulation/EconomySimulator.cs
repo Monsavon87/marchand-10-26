@@ -149,6 +149,18 @@ public class EconomySimulator : MonoBehaviour
             int smallestValue = run.BandTables.Count > 0 ? run.BandTables.Min(table => table.MinValue) : 0;
             run.StartWithGoods = RunScenario("E2. Départ réaliste (capital = valeur complète du plus petit butin), sans combat", ScenarioOptions.Trade(SimulationStrategy.Foresight), seed, startIndex, smallestValue);
 
+            // The real start of the game: 0 U.V., then the thief's loot (the first band the player is sent after), on
+            // every seed, with the whole loop (fights, care, recruits, wages).
+            if (settings.StarterLoot != null)
+            {
+                for (int i = 0; i <= settings.ExtraSeeds; i++)
+                {
+                    ScenarioOptions starter = ScenarioOptions.FullLoop();
+                    starter.StartingLoot = settings.StarterLoot;
+                    run.StarterSeeds.Add(RunScenario("Départ réel : butin du " + settings.StarterLoot.name.Replace("Loot_", string.Empty) + " (graine " + (seed + i) + ")", starter, seed + i, startIndex, 0));
+                }
+            }
+
             // One mechanic off at a time, to measure what each one does.
             ScenarioOptions noHospital = ScenarioOptions.FullLoop();
             noHospital.Healing = false;
@@ -225,6 +237,11 @@ public class EconomySimulator : MonoBehaviour
         debt = 0;
         expectedBalance = 0;
         Deposit(capital);
+        if (options.StartingLoot != null)
+        {
+            StartWithLoot(options.StartingLoot, seed, result);
+        }
+
         runStartDay = clock.Day;
         current = result;
 
@@ -245,6 +262,8 @@ public class EconomySimulator : MonoBehaviour
         int idleStreak = 0;
         while (clock.Day - runStartDay < days)
         {
+            // What is still in the cargo (goods of a loot this town buys) is sold first: it is money to trade with.
+            SellEverything(markets[here], null, result);
             if (options.Combat)
             {
                 VisitHospital(options, result);
@@ -449,7 +468,7 @@ public class EconomySimulator : MonoBehaviour
     }
 
     // In town: the cheapest recruit joins while the group is under its target size, without debt (the game's rule)
-    // and keeping the reserve of the larger group.
+    // and keeping the reserve of the larger group plus some money to trade with.
     private void Recruit(ScenarioOptions options, ScenarioResult result)
     {
         if (!options.Recruits || recruitDefinition == null || recruitPrice <= 0)
@@ -466,7 +485,7 @@ public class EconomySimulator : MonoBehaviour
                 return;
             }
 
-            if (wallet.Balance - recruitPrice < Reserve(options, party.DailyWage + recruitDefinition.DailyWage) || !Withdraw(recruitPrice))
+            if (wallet.Balance - recruitPrice < Reserve(options, party.DailyWage + recruitDefinition.DailyWage) + settings.TradingCapitalKeptOnRecruit || !Withdraw(recruitPrice))
             {
                 return;
             }
@@ -537,7 +556,14 @@ public class EconomySimulator : MonoBehaviour
 
                 expectedBalance += sold.Amount;
                 result.Sales += sold.Amount;
-                trip.Revenue += sold.Amount;
+                if (trip != null)
+                {
+                    trip.Revenue += sold.Amount;
+                }
+                else
+                {
+                    result.CargoSoldInTown += sold.Amount;
+                }
             }
         }
     }
@@ -769,6 +795,33 @@ public class EconomySimulator : MonoBehaviour
 
         trip.Loot = (int)gathered;
         result.LootTotal += (int)gathered;
+    }
+
+    // The real start: the loot of the first band beaten (rolled with its own dice from the seed): its U.V. are the
+    // capital, its goods go to the cargo (what does not fit is lost, as after a fight).
+    private void StartWithLoot(LootTable table, int seed, ScenarioResult result)
+    {
+        LootResult loot = LootRoller.Roll(table, new System.Random(seed * 7919 + 17));
+        if (loot.Uv > 0)
+        {
+            Deposit(loot.Uv);
+            result.StartingCapital += loot.Uv;
+        }
+
+        var taken = new List<GoodStack>();
+        var lost = new List<GoodStack>();
+        inventory.PlanAdd(loot.Goods, taken, lost);
+        var text = new System.Text.StringBuilder().Append(loot.Uv).Append(" U.V.");
+        for (int i = 0; i < taken.Count; i++)
+        {
+            if (inventory.TryAdd(taken[i].Good, taken[i].Quantity) == InventoryResult.Accepted)
+            {
+                result.StartingGoodsValue += taken[i].BaseValue;
+                text.Append(" + ").Append(taken[i].Quantity).Append(' ').Append(taken[i].Good.DisplayName);
+            }
+        }
+
+        result.StartingLootText = text.ToString();
     }
 
     // The definitions of the caravan's roster: the group the merchant starts with.

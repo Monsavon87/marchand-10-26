@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c90223e44cf17647bee486df0881ff0, type: 3}
   m_Name: Loot_Chasseurs
   m_EditorClassIdentifier: Assembly-CSharp::LootTable
-  minValue: 4500
-  maxValue: 8500
+  minValue: 2925
+  maxValue: 5525
   uvWeight: 25
   goods:
   - good: {fileID: 11400000, guid: 3f3d675bb7ef82845a7e5b962b02c4f4, type: 2}

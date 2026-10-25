@@ -15,11 +15,28 @@ MonoBehaviour:
   days: 100
   seed: 1
   startingCapital: 10000
+  starterLoot: {fileID: 11400000, guid: cbbc3e00afb0f8448a566ee347d97144, type: 2}
   maxIdleDays: 10
   extraSeeds: 9
   encounterChancePerDay: 0.15
   baseWinChance: 0.75
-  maxLossesOnWin: 2
+  victoryDamageMinPercent: 10
+  victoryDamageMaxPercent: 50
+  fightThreshold: 0.85
+  avoidFailureChance: 0.05
+  detourMinutes: 720
+  fitHealthShare: 0.8
+  reserveDays: 7
+  spendAllBelowReserves: 2
+  hospitalThresholdPercent: 60
+  targetPartySize: 4
+  sensitivityAvoidFailures:
+  - 0.15
+  - 0.3
+  longRunDays: 300
+  boundedGrowthRatio: 1.5
+  lootShareMin: 0.1
+  lootShareMax: 0.4
   growthWindowDays: 30
   stuckShare: 0.5
   maxTripReturn: 1.5
