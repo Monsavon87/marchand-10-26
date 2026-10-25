@@ -4,7 +4,7 @@ Ce fichier regroupe les décisions de conception **prises et validées**, pour n
 Il ne décrit pas le code (voir `PROJECT_LOG.md` pour l'historique des étapes, `CLAUDE.md` pour les règles de travail).
 Quand une décision change, on modifie la ligne concernée et on note la date. Les points non tranchés sont à la fin.
 
-Dernière mise à jour : 2026-10-23 (gestion du combat).
+Dernière mise à jour : 2026-10-25 (comportement des bandes, simulateur et rééquilibrage, achats selon le profil des villes, recherche de l'ennemi par l'IA de combat, butin −35 % et Voleur).
 
 ## 1. Le jeu
 
