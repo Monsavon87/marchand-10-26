@@ -1,0 +1,176 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9f26adfeaf654347bfc0358ed979076, type: 3}
+  m_Name: CombatOdds_Bench
+  m_EditorClassIdentifier: Assembly-CSharp::CombatOddsTable
+  source: "Banc d'essai du 2026-10-25 : ar\xE8ne Combat_Arena, les deux camps jou\xE9s par l'IA de combat (profil AI_Aggressive), recherche de l'ennemi par l'ou\xEFe, temps \xD75 (v\xE9rifi\xE9 identique \xE0 \xD71), 8 combats par match, unit\xE9s en pleine sant\xE9. Borne basse de ce que fait un joueur."
+  entries:
+  - caravan: Def_Fantassin x1
+    band: Def_Fantassin x1
+    caravanUnits: 1
+    fights: 8
+    wins: 7
+    meanHealthLost: 0.7428571
+    maxHealthLost: 0.8
+    deathsPerWin: 0
+  - caravan: Def_Fantassin x1
+    band: Def_Archer x2
+    caravanUnits: 1
+    fights: 8
+    wins: 8
+    meanHealthLost: 0.2125
+    maxHealthLost: 0.35
+    deathsPerWin: 0
+  - caravan: Def_Fantassin x1
+    band: Def_Archer x1, Def_Fantassin x1
+    caravanUnits: 1
+    fights: 16
+    wins: 3
+    meanHealthLost: 0.76666665
+    maxHealthLost: 0.9
+    deathsPerWin: 0
+  - caravan: Def_Fantassin x1
+    band: Def_Fantassin x2
+    caravanUnits: 1
+    fights: 8
+    wins: 0
+    meanHealthLost: 0
+    maxHealthLost: 0
+    deathsPerWin: 0
+  - caravan: Def_Fantassin x1
+    band: Def_Archer x1, Def_Fantassin x2
+    caravanUnits: 1
+    fights: 8
+    wins: 0
+    meanHealthLost: 0
+    maxHealthLost: 0
+    deathsPerWin: 0
+  - caravan: Def_Archer x1, Def_Fantassin x1
+    band: Def_Fantassin x1
+    caravanUnits: 2
+    fights: 8
+    wins: 8
+    meanHealthLost: 0.092307694
+    maxHealthLost: 0.12307692
+    deathsPerWin: 0
+  - caravan: Def_Archer x1, Def_Fantassin x1
+    band: Def_Archer x2
+    caravanUnits: 2
+    fights: 8
+    wins: 8
+    meanHealthLost: 0.14615385
+    maxHealthLost: 0.26153848
+    deathsPerWin: 0
+  - caravan: Def_Archer x1, Def_Fantassin x1
+    band: Def_Archer x1, Def_Fantassin x1
+    caravanUnits: 2
+    fights: 16
+    wins: 6
+    meanHealthLost: 0.63589746
+    maxHealthLost: 0.8923077
+    deathsPerWin: 0.33333334
+  - caravan: Def_Archer x1, Def_Fantassin x1
+    band: Def_Fantassin x2
+    caravanUnits: 2
+    fights: 8
+    wins: 8
+    meanHealthLost: 0.36923078
+    maxHealthLost: 0.4923077
+    deathsPerWin: 0
+  - caravan: Def_Archer x1, Def_Fantassin x1
+    band: Def_Archer x1, Def_Fantassin x2
+    caravanUnits: 2
+    fights: 8
+    wins: 0
+    meanHealthLost: 0
+    maxHealthLost: 0
+    deathsPerWin: 0
+  - caravan: Def_Archer x1, Def_Fantassin x2
+    band: Def_Fantassin x1
+    caravanUnits: 3
+    fights: 8
+    wins: 8
+    meanHealthLost: 0.114285715
+    maxHealthLost: 0.15238096
+    deathsPerWin: 0
+  - caravan: Def_Archer x1, Def_Fantassin x2
+    band: Def_Archer x2
+    caravanUnits: 3
+    fights: 8
+    wins: 8
+    meanHealthLost: 0.06666667
+    maxHealthLost: 0.07619048
+    deathsPerWin: 0
+  - caravan: Def_Archer x1, Def_Fantassin x2
+    band: Def_Archer x1, Def_Fantassin x1
+    caravanUnits: 3
+    fights: 16
+    wins: 16
+    meanHealthLost: 0.39047623
+    maxHealthLost: 0.5714286
+    deathsPerWin: 0.1875
+  - caravan: Def_Archer x1, Def_Fantassin x2
+    band: Def_Fantassin x2
+    caravanUnits: 3
+    fights: 8
+    wins: 8
+    meanHealthLost: 0.30476192
+    maxHealthLost: 0.3809524
+    deathsPerWin: 0
+  - caravan: Def_Archer x1, Def_Fantassin x2
+    band: Def_Archer x1, Def_Fantassin x2
+    caravanUnits: 3
+    fights: 8
+    wins: 8
+    meanHealthLost: 0.41428578
+    maxHealthLost: 0.62857145
+    deathsPerWin: 0.375
+  - caravan: Def_Archer x1, Def_Fantassin x3
+    band: Def_Fantassin x1
+    caravanUnits: 4
+    fights: 8
+    wins: 8
+    meanHealthLost: 0.08275862
+    maxHealthLost: 0.11034483
+    deathsPerWin: 0
+  - caravan: Def_Archer x1, Def_Fantassin x3
+    band: Def_Archer x2
+    caravanUnits: 4
+    fights: 8
+    wins: 8
+    meanHealthLost: 0.06379311
+    maxHealthLost: 0.13793103
+    deathsPerWin: 0
+  - caravan: Def_Archer x1, Def_Fantassin x3
+    band: Def_Archer x1, Def_Fantassin x1
+    caravanUnits: 4
+    fights: 16
+    wins: 16
+    meanHealthLost: 0.15603445
+    maxHealthLost: 0.26206896
+    deathsPerWin: 0
+  - caravan: Def_Archer x1, Def_Fantassin x3
+    band: Def_Fantassin x2
+    caravanUnits: 4
+    fights: 8
+    wins: 8
+    meanHealthLost: 0.24827588
+    maxHealthLost: 0.33103448
+    deathsPerWin: 0.25
+  - caravan: Def_Archer x1, Def_Fantassin x3
+    band: Def_Archer x1, Def_Fantassin x2
+    caravanUnits: 4
+    fights: 8
+    wins: 8
+    meanHealthLost: 0.42586207
+    maxHealthLost: 0.55172414
+    deathsPerWin: 0.25

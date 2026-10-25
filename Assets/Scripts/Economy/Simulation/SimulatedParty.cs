@@ -133,6 +133,59 @@ public class SimulatedParty
         return dead;
     }
 
+    /// <summary>Its composition key (see CombatOddsTable.KeyOf), to find a measured matchup.</summary>
+    public string Key
+    {
+        get
+        {
+            var definitions = new List<UnitDefinition>(units.Count);
+            for (int i = 0; i < units.Count; i++)
+            {
+                definitions.Add(units[i].Definition);
+            }
+
+            return CombatOddsTable.KeyOf(definitions);
+        }
+    }
+
+    /// <summary>Its hit points over its maximum (1 = full health).</summary>
+    public double HealthShare => TotalMaxHealth > 0 ? TotalHealth / (double)TotalMaxHealth : 0.0;
+
+    /// <summary>
+    /// The wounds of a won fight as measured on the combat bench: each unit loses about 'meanLost' of its maximum
+    /// (drawn between half and one and a half of it, at least 1 hit point), and with a chance of 'deathsPerWin' (and
+    /// more than one unit) the weakest unit dies. A won fight always leaves one unit standing. Returns the dead.
+    /// </summary>
+    public int TakeMeasuredDamage(Random dice, double meanLost, double deathsPerWin)
+    {
+        for (int i = 0; i < units.Count; i++)
+        {
+            double share = meanLost * (0.5 + dice.NextDouble());
+            int damage = Math.Max(1, (int)Math.Round(units[i].Max * share));
+            units[i].Health = Math.Max(1, units[i].Health - damage);
+        }
+
+        int dead = 0;
+        double chance = deathsPerWin;
+        while (units.Count > 1 && chance > 0.0 && dice.NextDouble() < Math.Min(1.0, chance))
+        {
+            int weakest = 0;
+            for (int i = 1; i < units.Count; i++)
+            {
+                if (units[i].Health < units[weakest].Health)
+                {
+                    weakest = i;
+                }
+            }
+
+            units.RemoveAt(weakest);
+            dead++;
+            chance -= 1.0;
+        }
+
+        return dead;
+    }
+
     /// <summary>One day of natural healing for every unit (the game's rule). Returns the hit points given back.</summary>
     public int RegenerateDay(HealingSettings healing)
     {

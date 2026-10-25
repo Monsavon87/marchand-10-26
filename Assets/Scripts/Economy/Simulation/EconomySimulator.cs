@@ -40,6 +40,8 @@ public class EconomySimulator : MonoBehaviour
     [SerializeField] private HealingSettings healingSettings;
     [Tooltip("The game's free days and the debt rule.")]
     [SerializeField] private PayrollSettings payrollSettings;
+    [Tooltip("Optional: what real fights came to on the combat test bench. Without it (or for a matchup it lacks), the fights follow the simple model of the simulation settings.")]
+    [SerializeField] private CombatOddsTable combatOdds;
     [Tooltip("Optional: the caravan's real payroll, switched off during the run (the simulated group is paid instead).")]
     [SerializeField] private PartyPayroll payroll;
     [Tooltip("Where the report is written, relative to the project folder.")]
@@ -124,7 +126,7 @@ public class EconomySimulator : MonoBehaviour
             payroll.enabled = false;
         }
 
-        var run = new SimulationRun { RecruitPrice = recruitPrice, RecruitName = recruitDefinition != null ? recruitDefinition.name : "-" };
+        var run = new SimulationRun { RecruitPrice = recruitPrice, RecruitName = recruitDefinition != null ? recruitDefinition.name : "-", Odds = combatOdds };
         try
         {
             run.BandTables.AddRange(CollectBandTables());
@@ -169,15 +171,15 @@ public class EconomySimulator : MonoBehaviour
             longLoop.Days = settings.LongRunDays;
             run.LoopLong = RunScenario("C sur " + settings.LongRunDays + " jours", longLoop, seed, startIndex, capital);
 
-            // The survival rests on the chance to win: the full loop on every seed with other chances.
-            foreach (float chance in settings.SensitivityWinChances)
+            // The survival rests on how often going around a band fails: the full loop on every seed with other chances.
+            foreach (float chance in settings.SensitivityAvoidFailures)
             {
                 var seeds = new List<ScenarioResult>();
                 ScenarioOptions options = ScenarioOptions.FullLoop();
-                options.WinChance = chance;
+                options.AvoidFailure = chance;
                 for (int i = 0; i <= settings.ExtraSeeds; i++)
                 {
-                    seeds.Add(RunScenario("C, victoire " + Mathf.RoundToInt(chance * 100f) + " % (graine " + (seed + i) + ")", options, seed + i, startIndex, capital));
+                    seeds.Add(RunScenario("C, contournement raté " + Mathf.RoundToInt(chance * 100f) + " % (graine " + (seed + i) + ")", options, seed + i, startIndex, capital));
                 }
 
                 run.Sensitivity.Add(new KeyValuePair<float, List<ScenarioResult>>(chance, seeds));
@@ -228,7 +230,7 @@ public class EconomySimulator : MonoBehaviour
 
         int days = options.Days > 0 ? options.Days : settings.Days;
         var dice = new System.Random(seed);
-        var fights = new SimulationCombat(settings, options.WinChance > 0f ? options.WinChance : settings.BaseWinChance, respawnSettings, dice, CollectBandTables());
+        var fights = new SimulationCombat(settings, respawnSettings, dice, CollectBands());
         var planner = new TradePlanner(tradeService, rules, economySettings.ReversionPercent, travel, markets, goods);
         PriceSeries[,] series = CreateSeries(result);
         int fullHealth = Math.Min(settings.TargetPartySize, recruitment.MaxSize) * (recruitDefinition != null ? recruitDefinition.MaxHealth : 1);
@@ -298,9 +300,46 @@ public class EconomySimulator : MonoBehaviour
             };
             result.Trips.Add(trip);
 
-            // The fight is rolled with the strength of the group as it leaves the town.
-            FightOutcome fight = options.Combat ? fights.Roll(plan.Minutes / MinutesPerDay, clock.Day - runStartDay, party.Strength(fullHealth)) : default;
-            clock.AdvanceMinutes(plan.Minutes);
+            // A band met on the way: the merchant sees it (and its composition) and fights only when its chance is good
+            // enough; otherwise it goes around it, a detour that costs time and may fail, which forces the fight.
+            FightOutcome fight = default;
+            CombatOddsTable.Entry matchup = null;
+            bool detour = false;
+            if (options.Combat)
+            {
+                float travelDays = plan.Minutes / MinutesPerDay;
+                SimulatedBand band = fights.Meet(travelDays, RunDay());
+                if (band != null)
+                {
+                    result.Encounters++;
+                    double chance = WinChance(band, fullHealth, out matchup);
+                    bool fightIt = chance >= settings.FightThreshold;
+                    if (fightIt)
+                    {
+                        result.FightsChosen++;
+                    }
+                    else if (dice.NextDouble() < AvoidFailure(options))
+                    {
+                        result.ForcedFights++;
+                        fightIt = true;
+                    }
+                    else
+                    {
+                        result.Avoided++;
+                        detour = true;
+                        trip.Detour = true;
+                    }
+
+                    if (fightIt)
+                    {
+                        result.MeasuredFights += matchup != null ? 1 : 0;
+                        trip.Band = band.Name;
+                        fight = fights.Fight(band, chance, travelDays, RunDay());
+                    }
+                }
+            }
+
+            clock.AdvanceMinutes(plan.Minutes + (detour ? settings.DetourMinutes : 0f));
             here = plan.ToIndex;
             if (fight.Happened && !fight.Won)
             {
@@ -312,7 +351,9 @@ public class EconomySimulator : MonoBehaviour
 
             if (fight.Happened)
             {
-                int dead = party.TakeVictoryDamage(dice, settings.VictoryDamageMinPercent, settings.VictoryDamageMaxPercent);
+                int dead = matchup != null
+                    ? party.TakeMeasuredDamage(dice, matchup.meanHealthLost, matchup.deathsPerWin)
+                    : party.TakeVictoryDamage(dice, settings.VictoryDamageMinPercent, settings.VictoryDamageMaxPercent);
                 trip.Fight = "Victoire" + (dead > 0 ? ", " + dead + " unité(s) perdue(s)" : "");
                 result.Victories++;
                 result.UnitsLost += dead;
@@ -443,6 +484,24 @@ public class EconomySimulator : MonoBehaviour
         int balance = wallet.Balance;
         int reserve = Reserve(options, party.DailyWage);
         return balance < reserve * (double)settings.SpendAllBelowReserves ? balance : balance - (long)reserve;
+    }
+
+    // The chance to win against this band: the measured matchup of the group's composition against the band's,
+    // lowered when the group is under its fit share of hit points; without a measure, the simple model.
+    private double WinChance(SimulatedBand band, int fullHealth, out CombatOddsTable.Entry matchup)
+    {
+        matchup = combatOdds != null ? combatOdds.Find(party.Key, party.Count, band.Key) : null;
+        if (matchup == null)
+        {
+            return settings.BaseWinChance * party.Strength(fullHealth);
+        }
+
+        return matchup.WinShare * Math.Min(1.0, party.HealthShare / settings.FitHealthShare);
+    }
+
+    private float AvoidFailure(ScenarioOptions options)
+    {
+        return options.AvoidFailure >= 0f ? options.AvoidFailure : settings.AvoidFailureChance;
     }
 
     // What the merchant keeps in the wallet: some days of the group's wages (nothing when there are no wages).
@@ -726,6 +785,30 @@ public class EconomySimulator : MonoBehaviour
         }
 
         return definitions;
+    }
+
+    // Every enemy band of the map: its name, its composition and its loot table.
+    private static List<SimulatedBand> CollectBands()
+    {
+        var found = new List<SimulatedBand>();
+        IReadOnlyList<UnitTeam> units = UnitTeam.All;
+        for (int i = 0; i < units.Count; i++)
+        {
+            if (units[i].Team != Team.Enemy || !units[i].TryGetComponent(out PartyRoster roster) || roster.LootTable == null)
+            {
+                continue;
+            }
+
+            var definitions = new List<UnitDefinition>();
+            for (int m = 0; m < roster.Members.Count; m++)
+            {
+                definitions.Add(roster.Members[m].definition);
+            }
+
+            found.Add(new SimulatedBand { Name = roster.LootTable.name.Replace("Loot_", string.Empty), Key = CombatOddsTable.KeyOf(definitions), Table = roster.LootTable });
+        }
+
+        return found;
     }
 
     // The loot table of every enemy band of the map.

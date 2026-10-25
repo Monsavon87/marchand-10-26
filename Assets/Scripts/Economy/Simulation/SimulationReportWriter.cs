@@ -46,6 +46,7 @@ public static class SimulationReportWriter
         AppendEarnings(text, run.Reference);
         AppendOffProfile(text, run);
         AppendPrices(text, run.Reference, goods, pricing);
+        AppendMeasuredFights(text, run);
         AppendLoop(text, settings, run);
         AppendStart(text, run);
         AppendMechanics(text, run);
@@ -249,6 +250,32 @@ public static class SimulationReportWriter
         }
     }
 
+    // ---- Measured fights -----------------------------------------------------------------------------------------
+
+    private static void AppendMeasuredFights(StringBuilder text, SimulationRun run)
+    {
+        text.AppendLine("## 4 bis. Combats mesurés (banc d'essai)");
+        text.AppendLine();
+        if (run.Odds == null || run.Odds.Entries.Count == 0)
+        {
+            text.AppendLine("Aucune table de combats mesurés : les combats suivent le modèle simple de `SimulationSettings`.");
+            text.AppendLine();
+            return;
+        }
+
+        text.AppendLine(run.Odds.Source);
+        text.AppendLine();
+        text.AppendLine("| Caravane | Bande | Victoires | PV perdus si victoire (moyenne / pire) | Unités perdues par victoire |");
+        text.AppendLine("|---|---|---:|---:|---:|");
+        foreach (CombatOddsTable.Entry e in run.Odds.Entries)
+        {
+            text.AppendLine("| " + e.caravan + " | " + e.band + " | " + e.wins + " / " + e.fights + " (" + Percent(e.WinShare) + ") | "
+                + (e.wins > 0 ? Percent(e.meanHealthLost) + " / " + Percent(e.maxHealthLost) : "-") + " | " + (e.wins > 0 ? e.deathsPerWin.ToString("0.00", CultureInfo.InvariantCulture) : "-") + " |");
+        }
+
+        text.AppendLine();
+    }
+
     // ---- The full loop -------------------------------------------------------------------------------------------
 
     private static void AppendLoop(StringBuilder text, SimulationSettings settings, SimulationRun run)
@@ -256,10 +283,13 @@ public static class SimulationReportWriter
         ScenarioResult c = run.Loop;
         text.AppendLine("## 5. La boucle complète : acheter, voyager, combattre, se soigner, recruter, payer, vendre (scénario C)");
         text.AppendLine();
-        text.AppendLine("Les combats sont tirés au sort (pas d'arène) : " + Percent(settings.EncounterChancePerDay) + " de chance de rencontre par jour de voyage tant qu'une bande est sur la carte ; "
-            + "chance de victoire " + Percent(settings.BaseWinChance) + " × (PV du groupe / PV de " + settings.TargetPartySize + " " + run.RecruitName + " en pleine santé) ; "
-            + "une victoire coûte à chaque unité " + settings.VictoryDamageMinPercent + " à " + settings.VictoryDamageMaxPercent + " % de ses PV max (une unité à 0 meurt, un survivant au moins) ; "
-            + "le butin est celui de la table de la bande (U.V. et marchandises ; les marchandises qui ne rentrent pas sont perdues) ; une bande battue revient après le délai des réglages de retour, avec un nouveau butin. "
+        text.AppendLine("Rencontres : " + Percent(settings.EncounterChancePerDay) + " de chance par jour de voyage de croiser une des bandes présentes sur la carte. "
+            + "Le marchand voit la bande et sa composition (comme le joueur) : il ne combat que si sa chance de victoire atteint " + Percent(settings.FightThreshold)
+            + ", sinon il la contourne (détour de " + (settings.DetourMinutes / 60f).ToString("0.#", CultureInfo.InvariantCulture) + " h, la caravane étant plus rapide que les bandes) ; un contournement rate dans "
+            + Percent(settings.AvoidFailureChance) + " des cas et le combat est alors forcé. "
+            + "Chance de victoire et blessures : celles des **vrais combats mesurés** (§ 4 bis) pour la composition du groupe contre celle de la bande, réduites en proportion quand le groupe est sous "
+            + Percent(settings.FitHealthShare) + " de ses PV ; une unité peut mourir selon la fréquence mesurée (un survivant au moins). "
+            + "Le butin est celui de la table de la bande (U.V. et marchandises ; les marchandises qui ne rentrent pas sont perdues) ; une bande battue revient après le délai des réglages de retour, avec un nouveau butin. "
             + "En ville, le marchand garde " + settings.ReserveDays + " jours de salaires en réserve (sous " + settings.SpendAllBelowReserves.ToString("0.#", CultureInfo.InvariantCulture)
             + " fois la réserve, il dépense tout : un marchand pauvre doit commercer pour vivre), soigne à l'hôpital (au complet) toute unité sous " + settings.HospitalThresholdPercent
             + " % de ses PV si la réserve reste couverte, et recrute " + run.RecruitName + " (" + Money(run.RecruitPrice) + ") jusqu'à " + settings.TargetPartySize + " unités, sans dette et en gardant la réserve.");
@@ -282,6 +312,8 @@ public static class SimulationReportWriter
         text.AppendLine("| Salaires en part de la marge du commerce | " + Percent(c.TradeMargin > 0 ? c.WagesPaid / (double)c.TradeMargin : 0.0) + " | "
             + Percent(b.TradeMargin > 0 ? b.WagesPaid / (double)b.TradeMargin : 0.0) + " |");
         text.AppendLine();
+        text.AppendLine("- Rencontres : " + c.Encounters + " ; combats choisis : " + c.FightsChosen + " ; bandes contournées : " + c.Avoided + " ; combats forcés (contournement raté) : " + c.ForcedFights
+            + " ; combats résolus par la mesure : " + c.MeasuredFights + ".");
         text.AppendLine("- Combats : " + c.Victories + " victoire(s), " + c.Defeats + " défaite(s) ; unités perdues : " + c.UnitsLost + " ; butin ramassé : " + Money(c.LootTotal)
             + " (perdu faute de place : " + Money(c.LootLostValue) + "), soit " + Percent(c.LootShare) + " des recettes.");
         text.AppendLine("- Soins : " + c.HitPointsRegenerated + " PV rendus par la régénération, " + c.HitPointsHealed + " PV à l'hôpital (" + c.HospitalVisits + " visite(s), " + Money(c.HealingCost) + ").");
@@ -393,14 +425,14 @@ public static class SimulationReportWriter
 
     private static void AppendSensitivity(StringBuilder text, SimulationSettings settings, SimulationRun run)
     {
-        text.AppendLine("## 5 quinquies. Sensibilité à la chance de victoire (hypothèse du simulateur)");
+        text.AppendLine("## 5 quinquies. Sensibilité au contournement raté (hypothèse du simulateur)");
         text.AppendLine();
-        text.AppendLine("La survie dépend presque entièrement de la chance de gagner un combat, qui est une hypothèse (les vrais combats tactiques ne sont pas joués). "
-            + "La boucle complète est rejouée sur les mêmes " + (settings.ExtraSeeds + 1) + " graines avec d'autres chances de victoire pour un groupe complet :");
+        text.AppendLine("Les chances de victoire viennent maintenant de la mesure ; l'inconnue est la part des bandes que le joueur n'arrive pas à éviter (inattention, terrain lent, bande qui coupe la route). "
+            + "La boucle complète est rejouée sur les mêmes " + (settings.ExtraSeeds + 1) + " graines avec d'autres taux d'échec du contournement :");
         text.AppendLine();
-        text.AppendLine("| Victoire (groupe complet) | Parties menées au bout | Profit net moyen | Profit net médian | Profit par jour moyen | Part du butin moyenne | Combats gagnés par partie |");
+        text.AppendLine("| Contournement raté | Parties menées au bout | Profit net moyen | Profit net médian | Profit par jour moyen | Part du butin moyenne | Combats gagnés par partie |");
         text.AppendLine("|---:|---:|---:|---:|---:|---:|---:|");
-        AppendSensitivityRow(text, settings.BaseWinChance, run.LoopSeeds(), true);
+        AppendSensitivityRow(text, settings.AvoidFailureChance, run.LoopSeeds(), true);
         foreach (KeyValuePair<float, List<ScenarioResult>> row in run.Sensitivity)
         {
             AppendSensitivityRow(text, row.Key, row.Value, false);
@@ -660,6 +692,19 @@ public static class SimulationReportWriter
             Passed = every.All(s => s.InvariantFailures.Count == 0) && every.Where(s => s.Options.Recruits).All(s => s.Recruits == 0 || s.RecruitCost == s.Recruits * run.RecruitPrice),
             Detail = every.Where(s => s.Options.Recruits).Sum(s => s.RecruitsRefusedForDebt) + " refus pour dette au total"
         });
+        List<ScenarioResult> withFights = every.Where(s => s.Options.Combat).ToList();
+        checks.Add(new Check
+        {
+            Name = "Le marchand ne combat que par choix (chance ≥ seuil) ou contournement raté ; chaque rencontre est soit un combat, soit un détour",
+            Passed = withFights.All(s => s.FightsChosen + s.ForcedFights == s.Victories + s.Defeats && s.FightsChosen + s.ForcedFights + s.Avoided == s.Encounters),
+            Detail = withFights.Sum(s => s.Encounters) + " rencontres : " + withFights.Sum(s => s.FightsChosen) + " combats choisis, " + withFights.Sum(s => s.ForcedFights) + " forcés, " + withFights.Sum(s => s.Avoided) + " contournées"
+        });
+        checks.Add(new Check
+        {
+            Name = "Combats résolus par la table mesurée (aucun repli sur le modèle simple)",
+            Passed = run.Odds == null || withFights.All(s => s.MeasuredFights == s.Victories + s.Defeats),
+            Detail = withFights.Sum(s => s.MeasuredFights) + " sur " + withFights.Sum(s => s.Victories + s.Defeats) + " combats"
+        });
         checks.Add(new Check
         {
             Name = "Aucune vente à une ville hors de son profil (une ville n'achète que ce qu'elle produit ou consomme)",
@@ -762,9 +807,8 @@ public static class SimulationReportWriter
         {
             double fights = seeds.Average(s => (double)(s.Victories + s.Defeats));
             yield return "**Survie** : " + lost + " parties sur " + seeds.Count + " perdues en combat, après " + fights.ToString("0.0", CultureInfo.InvariantCulture)
-                + " combat(s) en moyenne. Le chiffre dépend des hypothèses du simulateur (victoire " + Percent(settings.BaseWinChance) + " pour un groupe complet, voir § 5 quinquies), "
-                + "mais la cause est structurelle : une rencontre toutes les quelques journées de voyage et **une seule défaite qui met fin à la campagne** ; même à 95 % de victoire, une partie de 100 jours va rarement au bout. "
-                + "Pistes côté jeu : qu'une défaite coûte (une part de la cargaison et de l'argent, des blessés) sans finir la partie ; ou moins de rencontres (bandes moins nombreuses, plus lentes, évitables) ; ou un groupe de départ plus solide.";
+                + " combat(s) en moyenne, alors que le marchand ne combat qu'à " + Percent(settings.FightThreshold) + " de chances ou plus : les défaites viennent des combats forcés et des combats à 85-95 %. "
+                + "Pistes côté jeu : qu'une défaite coûte (cargaison, argent, blessés) sans finir la partie ; un groupe de départ plus solide (le départ F + A perd souvent contre une bande égale) ; ou des bandes plus faciles à éviter.";
         }
 
         if (c.RecruitsRefusedForDebt > 0)
@@ -824,8 +868,8 @@ public static class SimulationReportWriter
         text.AppendLine("## 9. Limites de cette simulation");
         text.AppendLine();
         text.AppendLine("- Le marchand simulé est un optimiseur à courte vue (le meilleur profit par jour du prochain trajet) : un humain peut faire mieux (enchaîner des routes) ou moins bien.");
-        text.AppendLine("- Les combats sont un modèle tiré au sort (rencontre, victoire selon les PV du groupe, dégâts d'une victoire) dont les valeurs sont des hypothèses de `SimulationSettings`, pas des mesures : "
-            + "le taux de défaites en dépend entièrement. Les vrais combats ne sont pas joués, la composition des bandes n'entre pas en compte.");
+        text.AppendLine("- Les chances de victoire et les blessures viennent de vrais combats de l'arène joués par l'IA des deux côtés (§ 4 bis) : l'IA ne fait ni pause, ni focalisation, ni repli malin, c'est une borne basse de ce que fait un joueur. "
+            + "Les rencontres restent tirées au sort (" + "chance par jour de voyage) et le contournement est une hypothèse ; un groupe blessé est jugé en réduisant la chance mesurée en pleine santé.");
         text.AppendLine("- Une défaite met fin à la campagne (comme dans le jeu aujourd'hui) : les moyennes sur les graines mélangent des parties complètes et des parties courtes. "
             + "La cargaison du trajet perdu est achetée mais jamais vendue : une partie courte peut afficher une marge du commerce négative, et une part du butin sans signification (« commerce à perte »).");
         text.AppendLine("- La part du butin est une estimation : le butin est compté au prix de base, alors que ses marchandises sont vendues au prix du marché avec la cargaison (elles sont aussi dans la marge du commerce).");

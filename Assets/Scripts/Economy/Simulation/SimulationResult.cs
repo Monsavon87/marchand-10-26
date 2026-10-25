@@ -17,6 +17,10 @@ public class TripRecord
     public int Loot;
     /// <summary>True when the good was sold to a town that has it outside its profile (it only buys it).</summary>
     public bool ToOffProfile;
+    /// <summary>The band fought on the way (empty when none).</summary>
+    public string Band = string.Empty;
+    /// <summary>True when a band was met and the merchant went around it.</summary>
+    public bool Detour;
 
     /// <summary>What the trade alone earned (the sale minus the purchase), fights and replacements apart.</summary>
     public int Profit => Revenue - Cost;
@@ -62,17 +66,17 @@ public struct ScenarioOptions
     public bool Recruits;
     /// <summary>Days of the run (0 = the settings' days).</summary>
     public int Days;
-    /// <summary>Chance to win with a full group (0 = the settings' chance): the sensitivity runs change it.</summary>
-    public float WinChance;
+    /// <summary>Chance that going around a band fails (negative = the settings' chance): the sensitivity runs change it.</summary>
+    public float AvoidFailure;
 
     public static ScenarioOptions Trade(SimulationStrategy strategy)
     {
-        return new ScenarioOptions { Strategy = strategy, Wages = true };
+        return new ScenarioOptions { Strategy = strategy, Wages = true, AvoidFailure = -1f };
     }
 
     public static ScenarioOptions FullLoop()
     {
-        return new ScenarioOptions { Strategy = SimulationStrategy.Foresight, Combat = true, Wages = true, Healing = true, Recruits = true };
+        return new ScenarioOptions { Strategy = SimulationStrategy.Foresight, Combat = true, Wages = true, Healing = true, Recruits = true, AvoidFailure = -1f };
     }
 }
 
@@ -95,9 +99,11 @@ public class SimulationRun
     public ScenarioResult ReferenceNoWages;
     public ScenarioResult ReferenceLong;
     public ScenarioResult LoopLong;
-    /// <summary>The full loop on every seed again, for each other chance to win of the settings.</summary>
+    /// <summary>The full loop on every seed again, for each other chance that going around a band fails.</summary>
     public readonly List<KeyValuePair<float, List<ScenarioResult>>> Sensitivity = new List<KeyValuePair<float, List<ScenarioResult>>>();
     public readonly List<LootTable> BandTables = new List<LootTable>();
+    /// <summary>The measured fights the runs used (null: the simple model only).</summary>
+    public CombatOddsTable Odds;
     public int RecruitPrice;
     public string RecruitName = string.Empty;
     public string StartingParty = string.Empty;
@@ -125,6 +131,16 @@ public class ScenarioResult
     public int IdleDays;
     public int Victories;
     public int Defeats;
+    /// <summary>Bands met on the road.</summary>
+    public int Encounters;
+    /// <summary>Bands the merchant chose to fight (its chance was at least the threshold).</summary>
+    public int FightsChosen;
+    /// <summary>Bands it went around.</summary>
+    public int Avoided;
+    /// <summary>Detours that failed: the fight was forced.</summary>
+    public int ForcedFights;
+    /// <summary>Fights resolved with the measured table (the others with the fallback model).</summary>
+    public int MeasuredFights;
     public int UnitsLost;
     public int LootTotal;
     public int LootLostValue;

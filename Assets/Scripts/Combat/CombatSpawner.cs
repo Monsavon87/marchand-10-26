@@ -4,7 +4,8 @@ using UnityEngine;
 /// <summary>
 /// Fills the arena from the encounter: one combat unit per member of each side, made from the same unit prefabs as
 /// everywhere else, set to the member's type and hit points, lined up at its side's starting point. Enemies get the
-/// combat brain with their profile. Then it starts the combat, and when it ends it writes the result into the
+/// combat brain with their profile, and go to look for the player's units on the other side of the arena (search
+/// mode) until they see them. Then it starts the combat, and when it ends it writes the result into the
 /// encounter (hit points of the player's units, losses of both sides).
 /// Without an encounter (the arena opened on its own, for testing) it uses its test sides and stays in the arena.
 /// </summary>
@@ -100,10 +101,21 @@ public class CombatSpawner : MonoBehaviour
             ActionController actions = unit.GetComponent<ActionController>();
             actions.BindScene(rulesProvider, combat);
 
-            if (isEnemy)
+            // The enemies always fight by the combat AI; the player's units only on the test bench (two AI sides).
+            if (isEnemy || encounter.PlayerSideByAi)
             {
+                AIUnitController controller = unit.GetComponent<AIUnitController>();
+                if (controller == null)
+                {
+                    controller = unit.AddComponent<AIUnitController>();
+                    controller.Configure(actions, unit.GetComponent<UnitTeam>());
+                }
+
+                // The enemy started on the other side of the arena: the unit goes to look for it there.
+                controller.SearchToward(isEnemy ? playerStart.position : enemyStart.position);
+
                 AICombatBrain brain = unit.AddComponent<AICombatBrain>();
-                brain.Configure(unit.GetComponent<AIUnitController>(), actions, unit.GetComponent<UnitStats>(),
+                brain.Configure(controller, actions, unit.GetComponent<UnitStats>(),
                     unit.GetComponent<UnitTeam>(), health, unit.GetComponent<UnitMover>(),
                     member.aiProfile != null ? member.aiProfile : defaultEnemyProfile, combat, rulesProvider);
             }

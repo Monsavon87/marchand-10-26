@@ -33,12 +33,22 @@ public class SimulationSettings : ScriptableObject
     [Header("Fights on the road")]
     [Tooltip("Chance per game day of travel that the caravan meets an enemy band (while some are left on the map).")]
     [Range(0f, 1f)] [SerializeField] private float encounterChancePerDay = 0.15f;
-    [Tooltip("Chance to win a fight with a full group at full health. It is multiplied by the group's hit points over those of a full group.")]
+    [Tooltip("Without a measured table (or a matchup it lacks): chance to win with a full group at full health, multiplied by the group's hit points over those of a full group.")]
     [Range(0f, 1f)] [SerializeField] private float baseWinChance = 0.75f;
     [Tooltip("A won fight costs each unit a share of its maximum hit points, drawn between this minimum...")]
     [Range(0, 100)] [SerializeField] private int victoryDamageMinPercent = 10;
     [Tooltip("...and this maximum (percent). A unit at 0 dies; a won fight leaves one unit standing.")]
     [Range(0, 100)] [SerializeField] private int victoryDamageMaxPercent = 50;
+
+    [Header("The merchant's choice when it meets a band (the player sees the band and its composition)")]
+    [Tooltip("It fights only when its chance to win is at least this; otherwise it goes around the band.")]
+    [Range(0f, 1f)] [SerializeField] private float fightThreshold = 0.85f;
+    [Tooltip("Chance that going around a band fails (cornered, slow ground, not seen in time): the fight is forced.")]
+    [Range(0f, 1f)] [SerializeField] private float avoidFailureChance = 0.05f;
+    [Tooltip("Game minutes a successful detour adds to the trip.")]
+    [Min(0f)] [SerializeField] private float detourMinutes = 720f;
+    [Tooltip("The measured odds are those of a group at full health; a group at or above this share of its hit points (the ceiling of natural healing) counts as fit, under it the chance is lowered in proportion.")]
+    [Range(0.1f, 1f)] [SerializeField] private float fitHealthShare = 0.8f;
 
     [Header("The simulated merchant's rules")]
     [Tooltip("The merchant keeps this many days of wages in the wallet: it never spends them on goods, care or recruits.")]
@@ -49,8 +59,8 @@ public class SimulationSettings : ScriptableObject
     [Range(0, 100)] [SerializeField] private int hospitalThresholdPercent = 60;
     [Tooltip("In town (runs with fights), the merchant recruits the cheapest offer up to this size, without debt and keeping the reserve. A full group of this size of the cheapest recruit is the reference strength of the fights.")]
     [Min(1)] [SerializeField] private int targetPartySize = 4;
-    [Tooltip("Other chances to win (with a full group) tried on every seed of the full loop, to see how much the survival rests on this hypothesis.")]
-    [SerializeField] private float[] sensitivityWinChances = { 0.85f, 0.95f };
+    [Tooltip("Other chances that going around a band fails, tried on every seed of the full loop, to see how much the survival rests on this hypothesis.")]
+    [SerializeField] private float[] sensitivityAvoidFailures = { 0.15f, 0.30f };
     [Tooltip("Days of the long runs, to see whether the profit ever stops growing.")]
     [Min(1)] [SerializeField] private int longRunDays = 300;
 
@@ -84,7 +94,11 @@ public class SimulationSettings : ScriptableObject
     public int HospitalThresholdPercent => hospitalThresholdPercent;
     public int TargetPartySize => targetPartySize;
     public int LongRunDays => longRunDays;
-    public System.Collections.Generic.IReadOnlyList<float> SensitivityWinChances => sensitivityWinChances ?? System.Array.Empty<float>();
+    public System.Collections.Generic.IReadOnlyList<float> SensitivityAvoidFailures => sensitivityAvoidFailures ?? System.Array.Empty<float>();
+    public float FightThreshold => fightThreshold;
+    public float AvoidFailureChance => avoidFailureChance;
+    public float DetourMinutes => detourMinutes;
+    public float FitHealthShare => fitHealthShare;
     public float BoundedGrowthRatio => boundedGrowthRatio;
     public float LootShareMin => lootShareMin;
     public float LootShareMax => lootShareMax;

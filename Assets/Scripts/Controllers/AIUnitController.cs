@@ -50,6 +50,14 @@ public class AIUnitController : MonoBehaviour
     [SerializeField] private Transform[] patrolPoints;
     [Tooltip("Seconds spent at each patrol point.")]
     [SerializeField] private float waitAtPoint = 1.5f;
+    [Tooltip("Search mode (in an arena): once the place where the enemy started is reached with nobody in sight, the unit searches around it within this distance (m).")]
+    [Min(1f)] [SerializeField] private float searchRadius = 12f;
+    [Tooltip("Search mode: an enemy that walks or fights closer than this (m) is heard, even out of sight; the unit goes toward the noise (it still has to see it to fight).")]
+    [Min(0f)] [SerializeField] private float hearingRadius = 20f;
+    [Tooltip("Search mode: after this many seconds without seeing or hearing anyone, the unit learns roughly where the nearest enemy is (a safety net: no combat stays stuck).")]
+    [Min(1f)] [SerializeField] private float intelAfterSeconds = 15f;
+    [Tooltip("Search mode: how far off (m) that rough position may be.")]
+    [Min(0f)] [SerializeField] private float intelError = 5f;
 
     [Header("Detection")]
     [Tooltip("A player unit closer than this, and visible, starts a chase.")]
@@ -101,6 +109,13 @@ public class AIUnitController : MonoBehaviour
     private System.Random wanderDice;
     private Vector3 wanderTarget;
     private NavMeshPath wanderPath;
+    private bool searching;
+    private bool searchReached;
+    private Vector3 searchPoint;
+    private Vector3 searchTarget;
+    private System.Random searchDice;
+    private float lastContactTime;
+    private float nextListenTime;
 
     /// <summary>Whether the unit follows a route or wanders (Route until told otherwise).</summary>
     public PatrolMode Mode => mode;
@@ -120,6 +135,16 @@ public class AIUnitController : MonoBehaviour
 
     /// <summary>The points of the patrol route (read-only; empty when the unit has none).</summary>
     public IReadOnlyList<Transform> PatrolPoints => patrolPoints ?? System.Array.Empty<Transform>();
+
+    /// <summary>
+    /// Sets up a controller added by a script to a unit made at runtime (the player's units on the combat test bench).
+    /// Before the unit wakes up.
+    /// </summary>
+    public void Configure(ActionController unitActions, UnitTeam unitTeam)
+    {
+        actions = unitActions;
+        ownTeam = unitTeam;
+    }
 
     /// <summary>
     /// The unit will follow these positions in a loop (replaces the route). Takes effect at the next ResetToPatrol, or
@@ -153,12 +178,31 @@ public class AIUnitController : MonoBehaviour
         patrolIndex = 0;
     }
 
+    /// <summary>
+    /// Search mode (an arena): the unit knows the enemy started around this point (the other side of the arena). As
+    /// long as it sees nobody it walks there, then searches around it; once an enemy is seen, the chase and the combat
+    /// brain take over as usual, and the search goes on when nobody is in sight any more. Replaces the patrol.
+    /// </summary>
+    public void SearchToward(Vector3 point)
+    {
+        searching = true;
+        searchReached = false;
+        searchPoint = point;
+        searchTarget = point;
+        searchDice = searchDice ?? new System.Random();
+        wanderPath = wanderPath ?? new NavMeshPath();
+        lastContactTime = Time.time;
+    }
+
+    /// <summary>True while the unit is in search mode (see SearchToward).</summary>
+    public bool IsSearching => searching;
+
     private bool HasPatrol
     {
         get
         {
             EnsureRoute();
-            return mode == PatrolMode.Wander || route.Count > 0;
+            return searching || mode == PatrolMode.Wander || route.Count > 0;
         }
     }
 
@@ -190,7 +234,33 @@ public class AIUnitController : MonoBehaviour
     // Where the patrol leads now: the point of the route it heads to, or the point picked for the wandering.
     private Vector3 PatrolDestination()
     {
+        if (searching)
+        {
+            return searchTarget;
+        }
+
         return mode == PatrolMode.Wander ? wanderTarget : route[patrolIndex];
+    }
+
+    // Search mode: on to the place where the enemy started until it is reached (a walk may be cut short), then a point
+    // drawn around it. When no point can be drawn, the place itself.
+    private void PickSearchTarget()
+    {
+        searchReached |= FlatDistance(searchPoint) <= 3f;
+        searchTarget = searchPoint;
+        if (!searchReached)
+        {
+            return;
+        }
+
+        for (int i = 0; i < 10; i++)
+        {
+            if (NavMeshPicker.TryPickAround(searchPoint, searchRadius, 0f, searchDice, wanderPath, out Vector3 point))
+            {
+                searchTarget = point;
+                return;
+            }
+        }
     }
 
     // Wandering: draws the next point. When no valid point is found the unit stays put and tries again after its wait.
@@ -207,7 +277,11 @@ public class AIUnitController : MonoBehaviour
     // The first destination of a patrol that starts: the first point of the route, or a first wandering point.
     private void StartPatrolOrder()
     {
-        if (mode == PatrolMode.Wander)
+        if (searching)
+        {
+            PickSearchTarget();
+        }
+        else if (mode == PatrolMode.Wander)
         {
             PickWanderTarget();
         }
@@ -347,6 +421,7 @@ public class AIUnitController : MonoBehaviour
                 }
 
                 ScanForTarget(now);
+                Listen(now);
                 break;
 
             case AIState.Chase:
@@ -371,8 +446,97 @@ public class AIUnitController : MonoBehaviour
 
             case AIState.ReturnToPatrol:
                 ScanForTarget(now);
+                Listen(now);
                 break;
         }
+    }
+
+    // Search mode: an enemy heard (walking or acting, within the hearing radius) becomes the place to search; with
+    // nobody seen or heard for a while, the rough place of the nearest enemy does. Seeing is still needed to fight.
+    private void Listen(float now)
+    {
+        if (!searching || state == AIState.Chase || now < nextListenTime)
+        {
+            return;
+        }
+
+        nextListenTime = now + scanInterval;
+        Transform heard = NearestEnemy(hearingRadius, true);
+        if (heard != null)
+        {
+            lastContactTime = now;
+            SearchAt(heard.position);
+            return;
+        }
+
+        if (now - lastContactTime < intelAfterSeconds)
+        {
+            return;
+        }
+
+        lastContactTime = now;
+        Transform nearest = NearestEnemy(float.MaxValue, false);
+        if (nearest != null)
+        {
+            float angle = (float)(searchDice.NextDouble() * Mathf.PI * 2.0);
+            float off = (float)searchDice.NextDouble() * intelError;
+            SearchAt(nearest.position + new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * off);
+        }
+    }
+
+    // Sends the search to a new place (the walk is redirected only when the place really changes).
+    private void SearchAt(Vector3 point)
+    {
+        Vector3 offset = point - searchPoint;
+        offset.y = 0f;
+        bool moved = offset.magnitude > 3f;
+        searchPoint = point;
+        searchReached = false;
+        if (moved || isWaiting)
+        {
+            isWaiting = false;
+            searchTarget = point;
+            Order(point);
+        }
+    }
+
+    // The nearest living enemy within 'radius' (flat distance); with 'noisyOnly', only one that walks or acts.
+    private Transform NearestEnemy(float radius, bool noisyOnly)
+    {
+        Transform best = null;
+        float bestDistance = radius;
+        IReadOnlyList<UnitTeam> units = UnitTeam.All;
+        for (int i = 0; i < units.Count; i++)
+        {
+            UnitTeam other = units[i];
+            if (other.Team == ownTeam.Team || (other.TryGetComponent(out Health otherHealth) && otherHealth.IsDead))
+            {
+                continue;
+            }
+
+            float distance = FlatDistance(other.transform.position);
+            if (distance > bestDistance)
+            {
+                continue;
+            }
+
+            if (noisyOnly && !IsNoisy(other))
+            {
+                continue;
+            }
+
+            bestDistance = distance;
+            best = other.transform;
+        }
+
+        return best;
+    }
+
+    // An enemy makes noise when it walks or does something (fights, shoots).
+    private static bool IsNoisy(UnitTeam other)
+    {
+        return (other.TryGetComponent(out UnitMover otherMover) && otherMover.IsMoving)
+            || (other.TryGetComponent(out ActionController otherActions) && otherActions.IsBusy);
     }
 
     // Looks for the closest player unit that is inside the detection radius AND visible.
@@ -423,6 +587,7 @@ public class AIUnitController : MonoBehaviour
         state = AIState.Chase;
         isWaiting = false;
         targetVisible = true;
+        lastContactTime = now;
         lastSeenPosition = newTarget.position;
         nextSightCheckTime = now + scanInterval;
         nextRepathTime = 0f;
@@ -578,7 +743,11 @@ public class AIUnitController : MonoBehaviour
             return;
         }
 
-        if (mode == PatrolMode.Wander)
+        if (searching)
+        {
+            PickSearchTarget();
+        }
+        else if (mode == PatrolMode.Wander)
         {
             PickWanderTarget();
         }

@@ -83,7 +83,7 @@ Un script = une responsabilité, rangé par fonctionnalité. Chaque classe a un 
 | `Controllers/SelectionManager`                            | Sélection (clic, Maj, rectangle) ; ne donne aucun ordre                                                                |
 | `Controllers/PlayerCommandController`                     | Transforme un clic sur le sol en ordre pour les unités sélectionnées (par `ActionController`)                          |
 | `Controllers/SelectableUnit`, `CampaignSelectionKeeper`   | Anneau de sélection ; la caravane reste toujours sélectionnée sur la carte                                             |
-| `Controllers/AIUnitController`                            | Cerveau de patrouille des ennemis (route ou errance, poursuite à vue, recherche)                                             |
+| `Controllers/AIUnitController`                            | Cerveau de patrouille des ennemis (route ou errance, poursuite à vue, fouille ; dans l'arène, recherche de l'ennemi au côté opposé avec ouïe et filet)                                             |
 | `Controllers/AICombatBrain`                               | Décisions de combat de l'IA (cible, contournement, recul, repli)                                                       |
 | `Controllers/PlayerUnitController`, `DebugMoveController` | Anciens contrôleurs de test (voir `Test_Movement`)                                                                     |
 | `Camera/StrategyCamera`                                   | Caméra de stratégie (ZQSD, bords d'écran, rotation, zoom)                                                              |
@@ -233,6 +233,10 @@ Objets racine principaux : `Ground` (NavMesh), `Main Camera`, `Caravan` (le joue
 
 `EconomySimulator` (objet de `Demo_Campaign`) joue l'économie **sans rendu** : un marchand simulé achète, voyage (durées réelles du NavMesh), se bat (modèle tiré au sort : `SimulationCombat`) et vend, **uniquement par `TradeService`** et par le vrai calendrier. Son groupe (`SimulatedParty`) part du vrai groupe de la caravane : PV, salaires payés par `PayrollRules` (la vraie paie est coupée pendant la simulation puis remise), régénération du jeu, hôpital et recrues par des règles simples de `SimulationSettings`, réserve de salaires. Chaque U.V. passe par un grand livre vérifié à chaque étape. Il écrit `ECONOMY_REPORT.md` : verdict sur les critères d'équilibrage, profit après salaires, détail de l'argent, part du butin, ventes hors profil, effet de chaque mécanique (une enlevée à la fois), sensibilité à la chance de victoire, parties de 300 jours, anomalies, protocole de test automatique, réglages suggérés.
 
+Les combats du simulateur suivent une table mesurée (`CombatOddsTable`, asset `CombatOdds_Bench`) : le marchand combat à 85 % de chances ou plus, sinon contourne la bande.
+
+**Banc d'essai des combats** (pour refaire la table) : en Play Mode dans `Combat_Arena`, pour chaque combat : créer un `EncounterData("Combat_Arena", LootResult.Empty, true)` avec `PlayerSideByAi = true` et les deux camps, `EncounterChannel.Begin`, `SceneManager.LoadScene("Combat_Arena")`, puis avancer image par image (`EditorApplication.Step`) jusqu'à `HasResult`, en réimposant `Time.timeScale = 5` à chaque image (le `CombatManager` le remet à 1 à chaque reprise ; ×10 fausse les résultats), en levant la pause (`SetPaused(false)`) et en coupant les caméras. Écrire ensuite la table avec `CombatOddsTable.Set`. Remettre `timeScale` à 1 et vérifier `ProjectSettings`.
+
 Lancer : entrer en Play Mode dans `Demo_Campaign` (session neuve), puis appeler `EconomySimulator.Run()` une fois (par exemple avec une commande d'éditeur ; environ 2 secondes). Rien n'est sauvegardé dans la session. À rejouer après tout changement de prix, de profil de ville ou de capacité.
 
 ---
@@ -277,6 +281,7 @@ Lancer : entrer en Play Mode dans `Demo_Campaign` (session neuve), puis appeler 
 - **Tests qui avancent le calendrier** : au-delà du jour 100, `DemoGoal` termine la démo et fige la carte (état Held, bandes immobiles) : rester sous 100 jours ou relancer le Play.
 - **Tester une défaite de bande sans combat** : désactiver la bande et appeler `OnBandDefeated` du `BandRespawner` par `SendMessage` (l'événement du flux ne peut pas être levé de l'extérieur).
 - **Une ville n'achète que son profil** : `TradeService` refuse une vente hors profil (`TradeStatus.NotBoughtHere`) ; tout nouvel acheteur (simulateur, interface, quête) doit passer par lui ou tester `Market.IsInProfile`, et `TradePlanner` ne vise que des villes qui achètent.
+- **IA de combat et recherche** : sans recherche, deux camps IA restent à leur départ ; avec une recherche vers un point fixe, deux camps qui se croisent hors de vue fouillent le camp vide d'en face. La recherche a besoin de l'ouïe et du filet (`AIUnitController`). La recherche n'est donnée que par `CombatSpawner` (arène) : ne pas l'activer pour les bandes de la carte.
 - **Test dans la scène du jeu** : `CampaignEncounterFlow` endort tous les objets racine de la scène sauf le sien. Tout nouvel objet racine de `Demo_Campaign` dort donc pendant un combat ; ne pas y mettre ce qui doit rester éveillé.
 
 ---

@@ -27,6 +27,11 @@ public class EncounterData
     public List<GoodStack> LootLost { get; } = new List<GoodStack>();
     /// <summary>True when the fight was started from the campaign map and must return there; false in a test arena.</summary>
     public bool ReturnToMap { get; }
+    /// <summary>
+    /// For the combat test bench only: the player's units are played by the combat AI too, so two AI sides fight and
+    /// the result measures the matchup. Off in the game.
+    /// </summary>
+    public bool PlayerSideByAi { get; set; }
 
     public bool HasResult { get; private set; }
     public Team? Winner { get; private set; }
