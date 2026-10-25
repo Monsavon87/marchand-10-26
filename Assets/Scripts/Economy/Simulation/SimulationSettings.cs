@@ -11,7 +11,9 @@ public enum SimulationStrategy
 
 /// <summary>
 /// The settings of the economy simulator: how long it runs, the seed of its dice, the money the merchant starts with,
-/// the model of the fights on the road and the thresholds the report uses to flag an anomaly. Pure data.
+/// the model of the fights on the road, the simulated merchant's rules (reserve, hospital, recruits) and the thresholds
+/// the report uses to flag an anomaly and give its verdict. These are hypotheses of the simulator, not game settings.
+/// Pure data.
 /// </summary>
 [CreateAssetMenu(fileName = "SimulationSettings", menuName = "Marchand/Economy/Simulation Settings")]
 public class SimulationSettings : ScriptableObject
@@ -31,10 +33,34 @@ public class SimulationSettings : ScriptableObject
     [Header("Fights on the road")]
     [Tooltip("Chance per game day of travel that the caravan meets an enemy band (while some are left on the map).")]
     [Range(0f, 1f)] [SerializeField] private float encounterChancePerDay = 0.15f;
-    [Tooltip("Chance to win a fight with the party at full size. It shrinks with the share of the party that is left.")]
+    [Tooltip("Chance to win a fight with a full group at full health. It is multiplied by the group's hit points over those of a full group.")]
     [Range(0f, 1f)] [SerializeField] private float baseWinChance = 0.75f;
-    [Tooltip("Most units a won fight can cost: the number lost is drawn between 0 and this.")]
-    [Min(0)] [SerializeField] private int maxLossesOnWin = 2;
+    [Tooltip("A won fight costs each unit a share of its maximum hit points, drawn between this minimum...")]
+    [Range(0, 100)] [SerializeField] private int victoryDamageMinPercent = 10;
+    [Tooltip("...and this maximum (percent). A unit at 0 dies; a won fight leaves one unit standing.")]
+    [Range(0, 100)] [SerializeField] private int victoryDamageMaxPercent = 50;
+
+    [Header("The simulated merchant's rules")]
+    [Tooltip("The merchant keeps this many days of wages in the wallet: it never spends them on goods, care or recruits.")]
+    [Min(0)] [SerializeField] private int reserveDays = 7;
+    [Tooltip("...but a poor merchant must trade to live: with less money than this many times the reserve, it spends all of it on goods.")]
+    [Min(1f)] [SerializeField] private float spendAllBelowReserves = 2f;
+    [Tooltip("In town, a unit under this share of its maximum hit points goes to the hospital (healed to full), if the reserve stays covered.")]
+    [Range(0, 100)] [SerializeField] private int hospitalThresholdPercent = 60;
+    [Tooltip("In town (runs with fights), the merchant recruits the cheapest offer up to this size, without debt and keeping the reserve. A full group of this size of the cheapest recruit is the reference strength of the fights.")]
+    [Min(1)] [SerializeField] private int targetPartySize = 4;
+    [Tooltip("Other chances to win (with a full group) tried on every seed of the full loop, to see how much the survival rests on this hypothesis.")]
+    [SerializeField] private float[] sensitivityWinChances = { 0.85f, 0.95f };
+    [Tooltip("Days of the long runs, to see whether the profit ever stops growing.")]
+    [Min(1)] [SerializeField] private int longRunDays = 300;
+
+    [Header("Verdict thresholds")]
+    [Tooltip("The profit is bounded when the profit of the last slice of days stays under this many times the one of the second slice.")]
+    [Min(1f)] [SerializeField] private float boundedGrowthRatio = 1.5f;
+    [Tooltip("The loot weighs without dominating when its share of the income is at least this...")]
+    [Range(0f, 1f)] [SerializeField] private float lootShareMin = 0.10f;
+    [Tooltip("...and at most this.")]
+    [Range(0f, 1f)] [SerializeField] private float lootShareMax = 0.40f;
 
     [Header("Anomaly thresholds")]
     [Tooltip("Length in days of the slices the profit is cut into to see whether it grows without end.")]
@@ -51,7 +77,17 @@ public class SimulationSettings : ScriptableObject
     public int ExtraSeeds => extraSeeds;
     public float EncounterChancePerDay => encounterChancePerDay;
     public float BaseWinChance => baseWinChance;
-    public int MaxLossesOnWin => maxLossesOnWin;
+    public int VictoryDamageMinPercent => Mathf.Min(victoryDamageMinPercent, victoryDamageMaxPercent);
+    public int VictoryDamageMaxPercent => Mathf.Max(victoryDamageMinPercent, victoryDamageMaxPercent);
+    public int ReserveDays => reserveDays;
+    public float SpendAllBelowReserves => spendAllBelowReserves;
+    public int HospitalThresholdPercent => hospitalThresholdPercent;
+    public int TargetPartySize => targetPartySize;
+    public int LongRunDays => longRunDays;
+    public System.Collections.Generic.IReadOnlyList<float> SensitivityWinChances => sensitivityWinChances ?? System.Array.Empty<float>();
+    public float BoundedGrowthRatio => boundedGrowthRatio;
+    public float LootShareMin => lootShareMin;
+    public float LootShareMax => lootShareMax;
     public int GrowthWindowDays => growthWindowDays;
     public float StuckShare => stuckShare;
     public float MaxTripReturn => maxTripReturn;

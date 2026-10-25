@@ -17086,6 +17086,8 @@ MonoBehaviour:
   terrainSettings: {fileID: 11400000, guid: 92ea1ac5518697c489ae42792da2ffd4, type: 2}
   caravan: {fileID: 359145124}
   recruitment: {fileID: 675263631}
+  healingSettings: {fileID: 11400000, guid: feb1c3a8e0f6cda41ad116a06892289b, type: 2}
+  payrollSettings: {fileID: 11400000, guid: c10be5c383a5230488b8791873251bc0, type: 2}
   payroll: {fileID: 304521187}
   reportPath: ECONOMY_REPORT.md
 --- !u!4 &2038860611

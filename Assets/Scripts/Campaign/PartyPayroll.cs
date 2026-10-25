@@ -125,22 +125,22 @@ public class PartyPayroll : MonoBehaviour
 
     private void OnDayStarted(int day)
     {
-        if (day <= settings.GraceDays)
+        if (!PayrollRules.IsCharged(day, settings.GraceDays))
         {
             return;
         }
 
         int cost = CostOf(day);
         int debtBefore = Debt;
-        long due = (long)debtBefore + cost;
-        int paid = (int)Math.Min(due, wallet.Balance);
+        PayrollRules.Settle(debtBefore, cost, wallet.Balance, out int paid, out int debtAfter);
         if (paid > 0 && wallet.TryWithdraw(paid) != WalletResult.Accepted)
         {
             Debug.LogError("PartyPayroll: the payment of " + paid + " U.V. was refused although the balance was checked.", this);
+            debtAfter += paid;
             paid = 0;
         }
 
-        Debt = (int)Math.Min(due - paid, int.MaxValue);
+        Debt = debtAfter;
         if (Debt != debtBefore)
         {
             DebtChanged();

@@ -118,7 +118,7 @@ Un script = une responsabilité, rangé par fonctionnalité. Chaque classe a un 
 | `PointOfInterest`              | Une ville de la carte (données et test de clic)                                                                                                             |
 | `TownRest`, `TownRecruitment`  | Arrivée en ville (l'événement qui ouvre la fenêtre de ville ; elle ne soigne plus rien) et recrutement |
 | `PartyRegeneration`, `HealingRules`, `TownHospital` | Régénération naturelle du groupe (8 % des PV max par jour du monde, plafonnée à 80 %), la règle de calcul pure, et l'hôpital (soin payé en U.V., 25 par PV rendu, par unité ou pour tout le groupe) ; réglages dans `HealingSettings` |
-| `PartyPayroll`, `IDailyCost`, `WageCost` | Paie des salaires du groupe à chaque début de jour (`DayStarted`), 7 jours offerts, dette si solde insuffisant (payée en premier ensuite) ; `IDailyCost` est le point d'extension pour d'autres coûts quotidiens (seul `WageCost` existe) ; réglages dans `PayrollSettings` |
+| `PartyPayroll`, `PayrollRules`, `IDailyCost`, `WageCost` | Paie des salaires du groupe à chaque début de jour (`DayStarted`) par la règle pure `PayrollRules` (partagée avec le simulateur), 7 jours offerts, dette si solde insuffisant (payée en premier ensuite) ; `IDailyCost` est le point d'extension pour d'autres coûts quotidiens (seul `WageCost` existe) ; réglages dans `PayrollSettings` |
 | `CampaignHud`                  | Horloge, message, état du temps                                                                                                                             |
 
 ### Données (`Data/`) — les ScriptableObjects (voir § 5)
@@ -231,9 +231,9 @@ Objets racine principaux : `Ground` (NavMesh), `Main Camera`, `Caravan` (le joue
 
 ## 6. L'équilibrage : le simulateur
 
-`EconomySimulator` (objet de `Demo_Campaign`) joue l'économie **sans rendu** : un marchand simulé achète, voyage (durées réelles du NavMesh), se bat (modèle tiré au sort) et vend, **uniquement par `TradeService`** et par le vrai calendrier. Il écrit `ECONOMY_REPORT.md` : profit total et par jour, routes et marchandises rentables, évolution des prix, anomalies, paramètres à ajuster.
+`EconomySimulator` (objet de `Demo_Campaign`) joue l'économie **sans rendu** : un marchand simulé achète, voyage (durées réelles du NavMesh), se bat (modèle tiré au sort : `SimulationCombat`) et vend, **uniquement par `TradeService`** et par le vrai calendrier. Son groupe (`SimulatedParty`) part du vrai groupe de la caravane : PV, salaires payés par `PayrollRules` (la vraie paie est coupée pendant la simulation puis remise), régénération du jeu, hôpital et recrues par des règles simples de `SimulationSettings`, réserve de salaires. Chaque U.V. passe par un grand livre vérifié à chaque étape. Il écrit `ECONOMY_REPORT.md` : verdict sur les critères d'équilibrage, profit après salaires, détail de l'argent, part du butin, ventes hors profil, effet de chaque mécanique (une enlevée à la fois), sensibilité à la chance de victoire, parties de 300 jours, anomalies, protocole de test automatique, réglages suggérés.
 
-Lancer : entrer en Play Mode dans `Demo_Campaign`, puis appeler `EconomySimulator.Run()` (par exemple avec une commande d'éditeur). Rien n'est sauvegardé dans la session. À rejouer après tout changement de prix, de profil de ville ou de capacité.
+Lancer : entrer en Play Mode dans `Demo_Campaign` (session neuve), puis appeler `EconomySimulator.Run()` une fois (par exemple avec une commande d'éditeur ; environ 2 secondes). Rien n'est sauvegardé dans la session. À rejouer après tout changement de prix, de profil de ville ou de capacité.
 
 ---
 
@@ -271,7 +271,8 @@ Lancer : entrer en Play Mode dans `Demo_Campaign`, puis appeler `EconomySimulato
 - **Versions de démo** : toujours au format x.y.z (`PlayerSettings.bundleVersion`), zip nommé `Marchand_Demo_Windows_vX.Y.Z.zip`, version et commit notés dans `PROJECT_LOG.md`.
 - **Tests au clavier simulé** : dans une longue session de Play, les touches simulées finissent par ne plus être vues ; relancer le Play. Les touches I et Échap n'ont été testées qu'indirectement.
 - **Namespace** : dans un script éditeur, écrire `UnityEngine.UI.Image` (alias `UImage`) pour éviter la collision avec un autre type `Image`.
-- **Paie et calendrier du simulateur** : `EconomySimulator` avance le vrai calendrier, donc la vraie paie se déclenche ; il suit `PartyPayroll.Settled` pour garder son solde attendu et remet la dette à zéro entre scénarios. Tout nouveau coût quotidien prélevé sur le Wallet doit être suivi de la même façon.
+- **Paie et calendrier du simulateur** : `EconomySimulator` avance le vrai calendrier ; il coupe la vraie paie (`PartyPayroll.enabled = false`) pendant la simulation et paie lui-même son groupe simulé, puis la remet. Tout nouveau coût quotidien du jeu prélevé sur le Wallet doit être coupé ou suivi de la même façon, et ajouté au grand livre (`ScenarioResult.LedgerBalance`), sinon le contrôle T2 échoue.
+- **Précision du calendrier** : `CampaignClock` compte les minutes en `float`. Le simulateur enchaîne des milliers de jours : un rapport n'est reproductible que pour la première exécution d'une session neuve. Une partie de jeu de 100 jours n'est pas concernée.
 - **`NavMeshPath` dans un champ** : le créer dans `Awake` ou `Start`, jamais dans l'initialiseur d'un champ de MonoBehaviour (exception au chargement).
 - **Tests qui avancent le calendrier** : au-delà du jour 100, `DemoGoal` termine la démo et fige la carte (état Held, bandes immobiles) : rester sous 100 jours ou relancer le Play.
 - **Tester une défaite de bande sans combat** : désactiver la bande et appeler `OnBandDefeated` du `BandRespawner` par `SendMessage` (l'événement du flux ne peut pas être levé de l'extérieur).

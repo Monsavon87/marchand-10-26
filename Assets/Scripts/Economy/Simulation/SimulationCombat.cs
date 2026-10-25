@@ -4,35 +4,35 @@ using System.Collections.Generic;
 /// <summary>What a simulated fight on the road came to.</summary>
 public readonly struct FightOutcome
 {
-    public FightOutcome(bool happened, bool won, LootResult loot, int unitsLost)
+    public FightOutcome(bool happened, bool won, LootResult loot)
     {
         Happened = happened;
         Won = won;
         Loot = loot;
-        UnitsLost = unitsLost;
     }
 
     public bool Happened { get; }
     public bool Won { get; }
     public LootResult Loot { get; }
-    public int UnitsLost { get; }
 }
 
 /// <summary>
 /// A model of the fights on the road, rolled with the seeded dice (no arena is loaded): each trip has a chance of
-/// meeting one of the bands that are left on the map, the chance of winning shrinks with the share of the party that
-/// is still standing, a victory pays the band's loot, rolled from its table when the campaign starts (each band can be beaten once, as in the game) and may cost some
-/// units, a defeat ends the campaign (the game over of the map). The party's size is a count here: the real roster is
-/// not touched. A beaten band comes back after a number of days drawn between the respawn settings' minimum and maximum, with
-/// a new loot from its table, as on the map (see BandRespawner); without respawn settings it never does.
+/// meeting one of the bands that are on the map, the chance of winning is the base chance times the strength of the
+/// group (its hit points over those of a full group: see SimulatedParty.Strength), a victory pays the band's loot,
+/// rolled from its table, a defeat ends the campaign (the game over of the map). The wounds of a victory are the
+/// group's business (SimulatedParty.TakeVictoryDamage). A beaten band comes back after a number of days drawn between
+/// the respawn settings' minimum and maximum, with a new loot from its table, as on the map (see BandRespawner);
+/// without respawn settings it never does.
 /// </summary>
 public class SimulationCombat
 {
     private readonly SimulationSettings settings;
+    private readonly double baseWinChance;
     private readonly Random dice;
     private readonly BandRespawnSettings respawn;
     private readonly List<Band> bands = new List<Band>();
-    private readonly int fullSize;
+    private readonly List<Band> present = new List<Band>();
 
     private sealed class Band
     {
@@ -42,9 +42,11 @@ public class SimulationCombat
         public int ReturnDay;
     }
 
-    public SimulationCombat(SimulationSettings settings, BandRespawnSettings respawn, Random dice, IEnumerable<LootTable> bandTables, int fullSize)
+    /// <summary>'baseWinChance' is the chance to win with a full group (the settings' one, or another for a sensitivity run).</summary>
+    public SimulationCombat(SimulationSettings settings, double baseWinChance, BandRespawnSettings respawn, Random dice, IEnumerable<LootTable> bandTables)
     {
         this.settings = settings;
+        this.baseWinChance = baseWinChance;
         this.respawn = respawn;
         this.dice = dice;
         // Each band gets its loot when the campaign starts, rolled from its table with the same dice.
@@ -52,16 +54,7 @@ public class SimulationCombat
         {
             bands.Add(new Band { Table = table, Loot = LootRoller.Roll(table, dice) });
         }
-
-        this.fullSize = Math.Max(1, fullSize);
-        Alive = this.fullSize;
     }
-
-    /// <summary>Units of the party still standing.</summary>
-    public int Alive { get; private set; }
-
-    /// <summary>Units the party is missing compared to its full size.</summary>
-    public int Missing => fullSize - Alive;
 
     /// <summary>Bands on the map on this day.</summary>
     public int BandsOnMap(int day)
@@ -75,16 +68,19 @@ public class SimulationCombat
         return count;
     }
 
-    /// <summary>One more unit joins the party (recruited in town).</summary>
-    public void Replace()
+    /// <summary>The chance to win a fight for a group of this strength (0 to 1).</summary>
+    public double WinChance(double strength)
     {
-        Alive = Math.Min(fullSize, Alive + 1);
+        return baseWinChance * Math.Max(0.0, Math.Min(1.0, strength));
     }
 
-    /// <summary>Rolls the dice for a trip of this many days of travel, beginning on this day of the run.</summary>
-    public FightOutcome Roll(float travelDays, int day)
+    /// <summary>
+    /// Rolls the dice for a trip of this many days of travel, beginning on this day of the run, for a group of this
+    /// strength (0 to 1).
+    /// </summary>
+    public FightOutcome Roll(float travelDays, int day, double strength)
     {
-        var present = new List<Band>();
+        present.Clear();
         for (int i = 0; i < bands.Count; i++)
         {
             if (bands[i].ReturnDay <= day)
@@ -105,10 +101,9 @@ public class SimulationCombat
         }
 
         Band band = present[dice.Next(present.Count)];
-        double winChance = settings.BaseWinChance * Alive / fullSize;
-        if (dice.NextDouble() >= winChance)
+        if (dice.NextDouble() >= WinChance(strength))
         {
-            return new FightOutcome(true, false, LootResult.Empty, 0);
+            return new FightOutcome(true, false, LootResult.Empty);
         }
 
         LootResult loot = band.Loot;
@@ -122,8 +117,7 @@ public class SimulationCombat
         {
             band.ReturnDay = int.MaxValue;
         }
-        int lost = Math.Min(Alive - 1, dice.Next(settings.MaxLossesOnWin + 1));
-        Alive -= lost;
-        return new FightOutcome(true, true, loot, lost);
+
+        return new FightOutcome(true, true, loot);
     }
 }

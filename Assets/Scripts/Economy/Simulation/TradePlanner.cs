@@ -60,9 +60,10 @@ public class TradePlanner
 
     /// <summary>
     /// The best trip from this town (invalid when no trip earns anything). 'startMinutes' is the calendar now, and
-    /// each judged route is noted in the result.
+    /// each judged route is noted in the result. 'budget' is the most the purchase may cost (the money the merchant
+    /// accepts to spend: what it has, minus what it keeps for the wages).
     /// </summary>
-    public TradePlan Best(int hereIndex, SimulationStrategy strategy, float startMinutes, ScenarioResult result)
+    public TradePlan Best(int hereIndex, SimulationStrategy strategy, float startMinutes, ScenarioResult result, long budget)
     {
         Market here = markets[hereIndex];
         TradePlan best = default;
@@ -71,7 +72,7 @@ public class TradePlanner
         {
             GoodDefinition good = goods[g];
             int maxBuy = service.MaxQuantity(TradeKind.Buy, here, good, out _);
-            if (maxBuy <= 0)
+            if (maxBuy <= 0 || budget <= 0)
             {
                 // Nothing to buy here (no stock, or no money for a single unit): the route is not judged.
                 continue;
@@ -90,7 +91,7 @@ public class TradePlanner
                     continue;
                 }
 
-                TradePlan plan = Judge(here, markets[d], d, good, maxBuy, minutes, strategy, startMinutes);
+                TradePlan plan = Judge(here, markets[d], d, good, maxBuy, minutes, strategy, startMinutes, budget);
                 NoteRoute(result, here, markets[d], good, plan);
                 double rate = plan.IsValid ? plan.Profit / (double)Math.Max(1f, minutes) : 0.0;
                 if (rate > bestRate)
@@ -105,7 +106,7 @@ public class TradePlanner
     }
 
     private TradePlan Judge(Market from, Market to, int toIndex, GoodDefinition good, int maxBuy, float minutes,
-        SimulationStrategy strategy, float startMinutes)
+        SimulationStrategy strategy, float startMinutes, long budget)
     {
         int stockHere = from.GetStock(good);
         int targetHere = from.GetTarget(good);
@@ -121,6 +122,11 @@ public class TradePlanner
         for (int q = 1; q <= maxBuy; q++)
         {
             cost += rules.BuyUnitPrice(good, stockHere - (q - 1), targetHere);
+            if (cost > budget)
+            {
+                break;
+            }
+
             revenue += rules.SellUnitPrice(good, stockThere + (q - 1), targetThere);
             long profit = revenue - cost;
             if (profit > bestProfit)

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 /// <summary>One trip of the simulated merchant: bought here, walked, (maybe fought), sold there.</summary>
@@ -14,6 +15,8 @@ public class TripRecord
     public float Minutes;
     public string Fight = string.Empty;
     public int Loot;
+    /// <summary>True when the good was sold to a town that has it outside its profile (it only buys it).</summary>
+    public bool ToOffProfile;
 
     /// <summary>What the trade alone earned (the sale minus the purchase), fights and replacements apart.</summary>
     public int Profit => Revenue - Cost;
@@ -49,10 +52,70 @@ public class RouteStats
     public int BestExpectedProfit;
 }
 
+/// <summary>What a simulated run includes: the mechanics can be switched off one by one to measure each one's effect.</summary>
+public struct ScenarioOptions
+{
+    public SimulationStrategy Strategy;
+    public bool Combat;
+    public bool Wages;
+    public bool Healing;
+    public bool Recruits;
+    /// <summary>Days of the run (0 = the settings' days).</summary>
+    public int Days;
+    /// <summary>Chance to win with a full group (0 = the settings' chance): the sensitivity runs change it.</summary>
+    public float WinChance;
+
+    public static ScenarioOptions Trade(SimulationStrategy strategy)
+    {
+        return new ScenarioOptions { Strategy = strategy, Wages = true };
+    }
+
+    public static ScenarioOptions FullLoop()
+    {
+        return new ScenarioOptions { Strategy = SimulationStrategy.Foresight, Combat = true, Wages = true, Healing = true, Recruits = true };
+    }
+}
+
+/// <summary>All the runs of one report, by role.</summary>
+public class SimulationRun
+{
+    /// <summary>Every run of the first table of the report, in order.</summary>
+    public readonly List<ScenarioResult> Scenarios = new List<ScenarioResult>();
+    public ScenarioResult Greedy;
+    public ScenarioResult Reference;
+    public ScenarioResult Replay;
+    public ScenarioResult Loop;
+    public ScenarioResult LoopReplay;
+    public readonly List<ScenarioResult> OtherSeeds = new List<ScenarioResult>();
+    public ScenarioResult Start;
+    public ScenarioResult StartWithGoods;
+    public ScenarioResult LoopNoHospital;
+    public ScenarioResult LoopNoRecruits;
+    public ScenarioResult LoopNoWages;
+    public ScenarioResult ReferenceNoWages;
+    public ScenarioResult ReferenceLong;
+    public ScenarioResult LoopLong;
+    /// <summary>The full loop on every seed again, for each other chance to win of the settings.</summary>
+    public readonly List<KeyValuePair<float, List<ScenarioResult>>> Sensitivity = new List<KeyValuePair<float, List<ScenarioResult>>>();
+    public readonly List<LootTable> BandTables = new List<LootTable>();
+    public int RecruitPrice;
+    public string RecruitName = string.Empty;
+    public string StartingParty = string.Empty;
+
+    /// <summary>The full loop over every seed (the main seed first).</summary>
+    public List<ScenarioResult> LoopSeeds()
+    {
+        var all = new List<ScenarioResult> { Loop };
+        all.AddRange(OtherSeeds);
+        return all;
+    }
+}
+
 /// <summary>Everything one simulated run measured; the report is made from it.</summary>
 public class ScenarioResult
 {
     public string Name = string.Empty;
+    public ScenarioOptions Options;
     public SimulationStrategy Strategy;
     public bool Combat;
     public int Seed;
@@ -65,11 +128,33 @@ public class ScenarioResult
     public int UnitsLost;
     public int LootTotal;
     public int LootLostValue;
-    public int ReplacementCost;
-    /// <summary>Wages paid by the caravan's payroll during the run (the real calendar makes it fire).</summary>
+
+    // The ledger: every U.V. that came in or went out, by kind. The wallet must always equal
+    // StartingCapital + Sales - Purchases + LootUv - WagesPaid - HealingCost - RecruitCost (checked at each step).
+    public long Purchases;
+    public long Sales;
+    public long LootUv;
+    /// <summary>Wages paid by the simulated payroll (the group of the run, the game's rule).</summary>
     public int WagesPaid;
-    /// <summary>Wages still owed at the end of the run.</summary>
+    /// <summary>Wages charged over the run (after the free days): what was paid plus what is still owed.</summary>
+    public long WagesDue;
+    /// <summary>Wages owed and not paid at the end of the run.</summary>
     public int EndingDebt;
+    /// <summary>The first day of the run (day 1 = the start) on which wages were charged; 0 when none was.</summary>
+    public int FirstChargedDay;
+    /// <summary>Most the merchant owed at any moment.</summary>
+    public int MaxDebt;
+    public int HealingCost;
+    public int HospitalVisits;
+    public int HitPointsHealed;
+    public int HitPointsRegenerated;
+    public int RecruitCost;
+    public int Recruits;
+    public int RecruitsRefusedForDebt;
+    /// <summary>The group at the end ("Fantassin 40/40, ...").</summary>
+    public string EndingParty = string.Empty;
+    public int EndingPartySize;
+    public int StartingPartySize;
     public int RefusedTrades;
     public string EndReason = string.Empty;
     public readonly List<TripRecord> Trips = new List<TripRecord>();
@@ -81,6 +166,17 @@ public class ScenarioResult
 
     public int NetProfit => EndingBalance - EndingDebt - StartingCapital;
     public double ProfitPerDay => DaysElapsed > 0 ? (double)NetProfit / DaysElapsed : 0.0;
+    /// <summary>What trading earned: sales minus purchases (the sale of the goods found in loot included).</summary>
+    public long TradeMargin => Sales - Purchases;
+    /// <summary>Income before costs: the trade margin and the U.V. of the loot.</summary>
+    public long Income => TradeMargin + LootUv;
+    /// <summary>
+    /// The share of the loot in the income: the loot gathered (U.V. and goods at base price) over the income. The goods
+    /// of the loot are sold with the cargo, so they are counted in the trade margin too: this is an estimate.
+    /// </summary>
+    public double LootShare => Income > 0 ? Math.Min(1.0, LootTotal / (double)Income) : 0.0;
+    /// <summary>The wallet the ledger expects.</summary>
+    public long LedgerBalance => StartingCapital + Sales - Purchases + LootUv - WagesPaid - HealingCost - RecruitCost;
 
     /// <summary>A short text that identifies the sequence of trips, to compare two runs.</summary>
     public string Fingerprint()
@@ -93,6 +189,7 @@ public class ScenarioResult
                 .Append('/').Append(trip.Cost).Append('/').Append(trip.Revenue).Append(';');
         }
 
-        return text.Append(EndingBalance).ToString();
+        return text.Append(EndingBalance).Append("|w").Append(WagesPaid).Append("|d").Append(EndingDebt).Append("|h").Append(HealingCost)
+            .Append("|r").Append(RecruitCost).Append("|v").Append(Victories).Append("|l").Append(Defeats).Append("|p").Append(EndingParty).ToString();
     }
 }
