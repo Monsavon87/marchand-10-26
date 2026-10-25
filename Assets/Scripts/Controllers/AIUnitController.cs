@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 /// <summary>
 /// Basic enemy brain: patrols between points, chases a player unit it can SEE come close,
@@ -23,6 +25,13 @@ public class AIUnitController : MonoBehaviour
         Scan,
         /// <summary>Walking back to what it was doing before the chase.</summary>
         ReturnToPatrol
+    }
+
+    /// <summary>What the unit does while it is not chasing: follow its route in a loop, or wander (random points near it).</summary>
+    public enum PatrolMode
+    {
+        Route,
+        Wander
     }
 
     private const int CircleSegments = 48;
@@ -84,12 +93,127 @@ public class AIUnitController : MonoBehaviour
     private float scanStartTime;
     private float scanBaseYaw;
     private bool interrupted;
+    private readonly List<Vector3> route = new List<Vector3>();
+    private bool routeReady;
+    private PatrolMode mode;
+    private BandBehaviorSettings wanderSettings;
+    private Bounds wanderMap;
+    private System.Random wanderDice;
+    private Vector3 wanderTarget;
+    private NavMeshPath wanderPath;
+
+    /// <summary>Whether the unit follows a route or wanders (Route until told otherwise).</summary>
+    public PatrolMode Mode => mode;
+
+    /// <summary>The positions of the patrol route in use (the scene's points until UseRoute is called; empty without route).</summary>
+    public IReadOnlyList<Vector3> Route
+    {
+        get
+        {
+            EnsureRoute();
+            return route;
+        }
+    }
 
     /// <summary>Current behavior, for debugging.</summary>
     public AIState State => state;
 
     /// <summary>The points of the patrol route (read-only; empty when the unit has none).</summary>
-    public System.Collections.Generic.IReadOnlyList<Transform> PatrolPoints => patrolPoints ?? System.Array.Empty<Transform>();
+    public IReadOnlyList<Transform> PatrolPoints => patrolPoints ?? System.Array.Empty<Transform>();
+
+    /// <summary>
+    /// The unit will follow these positions in a loop (replaces the route). Takes effect at the next ResetToPatrol, or
+    /// once the point it is heading to is reached.
+    /// </summary>
+    public void UseRoute(IReadOnlyList<Vector3> points)
+    {
+        route.Clear();
+        for (int i = 0; i < points.Count; i++)
+        {
+            route.Add(points[i]);
+        }
+
+        routeReady = true;
+        mode = PatrolMode.Route;
+        patrolIndex = 0;
+    }
+
+    /// <summary>
+    /// The unit will wander: each time it has reached a point (and waited), it picks a reachable point at random from
+    /// where it stands, as the settings say (distance, wait, and staying away from the edge of the map, see
+    /// NavMeshPicker.TryPickWanderHop). The dice is the caller's (a seed gives the same wandering).
+    /// </summary>
+    public void UseWander(BandBehaviorSettings settings, Bounds map, System.Random dice)
+    {
+        mode = PatrolMode.Wander;
+        wanderSettings = settings;
+        wanderMap = map;
+        wanderDice = dice;
+        wanderPath = wanderPath ?? new NavMeshPath();
+        patrolIndex = 0;
+    }
+
+    private bool HasPatrol
+    {
+        get
+        {
+            EnsureRoute();
+            return mode == PatrolMode.Wander || route.Count > 0;
+        }
+    }
+
+    private float PatrolWait => mode == PatrolMode.Wander ? wanderSettings.WanderWaitSeconds : waitAtPoint;
+
+    // The scene's points become the route the first time it is needed.
+    private void EnsureRoute()
+    {
+        if (routeReady)
+        {
+            return;
+        }
+
+        routeReady = true;
+        if (patrolPoints == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < patrolPoints.Length; i++)
+        {
+            if (patrolPoints[i] != null)
+            {
+                route.Add(patrolPoints[i].position);
+            }
+        }
+    }
+
+    // Where the patrol leads now: the point of the route it heads to, or the point picked for the wandering.
+    private Vector3 PatrolDestination()
+    {
+        return mode == PatrolMode.Wander ? wanderTarget : route[patrolIndex];
+    }
+
+    // Wandering: draws the next point. When no valid point is found the unit stays put and tries again after its wait.
+    private void PickWanderTarget()
+    {
+        wanderTarget = transform.position;
+        if (NavMeshPicker.TryPickWanderHop(transform.position, wanderSettings.WanderRadius, wanderSettings.WanderMinHop, wanderMap,
+            wanderSettings.EdgeMargin, wanderSettings.EdgePullZone, wanderSettings.EdgePullSamples, wanderSettings.PickTries, wanderDice, wanderPath, out Vector3 point))
+        {
+            wanderTarget = point;
+        }
+    }
+
+    // The first destination of a patrol that starts: the first point of the route, or a first wandering point.
+    private void StartPatrolOrder()
+    {
+        if (mode == PatrolMode.Wander)
+        {
+            PickWanderTarget();
+        }
+
+        Order(PatrolDestination());
+    }
 
     /// <summary>
     /// Starts the patrol over from where the unit stands (a band that came back): whatever it was doing is forgotten,
@@ -105,9 +229,9 @@ public class AIUnitController : MonoBehaviour
         patrolIndex = 0;
         homePosition = transform.position;
         Halt();
-        if (patrolPoints != null && patrolPoints.Length > 0)
+        if (HasPatrol)
         {
-            Order(patrolPoints[0].position);
+            StartPatrolOrder();
         }
     }
 
@@ -145,14 +269,14 @@ public class AIUnitController : MonoBehaviour
         }
 
         interrupted = false;
-        bool hasRoute = patrolPoints != null && patrolPoints.Length > 0;
+        bool hasRoute = HasPatrol;
         switch (state)
         {
             case AIState.Patrol:
                 // While waiting at a point, the normal timer sends the unit on.
                 if (!isWaiting && hasRoute)
                 {
-                    Order(patrolPoints[patrolIndex].position);
+                    Order(PatrolDestination());
                 }
 
                 break;
@@ -162,7 +286,7 @@ public class AIUnitController : MonoBehaviour
                 break;
 
             case AIState.ReturnToPatrol:
-                Order(hasRoute ? patrolPoints[patrolIndex].position : homePosition);
+                Order(hasRoute ? PatrolDestination() : homePosition);
                 break;
         }
     }
@@ -183,9 +307,9 @@ public class AIUnitController : MonoBehaviour
 
         homePosition = transform.position;
         state = AIState.Patrol;
-        if (patrolPoints != null && patrolPoints.Length > 0)
+        if (HasPatrol)
         {
-            Order(patrolPoints[patrolIndex].position);
+            StartPatrolOrder();
         }
     }
 
@@ -414,14 +538,14 @@ public class AIUnitController : MonoBehaviour
         state = AIState.ReturnToPatrol;
         isWaiting = false;
 
-        if (patrolPoints == null || patrolPoints.Length == 0)
+        if (!HasPatrol)
         {
             Order(homePosition);
             return;
         }
 
-        // patrolIndex still holds the point the unit was heading to before the chase.
-        Order(patrolPoints[patrolIndex].position);
+        // patrolIndex (or the wandering point) still holds what the unit was heading to before the chase.
+        Order(PatrolDestination());
     }
 
     // True if no solid, non-unit object lies between this unit's eyes and the target.
@@ -449,13 +573,21 @@ public class AIUnitController : MonoBehaviour
 
     private void GoToNextPatrolPoint()
     {
-        if (patrolPoints == null || patrolPoints.Length == 0)
+        if (!HasPatrol)
         {
             return;
         }
 
-        patrolIndex = (patrolIndex + 1) % patrolPoints.Length;
-        Order(patrolPoints[patrolIndex].position);
+        if (mode == PatrolMode.Wander)
+        {
+            PickWanderTarget();
+        }
+        else
+        {
+            patrolIndex = (patrolIndex + 1) % route.Count;
+        }
+
+        Order(PatrolDestination());
     }
 
     // Asks the unit to walk to a point. A refused request is treated like an unreachable point.
@@ -499,7 +631,7 @@ public class AIUnitController : MonoBehaviour
         {
             case AIState.Patrol:
                 isWaiting = true;
-                resumeTime = Time.time + waitAtPoint;
+                resumeTime = Time.time + PatrolWait;
                 break;
 
             case AIState.Investigate:
@@ -511,7 +643,7 @@ public class AIUnitController : MonoBehaviour
                 // Back on the route: pause, then carry on with the patrol.
                 state = AIState.Patrol;
                 isWaiting = true;
-                resumeTime = Time.time + waitAtPoint;
+                resumeTime = Time.time + PatrolWait;
                 break;
         }
     }
@@ -525,7 +657,7 @@ public class AIUnitController : MonoBehaviour
         {
             case AIState.Patrol:
                 isWaiting = true;
-                resumeTime = Time.time + waitAtPoint;
+                resumeTime = Time.time + PatrolWait;
                 break;
 
             case AIState.Investigate:
@@ -535,7 +667,7 @@ public class AIUnitController : MonoBehaviour
             case AIState.ReturnToPatrol:
                 state = AIState.Patrol;
                 isWaiting = true;
-                resumeTime = Time.time + waitAtPoint;
+                resumeTime = Time.time + PatrolWait;
                 break;
         }
     }

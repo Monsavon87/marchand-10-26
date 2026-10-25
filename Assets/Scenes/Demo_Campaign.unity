@@ -17301,6 +17301,7 @@ MonoBehaviour:
   flow: {fileID: 1095158888}
   caravan: {fileID: 359145124}
   lootSetup: {fileID: 1872740805}
+  behavior: {fileID: 11400000, guid: 03575aa61812f7443acbef5248268c9c, type: 2}
   viewCamera: {fileID: 0}
 --- !u!4 &2079362304
 Transform:

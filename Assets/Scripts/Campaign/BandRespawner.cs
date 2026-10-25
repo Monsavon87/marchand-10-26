@@ -7,9 +7,10 @@ using UnityEngine.AI;
 /// Brings the beaten enemy bands back, so the map never runs out of patrols: the goal is long-term trade, not wiping
 /// them out. When the encounter flow reports a band beaten (and switches it off), the delay is drawn between the
 /// settings' minimum and maximum, counted in world days only: the campaign clock raises DayStarted, nothing here has a
-/// timer. When the day comes, at midnight, the band returns to its starting point (or, if that is not allowed, another
-/// point of its route) with the composition it began with, full hit points, a new loot (see BandLootSetup) and its patrol
-/// started over. It never appears during a combat, closer to the caravan than the settings allow, nor, as a rule, in the
+/// timer. When the day comes, at midnight, the band returns at a point drawn at random on the whole map (reachable from
+/// the caravan; its old starting point only if no draw works) with the composition it began with, full hit points, a new
+/// loot (see BandLootSetup) and a new behavior drawn by the BandBehaviorSettings: a route made around its new point, or
+/// wandering. The bands draw their behavior at the start of the scene too. It never appears during a combat, closer to the caravan than the settings allow, nor, as a rule, in the
 /// player's view; a band held back for a few days ignores the view, so a camera zoomed right out cannot keep the map
 /// empty. Bands are found at the start of the scene, as BandLootSetup does.
 /// </summary>
@@ -22,10 +23,16 @@ public class BandRespawner : MonoBehaviour
     [SerializeField] private CampaignEncounterFlow flow;
     [SerializeField] private Transform caravan;
     [SerializeField] private BandLootSetup lootSetup;
+    [Tooltip("What a band does each time it appears: follow a route or wander, and the routes made for the bands that come back.")]
+    [SerializeField] private BandBehaviorSettings behavior;
     [Tooltip("Optional: falls back to the main camera.")]
     [SerializeField] private Camera viewCamera;
 
     private readonly List<Band> bands = new List<Band>();
+    private readonly List<Vector3> routeBuffer = new List<Vector3>();
+    private NavMeshPath path;
+    private Bounds navBounds;
+    private bool hasNavBounds;
     private System.Random dice;
 
     /// <summary>Raised when a band is back on the map.</summary>
@@ -65,7 +72,7 @@ public class BandRespawner : MonoBehaviour
 
     private void Start()
     {
-        if (settings == null || clock == null || flow == null || caravan == null || lootSetup == null)
+        if (settings == null || clock == null || flow == null || caravan == null || lootSetup == null || behavior == null)
         {
             Debug.LogError("BandRespawner: a serialized reference is not assigned.", this);
             enabled = false;
@@ -78,6 +85,13 @@ public class BandRespawner : MonoBehaviour
         }
 
         dice = new System.Random(settings.Seed != 0 ? settings.Seed : Environment.TickCount);
+        path = new NavMeshPath();
+        hasNavBounds = NavMeshPicker.TryGetNavMeshBounds(out navBounds);
+        if (!hasNavBounds)
+        {
+            Debug.LogError("BandRespawner: there is no NavMesh: the bands will come back at their starting point.", this);
+        }
+
         IReadOnlyList<UnitTeam> units = UnitTeam.All;
         for (int i = 0; i < units.Count; i++)
         {
@@ -100,6 +114,7 @@ public class BandRespawner : MonoBehaviour
             }
 
             bands.Add(band);
+            ChooseBehavior(band, band.Home, true);
         }
     }
 
@@ -179,23 +194,89 @@ public class BandRespawner : MonoBehaviour
         band.Team.gameObject.SetActive(true);
         band.Mover.PlaceAt(place);
         band.Team.transform.rotation = band.Rotation;
+        ChooseBehavior(band, place, false);
         band.Ai.ResetToPatrol();
         Respawned(band.Team);
     }
 
-    // The first place that is on the NavMesh, far enough from the caravan and (unless the view is ignored) out of the
-    // player's view: the starting point first, then the points of the route.
+    // Draws what the band does from now on: follow a route or wander, by the weights of the settings. At the start of the
+    // scene the route is the one of the scene; for a band that comes back it is made around its new starting point (and
+    // the band wanders if no route can be made there).
+    private void ChooseBehavior(Band band, Vector3 origin, bool atStart)
+    {
+        int total = behavior.RouteWeight + behavior.WanderWeight;
+        bool wander = total > 0 && dice.Next(total) >= behavior.RouteWeight;
+        if (!wander && !atStart)
+        {
+            int count = dice.Next(behavior.RoutePointsMin, behavior.RoutePointsMax + 1);
+            if (NavMeshPicker.TryPickRoute(origin, count, behavior.RouteRadius, behavior.RouteMinSpacing, behavior.PickTries, dice, path, routeBuffer,
+                hasNavBounds ? navBounds : default, behavior.EdgeMargin))
+            {
+                band.Ai.UseRoute(routeBuffer);
+            }
+            else
+            {
+                wander = true;
+            }
+        }
+
+        if (wander)
+        {
+            band.Ai.UseWander(behavior, hasNavBounds ? navBounds : default, dice);
+        }
+    }
+
+    // A point of the whole map that is on the NavMesh, reachable from the caravan, away from the edge of the map, far
+    // enough from the caravan and from the other bands and (unless the view is ignored) out of the player's view. Several
+    // valid points are drawn and the one farthest from the other bands is kept, so the bands spread over the map. When no
+    // draw works, the band's starting point is tried, then the points of the scene's route (same rules).
     private bool TryFindPlace(Band band, bool ignoreView, out Vector3 place)
     {
-        if (IsAllowed(band.Home, ignoreView, out place))
+        place = default;
+        if (hasNavBounds)
+        {
+            Bounds inner = navBounds;
+            inner.Expand(-2f * behavior.EdgeMargin);
+            bool found = false;
+            float bestSpread = -1f;
+            int valid = 0;
+            for (int i = 0; i < behavior.SpawnTries && valid < behavior.SpawnCandidates; i++)
+            {
+                if (!NavMeshPicker.TryPickInBounds(inner, caravan.position, dice, path, out Vector3 candidate) || !IsAllowed(candidate, ignoreView, out Vector3 snapped))
+                {
+                    continue;
+                }
+
+                float spread = DistanceToNearestBand(band, snapped);
+                if (spread < behavior.MinDistanceBetweenBands)
+                {
+                    continue;
+                }
+
+                valid++;
+                if (spread > bestSpread)
+                {
+                    bestSpread = spread;
+                    place = snapped;
+                    found = true;
+                }
+            }
+
+            if (found)
+            {
+                return true;
+            }
+        }
+
+        if (IsAllowed(band.Home, ignoreView, out place) && DistanceToNearestBand(band, place) >= behavior.MinDistanceBetweenBands)
         {
             return true;
         }
 
-        IReadOnlyList<Transform> route = band.Ai.PatrolPoints;
+        IReadOnlyList<Vector3> route = band.Ai.Route;
         for (int i = 0; i < route.Count; i++)
         {
-            if (route[i] != null && IsAllowed(route[i].position, ignoreView, out place))
+            if (IsAllowed(route[i], ignoreView, out place) && DistanceToNearestBand(band, place) >= behavior.MinDistanceBetweenBands)
             {
                 return true;
             }
@@ -203,6 +284,26 @@ public class BandRespawner : MonoBehaviour
 
         place = default;
         return false;
+    }
+
+    // Flat distance to the nearest other band that is on the map (bands waiting to come back do not count).
+    private float DistanceToNearestBand(Band self, Vector3 point)
+    {
+        float nearest = float.MaxValue;
+        for (int i = 0; i < bands.Count; i++)
+        {
+            Band other = bands[i];
+            if (other == self || !other.Team.gameObject.activeInHierarchy)
+            {
+                continue;
+            }
+
+            Vector3 offset = other.Team.transform.position - point;
+            offset.y = 0f;
+            nearest = Mathf.Min(nearest, offset.magnitude);
+        }
+
+        return nearest;
     }
 
     private bool IsAllowed(Vector3 point, bool ignoreView, out Vector3 snapped)

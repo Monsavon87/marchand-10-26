@@ -83,7 +83,7 @@ Un script = une responsabilité, rangé par fonctionnalité. Chaque classe a un 
 | `Controllers/SelectionManager`                            | Sélection (clic, Maj, rectangle) ; ne donne aucun ordre                                                                |
 | `Controllers/PlayerCommandController`                     | Transforme un clic sur le sol en ordre pour les unités sélectionnées (par `ActionController`)                          |
 | `Controllers/SelectableUnit`, `CampaignSelectionKeeper`   | Anneau de sélection ; la caravane reste toujours sélectionnée sur la carte                                             |
-| `Controllers/AIUnitController`                            | Cerveau de patrouille des ennemis (patrouille, poursuite à vue, recherche)                                             |
+| `Controllers/AIUnitController`                            | Cerveau de patrouille des ennemis (route ou errance, poursuite à vue, recherche)                                             |
 | `Controllers/AICombatBrain`                               | Décisions de combat de l'IA (cible, contournement, recul, repli)                                                       |
 | `Controllers/PlayerUnitController`, `DebugMoveController` | Anciens contrôleurs de test (voir `Test_Movement`)                                                                     |
 | `Camera/StrategyCamera`                                   | Caméra de stratégie (ZQSD, bords d'écran, rotation, zoom)                                                              |
@@ -112,7 +112,8 @@ Un script = une responsabilité, rangé par fonctionnalité. Chaque classe a un 
 | `CampaignEncounterFlow`        | Rencontre → combat → retour : construit `EncounterData`, endort la carte, charge l'arène, applique le résultat (survivants, butin, bande mise de côté, défaite) |
 | `PartyRoster`, `PartyCapacity` | Les unités d'un groupe (avec leurs PV ; butin d'une bande) et la taille maximale du groupe                                                                  |
 | `BandLootSetup`                | Donne à chaque bande ennemie son butin, tiré une fois au démarrage de la scène depuis sa table (`LootTable`), avec une graine réglable                       |
-| `BandRespawner`                | Fait revenir les bandes battues : délai tiré en jours du monde (`DayStarted`), retour à leur point de départ (ou un point de leur route) à plus de 50 m de la caravane et hors de la vue du joueur, même composition, nouveau butin ; réglages dans `BandRespawnSettings` |
+| `NavMeshPicker` (`Movement/`)    | Tirages de points atteignables sur le NavMesh (autour d'un point, sur toute la carte, route, saut d'errance avec marge de bord et rappel vers le centre) pour l'errance et le retour des bandes |
+| `BandRespawner`                | Fait revenir les bandes battues : délai tiré en jours du monde (`DayStarted`), retour à un point tiré au hasard sur la carte, avec un nouveau comportement (route générée ou errance) à plus de 50 m de la caravane et hors de la vue du joueur, même composition, nouveau butin ; réglages dans `BandRespawnSettings` |
 | `DemoGoal`                     | But de la démo : 100 jours (`DemoGoalSettings`) ; à la fin, tient la carte et lève `Finished` avec la richesse finale (argent + cargaison au prix de base) |
 | `PointOfInterest`              | Une ville de la carte (données et test de clic)                                                                                                             |
 | `TownRest`, `TownRecruitment`  | Arrivée en ville (l'événement qui ouvre la fenêtre de ville ; elle ne soigne plus rien) et recrutement |
@@ -122,7 +123,7 @@ Un script = une responsabilité, rangé par fonctionnalité. Chaque classe a un 
 
 ### Données (`Data/`) — les ScriptableObjects (voir § 5)
 
-`UnitDefinition`, `AIProfile`, `CombatSettings`, `CombatRulesSettings`, `AttackZoneSettings`, `ActionTimingSettings`, `TerrainSettings`, `HealingSettings`, `PayrollSettings`, `OrderQueueSettings`, `RecruitmentSettings`, `EncounterChannel` / `EncounterData`, `GameHelp`, `PartyMember`, et pour l'économie `GoodDefinition`, `GoodCatalog`, `TownDefinition`, `CargoCapacity`, `PricingSettings`, `EconomySettings`, et pour le butin `LootTable` (valeur totale et ressources d'une bande) et `LootWealthScale` (les mots Maigre à Très riche).
+`UnitDefinition`, `AIProfile`, `CombatSettings`, `CombatRulesSettings`, `AttackZoneSettings`, `ActionTimingSettings`, `TerrainSettings`, `HealingSettings`, `PayrollSettings`, `OrderQueueSettings`, `BandBehaviorSettings`, `RecruitmentSettings`, `EncounterChannel` / `EncounterData`, `GameHelp`, `PartyMember`, et pour l'économie `GoodDefinition`, `GoodCatalog`, `TownDefinition`, `CargoCapacity`, `PricingSettings`, `EconomySettings`, et pour le butin `LootTable` (valeur totale et ressources d'une bande) et `LootWealthScale` (les mots Maigre à Très riche).
 
 ### Économie (`Economy/`)
 
@@ -208,6 +209,7 @@ Tout se règle dans des ScriptableObjects (`Assets/ScriptableObjects/`) :
 | Les terrains (coût de chemin, vitesse)                     | `TerrainSettings`                                                            |
 | Les offres et le prix de recrutement, la taille du groupe  | `RecruitmentSettings`                                                        |
 | La régénération (% par jour, plafond) et le prix du soin par PV | `HealingSettings_Default` |
+| Route ou errance des bandes (poids, rayons, attente), routes générées, distance entre bandes, marge de bord | `BandBehaviorSettings_Default` |
 | La taille de la file d'ordres sur la carte (Maj + clic) | `OrderQueueSettings_Map` (en combat : `CombatSettings.MaxQueuedOrders`) |
 | Le salaire par jour d'une unité | `UnitDefinition.dailyWage` (`Def_*`) |
 | Les jours de paie offerts, la dette qui bloque le recrutement | `PayrollSettings_Default` |
@@ -270,13 +272,16 @@ Lancer : entrer en Play Mode dans `Demo_Campaign`, puis appeler `EconomySimulato
 - **Tests au clavier simulé** : dans une longue session de Play, les touches simulées finissent par ne plus être vues ; relancer le Play. Les touches I et Échap n'ont été testées qu'indirectement.
 - **Namespace** : dans un script éditeur, écrire `UnityEngine.UI.Image` (alias `UImage`) pour éviter la collision avec un autre type `Image`.
 - **Paie et calendrier du simulateur** : `EconomySimulator` avance le vrai calendrier, donc la vraie paie se déclenche ; il suit `PartyPayroll.Settled` pour garder son solde attendu et remet la dette à zéro entre scénarios. Tout nouveau coût quotidien prélevé sur le Wallet doit être suivi de la même façon.
+- **`NavMeshPath` dans un champ** : le créer dans `Awake` ou `Start`, jamais dans l'initialiseur d'un champ de MonoBehaviour (exception au chargement).
+- **Tests qui avancent le calendrier** : au-delà du jour 100, `DemoGoal` termine la démo et fige la carte (état Held, bandes immobiles) : rester sous 100 jours ou relancer le Play.
+- **Tester une défaite de bande sans combat** : désactiver la bande et appeler `OnBandDefeated` du `BandRespawner` par `SendMessage` (l'événement du flux ne peut pas être levé de l'extérieur).
 - **Test dans la scène du jeu** : `CampaignEncounterFlow` endort tous les objets racine de la scène sauf le sien. Tout nouvel objet racine de `Demo_Campaign` dort donc pendant un combat ; ne pas y mettre ce qui doit rester éveillé.
 
 ---
 
 ## 10. Où en est-on, et la suite
 
-Fait : démo jouable (v0.1.0), économie E1 à E9, butin en marchandises (F1), marché à onglets et profit (F2), retour des bandes et nouveau but de la démo (F3), soin naturel et hôpital (F4), salaires du groupe et dette (F5), file d'ordres sur la carte.
+Fait : démo jouable (v0.1.0), économie E1 à E9, butin en marchandises (F1), marché à onglets et profit (F2), retour des bandes et nouveau but de la démo (F3), soin naturel et hôpital (F4), salaires du groupe et dette (F5), file d'ordres sur la carte, comportement des bandes (route ou errance).
 
 À décider avec le responsable du jeu :
 
