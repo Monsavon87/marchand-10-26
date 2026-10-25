@@ -13,13 +13,11 @@ MonoBehaviour:
   m_Name: CombatSettings_Default
   m_EditorClassIdentifier: Assembly-CSharp::CombatSettings
   autoPauseOnAllyDeath: 1
-  autoPauseOnEnemySighted: 1
-  viewRadius: 9
+  autoPauseOnEnemyDetection: 1
   sightBlockers:
     serializedVersion: 2
     m_Bits: 4294967295
   eyeHeight: 0.5
-  sightCheckInterval: 0.2
   maxQueuedOrders: 4
   projectilePrefab: {fileID: 8273404934132075935, guid: 1bc82e62909aa8d40bed42c1f08d756b, type: 3}
   arrowSpeed: 25

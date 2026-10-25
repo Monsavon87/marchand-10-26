@@ -78,7 +78,6 @@ public class UnitMover : MonoBehaviour
     private Vector3 pendingDestination;
     private bool pendingHasFacing;
     private Vector3 pendingFacePoint;
-    private float pendingMaxLength;
 
     /// <summary>True while an order is being executed.</summary>
     public bool IsMoving => isMoving;
@@ -94,9 +93,6 @@ public class UnitMover : MonoBehaviour
 
     /// <summary>Counts the orders that really started. Lets a caller see whether its order began.</summary>
     public int OrderSerial { get; private set; }
-
-    /// <summary>True if the last order that started was cut at its maximum path length (the unit stops short).</summary>
-    public bool LastOrderTruncated { get; private set; }
 
     /// <summary>True while the unit turns on the spot toward a point.</summary>
     public bool IsTurning => hasFacingTarget;
@@ -179,7 +175,7 @@ public class UnitMover : MonoBehaviour
     /// </summary>
     public void MoveTo(Vector3 destination)
     {
-        Order(destination, false, default, float.PositiveInfinity);
+        Order(destination, false, default);
     }
 
     /// <summary>
@@ -188,17 +184,7 @@ public class UnitMover : MonoBehaviour
     /// </summary>
     public void MoveTo(Vector3 destination, Vector3 faceTowardsAtArrival)
     {
-        Order(destination, true, faceTowardsAtArrival, float.PositiveInfinity);
-    }
-
-    /// <summary>
-    /// Same as above, but the unit never walks farther than 'maxPathLength': a longer path is cut there and the
-    /// unit stops at the cut point. The cut is made when the unit actually starts, on its real path.
-    /// Who decides the limit (a combat manager, for example) is not this class's business.
-    /// </summary>
-    public void MoveTo(Vector3 destination, Vector3 faceTowardsAtArrival, float maxPathLength)
-    {
-        Order(destination, true, faceTowardsAtArrival, maxPathLength);
+        Order(destination, true, faceTowardsAtArrival);
     }
 
     /// <summary>
@@ -447,7 +433,7 @@ public class UnitMover : MonoBehaviour
     }
 
     // Routes an order: directly when the agent is on, through a wake-up when the unit is an obstacle.
-    private void Order(Vector3 destination, bool hasFacing, Vector3 facePoint, float maxLength)
+    private void Order(Vector3 destination, bool hasFacing, Vector3 facePoint)
     {
         if (isObstacleMode || isWakingUp)
         {
@@ -461,7 +447,6 @@ public class UnitMover : MonoBehaviour
             pendingDestination = destination;
             pendingHasFacing = hasFacing;
             pendingFacePoint = facePoint;
-            pendingMaxLength = maxLength;
             if (!isWakingUp)
             {
                 BeginWakeUp();
@@ -471,31 +456,16 @@ public class UnitMover : MonoBehaviour
         }
 
         isSettling = false;
-        ExecuteOrder(destination, hasFacing, facePoint, maxLength);
+        ExecuteOrder(destination, hasFacing, facePoint);
     }
 
-    // The agent is on the NavMesh: compute the path (cut at maxLength if needed) and start walking.
-    private void ExecuteOrder(Vector3 destination, bool hasFacing, Vector3 facePoint, float maxLength)
+    // The agent is on the NavMesh: compute the path and start walking.
+    private void ExecuteOrder(Vector3 destination, bool hasFacing, Vector3 facePoint)
     {
         if (!ComputePath(destination, out int count, out _))
         {
             PathFailed(destination);
             return;
-        }
-
-        bool cut = false;
-        if (maxLength < float.PositiveInfinity && PathMath.Length(corners, count) > maxLength)
-        {
-            // Too long: walk only as far as allowed, along the same route.
-            cut = true;
-            count = PathMath.TruncateAt(corners, count, maxLength);
-            if (!agent.CalculatePath(corners[count - 1], path) || path.status == NavMeshPathStatus.PathInvalid)
-            {
-                PathFailed(destination);
-                return;
-            }
-
-            count = path.GetCornersNonAlloc(corners);
         }
 
         if (!agent.SetPath(path))
@@ -509,7 +479,6 @@ public class UnitMover : MonoBehaviour
         hasFacingTarget = false;
         hasArrivalFacing = hasFacing;
         arrivalFacePoint = facePoint;
-        LastOrderTruncated = cut;
         OrderSerial++;
         isMoving = true;
         agent.avoidancePriority = movingAvoidancePriority;
@@ -647,7 +616,7 @@ public class UnitMover : MonoBehaviour
                 }
             }
 
-            ExecuteOrder(pendingDestination, pendingHasFacing, pendingFacePoint, pendingMaxLength);
+            ExecuteOrder(pendingDestination, pendingHasFacing, pendingFacePoint);
             return;
         }
 

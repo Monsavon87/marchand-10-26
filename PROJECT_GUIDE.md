@@ -45,9 +45,8 @@ Les noms de classes, de fichiers et de dossiers cités ici existent tels quels d
 | `Demo_Campaign`                                                                                            | **La scène principale** : carte, 5 villes, 6 bandes, économie, interface de ville                |
 | `Combat_Arena`, `Arena_Foret`, `Arena_Fort`                                                                | Arènes de combat chargées par-dessus la carte (tirées au hasard)                                 |
 | `Tests/Test_Campaign`, `Test_Movement`, `Test_Terrain`, `Test_Combat`, `Test_Combat_2v2`, `Test_Combat_AI` | Bancs d'essai d'un système à la fois. À ne rejouer que si l'on touche au système qu'ils couvrent |
-| `SampleScene`                                                                                              | Reste du modèle Unity, sans rôle                                                                 |
 
-Les scènes de la liste de build sont dans `ProjectSettings/EditorBuildSettings.asset` (`MainMenu`, `Demo_Campaign`, arènes, `Test_Campaign`).
+Les scènes de la liste de build sont dans `ProjectSettings/EditorBuildSettings.asset` (`MainMenu`, `Demo_Campaign`, arènes, `Test_Campaign`). La liste garde une ligne désactivée vers `SampleScene`, supprimée en G0 (ligne laissée pour ne pas toucher à `ProjectSettings`) ; Unity l'affiche « Deleted ».
 
 ### Touches de debug (jeu en éditeur)
 
@@ -77,7 +76,7 @@ Un script = une responsabilité, rangé par fonctionnalité. Chaque classe a un 
 | `Movement/UnitMover`                                      | **Le seul script qui touche au `NavMeshAgent`.** Tout déplacement (joueur, ennemis, carte, combat) passe par lui       |
 | `Movement/UnitTerrainEffects`, `Data/TerrainSettings`     | Coûts de chemin et vitesses selon le terrain (route, forêt, marais…)                                                   |
 | `Movement/MoveOrderGate`                                  | Autorise ou limite un ordre de déplacement (le combat limite la distance, la carte redirige vers l'entrée d'une ville) |
-| `Movement/FormationLayout`, `PathMath`                    | Calculs purs (formation, longueur de chemin)                                                                           |
+| `Movement/FormationLayout`                                | Calcul pur des places en formation                                                                                     |
 | `Core/UnitTeam`                                           | Le camp d'une unité (`Team`) et le registre de toutes les unités                                                       |
 | `Core/UiPointerGuard`                                     | Dit si la souris est sur l'interface, pour qu'un clic sur un bouton ne devienne pas un clic dans le monde              |
 | `Controllers/SelectionManager`                            | Sélection (clic, Maj, rectangle) ; ne donne aucun ordre                                                                |
@@ -85,7 +84,7 @@ Un script = une responsabilité, rangé par fonctionnalité. Chaque classe a un 
 | `Controllers/SelectableUnit`, `CampaignSelectionKeeper`   | Anneau de sélection ; la caravane reste toujours sélectionnée sur la carte                                             |
 | `Controllers/AIUnitController`                            | Cerveau de patrouille des ennemis (route ou errance, poursuite à vue, fouille ; dans l'arène, recherche de l'ennemi au côté opposé avec ouïe et filet)                                             |
 | `Controllers/AICombatBrain`                               | Décisions de combat de l'IA (cible, contournement, recul, repli)                                                       |
-| `Controllers/PlayerUnitController`, `DebugMoveController` | Anciens contrôleurs de test (voir `Test_Movement`)                                                                     |
+| `Controllers/PlayerUnitController`, `DebugMoveController` | Contrôleurs de `Test_Movement` seulement (clic pour déplacer ; Espace vers le point suivant), gardés pour cette scène   |
 | `Camera/StrategyCamera`                                   | Caméra de stratégie (ZQSD, bords d'écran, rotation, zoom)                                                              |
 
 ### Combat (`Combat/`)
@@ -98,7 +97,7 @@ Un script = une responsabilité, rangé par fonctionnalité. Chaque classe a un 
 | `Actions/MoveAction`, `AttackAction`, `ShootAction`, `ChaseAction`, `WaitAction` | Les actions (« Déplacer », « Attaquer », « Tirer », « Poursuivre », « Attendre »)                                                                    |
 | `Actions/ShotSpotFinder`, `LineOfSight`, `Projectile`, `ShotPassThrough`         | Tir à distance : place de tir, ligne de vue, flèche, décors qui ne bloquent pas                                                                      |
 | `Rules/ICombatRules`, `CombatRules`, `CombatRulesProvider`, `AttackZone`         | Règles de résolution (dé + bonus contre défense, zones face / flanc / dos). Pour changer de système de règles, changer ce que le fournisseur renvoie |
-| `UnitStats`, `Health`, `UnitDeath`, `CombatMovementBudget`                       | Chiffres de combat copiés de `UnitDefinition`, points de vie, mort, temps d'action par unité                                                         |
+| `UnitStats`, `Health`, `UnitDeath`                                               | Chiffres de combat copiés de `UnitDefinition`, points de vie, mort                                                                                   |
 | `Feedback/*`                                                                     | Journal de combat, cible visée, zones, portée de l'arme, textes flottants                                                                            |
 
 ### Campagne (`Campaign/`)
@@ -274,7 +273,8 @@ Lancer : entrer en Play Mode dans `Demo_Campaign` (session neuve), puis appeler 
 - **Tests en éditeur sans focus** : quand la fenêtre d'Unity n'a pas le focus, le Play Mode peut ne plus avancer d'image (le compteur d'images reste figé, un `Destroy` reste en attente). Passer l'éditeur en pause (`EditorApplication.isPaused = true`) et avancer par `EditorApplication.Step()` dans une boucle avec une courte attente débloque tout (touches simulées comprises : celles-ci n'ont pas été vues dans ce mode, utiliser les méthodes publiques, par exemple `UnitMover.MoveTo` pour faire passer le temps).
 - **`timeScale` enregistré à 0** : après des tests de pause, Unity a déjà enregistré `ProjectSettings/TimeManager.asset` avec `timeScale` 0 (la carte paraît « gelée », les unités « ne bougent pas »). En fin de test, `git status ProjectSettings` ; restaurer `TimeManager.asset` (`git checkout`) et remettre `runInBackground` à `false`. En cas de doute sur une unité immobile, lire `Time.timeScale` d'abord.
 - **Les builds réécrivent des réglages** : un build (même raté) modifie `ProjectSettings/` et des assets de rendu (`PC_RPAsset.asset`, `UniversalRenderPipelineGlobalSettings.asset`…). Les restaurer ensuite sauf décision contraire. `BuildPipeline.BuildPlayer` ne tourne pas dans une commande MCP : le lancer par `EditorApplication.delayCall` et écrire le compte rendu dans un fichier.
-- **Build depuis le MCP** : `BuildPipeline.BuildPlayer` est refusé dans une commande MCP ; passer par un `[MenuItem]` dans un script temporaire de `Assets/Editor/TemporaryGeneratedScripts/`, l'exécuter avec `Unity_ManageMenuItem`, différer le build par `EditorApplication.delayCall` et écrire le rapport dans un fichier ; supprimer le script ensuite. `AssetDatabase.DeleteAsset` est refusé aussi : supprimer le dossier temporaire par le système de fichiers.
+- **Build depuis le MCP** : `BuildPipeline.BuildPlayer` est refusé dans une commande MCP ; passer par un `[MenuItem]` dans un script temporaire de `Assets/Editor/TemporaryGeneratedScripts/`, l'exécuter avec `Unity_ManageMenuItem`, différer le build par `EditorApplication.delayCall` et écrire le rapport dans un fichier ; supprimer le script ensuite. `AssetDatabase.DeleteAsset` est refusé aussi : pour supprimer un asset, l'appeler depuis un menu du même script temporaire ; supprimer le dossier `TemporaryGeneratedScripts` par le système de fichiers, mais **jamais `Assets/Editor` ni `Assets/Editor.meta`** (suivis par git).
+- **Matériaux aux noms trompeurs** : `Mat_PathOutOfRange` sert au trait d'un tir bloqué (`CombatTargeting.blockedShotMaterial`, dans les scènes de combat) et `Mat_PathPlan` au trait des ordres en file (`QueuedPathLine` du prefab `Unit`) : ne pas les prendre pour des restes.
 - **Versions de démo** : toujours au format x.y.z (`PlayerSettings.bundleVersion`), zip nommé `Marchand_Demo_Windows_vX.Y.Z.zip`, version et commit notés dans `PROJECT_LOG.md`.
 - **Tests au clavier simulé** : dans une longue session de Play, les touches simulées finissent par ne plus être vues ; relancer le Play. Les touches I et Échap n'ont été testées qu'indirectement.
 - **Namespace** : dans un script éditeur, écrire `UnityEngine.UI.Image` (alias `UImage`) pour éviter la collision avec un autre type `Image`.
@@ -291,7 +291,7 @@ Lancer : entrer en Play Mode dans `Demo_Campaign` (session neuve), puis appeler 
 
 ## 10. Où en est-on, et la suite
 
-Fait : démo jouable (v0.1.0), économie E1 à E9, butin en marchandises (F1), marché à onglets et profit (F2), retour des bandes et nouveau but de la démo (F3), soin naturel et hôpital (F4), salaires du groupe et dette (F5), file d'ordres sur la carte, comportement des bandes (route ou errance).
+Fait : démo jouable (v0.2.0), ménage technique du code débranché (G0), économie E1 à E9, butin en marchandises (F1), marché à onglets et profit (F2), retour des bandes et nouveau but de la démo (F3), soin naturel et hôpital (F4), salaires du groupe et dette (F5), file d'ordres sur la carte, comportement des bandes (route ou errance).
 
 À décider avec le responsable du jeu :
 

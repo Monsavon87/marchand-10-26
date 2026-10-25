@@ -8,10 +8,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1847993490452819210, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
-      propertyPath: enforced
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 4257288352082337060, guid: bd6f26cc06f8f0540937b8560affa959, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -108,8 +104,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AIUnitController
   actions: {fileID: 6764932271480760997}
   ownTeam: {fileID: 4870326745827608233}
+  attackTargets: 0
   patrolPoints: []
   waitAtPoint: 1.5
+  searchRadius: 12
+  hearingRadius: 20
+  intelAfterSeconds: 15
+  intelError: 5
   detectionRadius: 9
   abandonDistance: 15
   contactDistance: 1.5
