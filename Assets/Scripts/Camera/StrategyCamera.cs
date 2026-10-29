@@ -1,15 +1,19 @@
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.InputSystem;
 
 /// <summary>
 /// Strategy camera: a tilted top-down view orbiting a pivot point on the ground.
 /// Keyboard, screen-edge and right-mouse-drag panning, mouse wheel zoom, optional rotation, bounds,
-/// and centering on a target.
+/// and centering on a target. Optionally the tilt follows the zoom (flatter close up) and the view stays above the relief.
 /// Independent from units and controllers: the only link is a plain Transform to center on.
 /// </summary>
 [RequireComponent(typeof(Camera))]
 public class StrategyCamera : MonoBehaviour
 {
+    // Points checked along the line of sight when the view must stay above the relief.
+    private const int ReliefSamples = 8;
+
     [Header("View")]
     [Tooltip("Tilt of the camera in degrees (90 = straight down).")]
     [SerializeField, Range(10f, 89f)] private float pitch = 55f;
@@ -64,6 +68,22 @@ public class StrategyCamera : MonoBehaviour
     [Tooltip("Area (XZ) the pivot cannot leave. Drawn in the Scene view when the camera is selected.")]
     [SerializeField] private Bounds bounds = new Bounds(Vector3.zero, new Vector3(96f, 0f, 96f));
 
+    [Header("Ground height")]
+    [Tooltip("On a map with relief: the pivot follows the height of the NavMesh under it, so the camera never sinks into a hill. Off = the pivot stays at the start height.")]
+    [SerializeField] private bool followGroundHeight;
+    [Tooltip("How far from the pivot the NavMesh is looked for, in meters (over a lake the shore is used).")]
+    [Min(1f)] [SerializeField] private float groundSearchRadius = 25f;
+
+    [Header("Tilt with zoom")]
+    [Tooltip("The tilt follows the zoom: close up the view gets flatter (Close Pitch), far away it looks down more (Far Pitch). Off = the fixed Pitch above.")]
+    [SerializeField] private bool tiltWithZoom;
+    [SerializeField, Range(5f, 89f)] private float closePitch = 25f;
+    [SerializeField, Range(5f, 89f)] private float farPitch = 75f;
+    [Tooltip("Layers of the ground the camera and its line of sight must stay above (relief): the view tilts up rather than go into a hill. Nothing = no check.")]
+    [SerializeField] private LayerMask groundLayers;
+    [Tooltip("Minimum height of the camera above the ground, in meters; along the line of sight it shrinks to 0 at the pivot.")]
+    [Min(0f)] [SerializeField] private float groundClearance = 2f;
+
     [Header("Focus")]
     [Tooltip("Transform the camera centers on when the center key is pressed (set by the selection system later).")]
     [SerializeField] private Transform focusTarget;
@@ -79,6 +99,8 @@ public class StrategyCamera : MonoBehaviour
     private float currentYaw;
     private float targetYaw;
     private float yawVelocity;
+    private float currentPitch;
+    private float pitchVelocity;
     private bool isCentering;
     // The cursor reads (0,0), a screen corner, until the first mouse event: edge scrolling waits for a real move.
     private bool mouseHasMoved;
@@ -124,6 +146,7 @@ public class StrategyCamera : MonoBehaviour
         pivot = targetPivot = ClampToBounds(startPivot);
         distance = targetDistance = Mathf.Clamp(startDistance, minDistance, maxDistance);
         currentYaw = targetYaw = yaw;
+        currentPitch = TargetPitch();
         if (Mouse.current != null)
         {
             firstMousePosition = Mouse.current.position.ReadValue();
@@ -366,7 +389,7 @@ public class StrategyCamera : MonoBehaviour
     private bool TryGetGroundPoint(Vector2 screenPosition, out Vector3 point)
     {
         Ray ray = viewCamera.ScreenPointToRay(screenPosition);
-        Plane ground = new Plane(Vector3.up, new Vector3(0f, startPivot.y, 0f));
+        Plane ground = new Plane(Vector3.up, new Vector3(0f, pivot.y, 0f));
         if (ground.Raycast(ray, out float enter))
         {
             point = ray.GetPoint(enter);
@@ -398,11 +421,68 @@ public class StrategyCamera : MonoBehaviour
         pivot = Vector3.SmoothDamp(pivot, targetPivot, ref pivotVelocity, smoothTime, Mathf.Infinity, deltaTime);
         distance = Mathf.SmoothDamp(distance, targetDistance, ref distanceVelocity, smoothTime, Mathf.Infinity, deltaTime);
         currentYaw = Mathf.SmoothDampAngle(currentYaw, targetYaw, ref yawVelocity, smoothTime, Mathf.Infinity, deltaTime);
+        currentPitch = Mathf.SmoothDampAngle(currentPitch, TargetPitch(), ref pitchVelocity, smoothTime, Mathf.Infinity, deltaTime);
+    }
+
+    // The fixed pitch, or the pitch of the current zoom; then raised if the view would go into the relief.
+    private float TargetPitch()
+    {
+        float wanted = pitch;
+        if (tiltWithZoom && maxDistance > minDistance)
+        {
+            // Logarithmic, like the zoom itself: each wheel notch changes the tilt by the same amount.
+            float t = Mathf.Log(distance / minDistance) / Mathf.Log(maxDistance / minDistance);
+            wanted = Mathf.Lerp(closePitch, farPitch, Mathf.Clamp01(t));
+        }
+
+        return ClearRelief(wanted);
+    }
+
+    // Raises the pitch until the camera and its line of sight to the pivot stay above the ground.
+    private float ClearRelief(float wanted)
+    {
+        if (groundLayers.value == 0 || distance <= 0f)
+        {
+            return wanted;
+        }
+
+        float result = wanted;
+        // Twice: raising the pitch moves the samples, so the second pass checks the new line.
+        for (int pass = 0; pass < 2; pass++)
+        {
+            Vector3 back = Quaternion.Euler(result, currentYaw, 0f) * Vector3.back;
+            for (int i = 1; i <= ReliefSamples; i++)
+            {
+                float along = distance * i / ReliefSamples;
+                Vector3 point = pivot + back * along;
+                // The line starts on the ground at the pivot: the clearance grows from 0 there to its full value at the camera.
+                float needed = GroundHeightAt(point) + groundClearance * i / ReliefSamples;
+                float horizontal = along * Mathf.Cos(result * Mathf.Deg2Rad);
+                if (point.y < needed && horizontal > 0.01f)
+                {
+                    result = Mathf.Max(result, Mathf.Atan2(needed - pivot.y, horizontal) * Mathf.Rad2Deg);
+                }
+            }
+        }
+
+        return Mathf.Min(result, 89f);
+    }
+
+    // Height of the ground (groundLayers) under a point, or very low when there is none.
+    private float GroundHeightAt(Vector3 point)
+    {
+        Vector3 from = new Vector3(point.x, pivot.y + distance + 50f, point.z);
+        if (Physics.Raycast(from, Vector3.down, out RaycastHit hit, distance + 200f, groundLayers, QueryTriggerInteraction.Ignore))
+        {
+            return hit.point.y;
+        }
+
+        return float.MinValue;
     }
 
     private void ApplyPose()
     {
-        Quaternion rotation = Quaternion.Euler(pitch, currentYaw, 0f);
+        Quaternion rotation = Quaternion.Euler(currentPitch, currentYaw, 0f);
         transform.rotation = rotation;
         transform.position = pivot - rotation * Vector3.forward * distance;
     }
@@ -412,8 +492,23 @@ public class StrategyCamera : MonoBehaviour
     {
         point.x = Mathf.Clamp(point.x, bounds.min.x, bounds.max.x);
         point.z = Mathf.Clamp(point.z, bounds.min.z, bounds.max.z);
-        point.y = startPivot.y;
+        point.y = GroundHeight(point);
         return point;
+    }
+
+    // The start height, or the height of the closest NavMesh point when the pivot follows the relief.
+    private float GroundHeight(Vector3 point)
+    {
+        if (followGroundHeight)
+        {
+            point.y = pivot.y;
+            if (NavMesh.SamplePosition(point, out NavMeshHit hit, groundSearchRadius, NavMesh.AllAreas))
+            {
+                return hit.position.y;
+            }
+        }
+
+        return startPivot.y;
     }
 
     private void OnDrawGizmosSelected()

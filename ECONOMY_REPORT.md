@@ -6,12 +6,12 @@ Simulation sans rendu de **100 jours** (et 300 jours pour les parties longues), 
 
 | Critère | Mesure | Résultat |
 |---|---|---|
-| Profit positif (après salaires, soins et recrues) | B : 74 478 U.V. (744 U.V. par jour) ; C : 101 351 U.V. (1 013 U.V. par jour) ; C positif sur 10 graines sur 10 | **respecté** |
-| Profit borné (dernière tranche de 30 jours ≤ 1.50 × la deuxième) | B : × 0.28 ; C : × 0.76 | **respecté** |
-| Butin qui pèse sans dominer (10 % à 40 % des recettes, moyenne des graines) | moyenne des 10 graines : 37 % (de 24 % à 46 %) ; graine 1 seule : 41 % | **respecté** |
-| Aucun profit infini (300 jours : dernier tiers ≤ 1,1 × le tiers du milieu, pas de dépassement) | B : × 1.01 ; C : × 0.92 | **respecté** |
+| Profit positif (après salaires, soins et recrues) | B : 74 478 U.V. (744 U.V. par jour) ; C : 125 013 U.V. (1 250 U.V. par jour) ; C positif sur 10 graines sur 10 | **respecté** |
+| Profit borné (dernière tranche de 30 jours ≤ 1.50 × la deuxième) | B : × 0.28 ; C : × 2.20 | **non respecté** |
+| Butin qui pèse sans dominer (10 % à 40 % des recettes, moyenne des graines) | moyenne des 10 graines : 42 % (de 28 % à 52 %) ; graine 1 seule : 45 % | **non respecté** |
+| Aucun profit infini (300 jours : dernier tiers ≤ 1,1 × le tiers du milieu, pas de dépassement) | B : × 1.01 ; C : × 0.74 | **respecté** |
 
-Survie de la boucle complète : 10 partie(s) sur 10 vont au bout des 100 jours sans défaite (une défaite met fin à la campagne, comme dans le jeu).
+Survie de la boucle complète : 7 partie(s) sur 10 vont au bout des 100 jours sans défaite (une défaite met fin à la campagne, comme dans le jeu).
 
 ## 1. Résumé des scénarios
 
@@ -19,29 +19,29 @@ Profit net = argent à la fin - dette - capital de départ : salaires, soins et 
 
 | Scénario | Profit net | Par jour | Trajets | Salaires | Soins | Recrues | Butin (part des recettes) | Combats V/D | Groupe final | Fin |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|---|
-| A. Marchand glouton, sans combat | 77 780 U.V. | 777 U.V. | 58 | 8 930 U.V. | 0 U.V. | 0 U.V. (0) | 0 U.V. (0 %) | 0 / 0 | Def_Fantassin 40/40, Def_Archer 25/25 | Terminé : 100 jours écoulés. |
+| A. Marchand glouton, sans combat | 77 386 U.V. | 773 U.V. | 58 | 8 930 U.V. | 0 U.V. | 0 U.V. (0) | 0 U.V. (0 %) | 0 / 0 | Def_Fantassin 40/40, Def_Archer 25/25 | Terminé : 100 jours écoulés. |
 | B. Marchand prévoyant, sans combat | 74 478 U.V. | 744 U.V. | 58 | 8 930 U.V. | 0 U.V. | 0 U.V. (0) | 0 U.V. (0 %) | 0 / 0 | Def_Fantassin 40/40, Def_Archer 25/25 | Terminé : 100 jours écoulés. |
 | B'. Scénario B rejoué (contrôle de graine) | 74 478 U.V. | 744 U.V. | 58 | 8 930 U.V. | 0 U.V. | 0 U.V. (0) | 0 U.V. (0 %) | 0 / 0 | Def_Fantassin 40/40, Def_Archer 25/25 | Terminé : 100 jours écoulés. |
-| C. Boucle complète (combats, butin, soin, recrues, salaires) | 101 351 U.V. | 1 013 U.V. | 58 | 15 430 U.V. | 5 075 U.V. | 12 000 U.V. (4) | 55 536 U.V. (41 %) | 17 / 0 | Def_Fantassin 40/40, Def_Fantassin 32/40, Def_Fantassin 33/40, Def_Fantassin 32/40 | Terminé : 100 jours écoulés. |
-| C'. Scénario C rejoué (contrôle de graine) | 101 351 U.V. | 1 013 U.V. | 58 | 15 430 U.V. | 5 075 U.V. | 12 000 U.V. (4) | 55 536 U.V. (41 %) | 17 / 0 | Def_Fantassin 40/40, Def_Fantassin 32/40, Def_Fantassin 33/40, Def_Fantassin 32/40 | Terminé : 100 jours écoulés. |
+| C. Boucle complète (combats, butin, soin, recrues, salaires) | 125 013 U.V. | 1 250 U.V. | 58 | 15 040 U.V. | 10 550 U.V. | 9 000 U.V. (3) | 72 487 U.V. (45 %) | 17 / 0 | Def_Fantassin 40/40, Def_Fantassin 40/40, Def_Fantassin 40/40, Def_Fantassin 40/40 | Terminé : 100 jours écoulés. |
+| C'. Scénario C rejoué (contrôle de graine) | 125 013 U.V. | 1 250 U.V. | 58 | 15 040 U.V. | 10 550 U.V. | 9 000 U.V. (3) | 72 487 U.V. (45 %) | 17 / 0 | Def_Fantassin 40/40, Def_Fantassin 40/40, Def_Fantassin 40/40, Def_Fantassin 40/40 | Terminé : 100 jours écoulés. |
 | E. Départ réaliste (capital = argent du plus petit butin), sans combat | 428 U.V. | 26 U.V. | 5 | 855 U.V. | 0 U.V. | 0 U.V. (0) | 0 U.V. (0 %) | 0 / 0 | Def_Fantassin 40/40, Def_Archer 25/25 | Bloqué : aucun trajet rentable pendant 10 jours (ville Bourg-Val). |
-| E2. Départ réaliste (capital = valeur complète du plus petit butin), sans combat | 75 168 U.V. | 744 U.V. | 61 | 8 930 U.V. | 0 U.V. | 0 U.V. (0) | 0 U.V. (0 %) | 0 / 0 | Def_Fantassin 40/40, Def_Archer 25/25 | Terminé : 100 jours écoulés. |
-| C sans hôpital | 106 553 U.V. | 1 054 U.V. | 58 | 15 590 U.V. | 0 U.V. | 12 000 U.V. (4) | 55 911 U.V. (42 %) | 17 / 0 | Def_Fantassin 32/40, Def_Fantassin 32/40, Def_Fantassin 32/40, Def_Fantassin 32/40 | Terminé : 100 jours écoulés. |
-| C sans recrutement | 96 097 U.V. | 942 U.V. | 58 | 9 025 U.V. | 1 575 U.V. | 0 U.V. (0) | 20 081 U.V. (19 %) | 7 / 0 | Def_Fantassin 32/40, Def_Archer 20/25 | Terminé : 100 jours écoulés. |
-| C sans salaires | 133 201 U.V. | 1 332 U.V. | 57 | 0 U.V. | 8 725 U.V. | 9 000 U.V. (3) | 66 273 U.V. (44 %) | 17 / 0 | Def_Fantassin 40/40, Def_Archer 20/25, Def_Fantassin 33/40, Def_Fantassin 32/40 | Terminé : 100 jours écoulés. |
+| E2. Départ réaliste (capital = valeur complète du plus petit butin), sans combat | 61 409 U.V. | 608 U.V. | 58 | 8 930 U.V. | 0 U.V. | 0 U.V. (0) | 0 U.V. (0 %) | 0 / 0 | Def_Fantassin 40/40, Def_Archer 25/25 | Terminé : 100 jours écoulés. |
+| C sans hôpital | 57 200 U.V. | 1 271 U.V. | 28 | 6 240 U.V. | 0 U.V. | 9 000 U.V. (3) | 30 034 U.V. (41 %) | 7 / 1 | Def_Fantassin 32/40, Def_Fantassin 32/40, Def_Fantassin 32/40, Def_Fantassin 32/40 | Défaite en combat sur la route Bourg-Val > Hautmont (fin de la campagne). |
+| C sans recrutement | 87 742 U.V. | 860 U.V. | 56 | 9 025 U.V. | 1 875 U.V. | 0 U.V. (0) | 13 254 U.V. (13 %) | 4 / 0 | Def_Fantassin 32/40, Def_Archer 21/25 | Terminé : 100 jours écoulés. |
+| C sans salaires | 127 883 U.V. | 1 266 U.V. | 58 | 0 U.V. | 6 075 U.V. | 9 000 U.V. (3) | 58 108 U.V. (41 %) | 17 / 0 | Def_Fantassin 32/40, Def_Fantassin 32/40, Def_Fantassin 32/40, Def_Fantassin 32/40 | Terminé : 100 jours écoulés. |
 | B sans salaires | 83 439 U.V. | 834 U.V. | 58 | 0 U.V. | 0 U.V. | 0 U.V. (0) | 0 U.V. (0 %) | 0 / 0 | Def_Fantassin 40/40, Def_Archer 25/25 | Terminé : 100 jours écoulés. |
 | B sur 300 jours | 157 742 U.V. | 524 U.V. | 162 | 27 930 U.V. | 0 U.V. | 0 U.V. (0) | 0 U.V. (0 %) | 0 / 0 | Def_Fantassin 40/40, Def_Archer 25/25 | Terminé : 300 jours écoulés. |
-| C sur 300 jours | 300 169 U.V. | 997 U.V. | 163 | 47 430 U.V. | 22 450 U.V. | 18 000 U.V. (6) | 197 234 U.V. (51 %) | 48 / 0 | Def_Fantassin 32/40, Def_Fantassin 32/40, Def_Fantassin 38/40, Def_Fantassin 35/40 | Terminé : 300 jours écoulés. |
+| C sur 300 jours | 264 453 U.V. | 878 U.V. | 162 | 47 040 U.V. | 20 175 U.V. | 24 000 U.V. (8) | 159 627 U.V. (45 %) | 38 / 0 | Def_Fantassin 32/40, Def_Fantassin 37/40, Def_Fantassin 32/40, Def_Fantassin 32/40 | Terminé : 300 jours écoulés. |
 
 ## 2. Durées de trajet (jours de calendrier, distance en mètres)
 
-| De \ Vers | Port-Brume | Aubeterre | Hautmont | Bourg-Val | Carrefour |
+| De \ Vers | Aubeterre | Bourg-Val | Port-Brume | Hautmont | Carrefour |
 |---|---:|---:|---:|---:|---:|
-| Port-Brume (Portuaire) | - | 2.0 j (356 m) | 1.0 j (183 m) | 0.9 j (168 m) | 0.6 j (96 m) |
-| Aubeterre (Agricole) | 2.0 j (356 m) | - | 1.0 j (178 m) | 1.1 j (192 m) | 1.5 j (242 m) |
-| Hautmont (Minière) | 1.0 j (183 m) | 1.0 j (178 m) | - | 1.9 j (347 m) | 1.2 j (202 m) |
-| Bourg-Val (Artisane) | 0.9 j (168 m) | 1.1 j (192 m) | 1.9 j (347 m) | - | 0.9 j (153 m) |
-| Carrefour (Transit) | 0.6 j (96 m) | 1.5 j (242 m) | 1.1 j (173 m) | 0.7 j (121 m) | - |
+| Aubeterre (Agricole) | - | 1.1 j (192 m) | 2.0 j (356 m) | 1.0 j (178 m) | 1.5 j (242 m) |
+| Bourg-Val (Artisane) | 1.1 j (192 m) | - | 0.9 j (168 m) | 1.9 j (347 m) | 0.9 j (153 m) |
+| Port-Brume (Portuaire) | 2.0 j (356 m) | 0.9 j (168 m) | - | 1.0 j (183 m) | 0.6 j (100 m) |
+| Hautmont (Minière) | 1.0 j (178 m) | 1.9 j (347 m) | 1.0 j (183 m) | - | 1.2 j (204 m) |
+| Carrefour (Transit) | 1.5 j (247 m) | 0.8 j (126 m) | 0.5 j (82 m) | 1.1 j (178 m) | - |
 
 ## 3. Ce qui rapporte (scénario B, sans combat)
 
@@ -63,7 +63,7 @@ Par route (ville de départ > ville d'arrivée) :
 | Bourg-Val > Hautmont | 22 | 31 300 U.V. | 738 U.V. |
 | Hautmont > Bourg-Val | 23 | 18 949 U.V. | 427 U.V. |
 | Port-Brume > Bourg-Val | 2 | 17 236 U.V. | 9 215 U.V. |
-| Bourg-Val > Aubeterre | 3 | 6 743 U.V. | 2 106 U.V. |
+| Bourg-Val > Aubeterre | 3 | 6 743 U.V. | 2 105 U.V. |
 | Aubeterre > Hautmont | 3 | 3 230 U.V. | 1 091 U.V. |
 | Aubeterre > Bourg-Val | 2 | 2 947 U.V. | 1 380 U.V. |
 | Bourg-Val > Port-Brume | 1 | 2 009 U.V. | 2 148 U.V. |
@@ -109,100 +109,100 @@ Prix médian (sans écart acheteur/vendeur) : moyenne, minimum et maximum sur la
 
 | Ville | Profil | Prix moyen | Min | Max | Stock min-max | Plancher / plafond | Jours à stock 0 |
 |---|---|---:|---:|---:|---:|---:|---:|
-| Port-Brume | profil | 960 U.V. | 960 U.V. | 960 U.V. | 15-20 | 0 % / 0 % | 0 % |
 | Aubeterre | profil | 960 U.V. | 960 U.V. | 960 U.V. | 60-60 | 0 % / 0 % | 0 % |
-| Hautmont | profil | 960 U.V. | 960 U.V. | 960 U.V. | 12-20 | 0 % / 0 % | 0 % |
 | Bourg-Val | profil | 960 U.V. | 960 U.V. | 960 U.V. | 18-24 | 0 % / 0 % | 0 % |
+| Port-Brume | profil | 960 U.V. | 960 U.V. | 960 U.V. | 15-20 | 0 % / 0 % | 0 % |
+| Hautmont | profil | 960 U.V. | 960 U.V. | 960 U.V. | 12-20 | 0 % / 0 % | 0 % |
 | Carrefour | profil | 960 U.V. | 960 U.V. | 960 U.V. | 40-40 | 0 % / 0 % | 0 % |
 
 **Sel** (prix de base 300 U.V.)
 
 | Ville | Profil | Prix moyen | Min | Max | Stock min-max | Plancher / plafond | Jours à stock 0 |
 |---|---|---:|---:|---:|---:|---:|---:|
-| Port-Brume | profil | 237 U.V. | 237 U.V. | 240 U.V. | 45-46 | 0 % / 0 % | 0 % |
 | Aubeterre | profil | 367 U.V. | 365 U.V. | 455 U.V. | 4-8 | 0 % / 0 % | 0 % |
-| Hautmont | profil | 265 U.V. | 249 U.V. | 266 U.V. | 18-20 | 0 % / 0 % | 0 % |
 | Bourg-Val | profil | 330 U.V. | 330 U.V. | 330 U.V. | 10-10 | 0 % / 0 % | 0 % |
+| Port-Brume | profil | 237 U.V. | 237 U.V. | 240 U.V. | 45-46 | 0 % / 0 % | 0 % |
+| Hautmont | profil | 265 U.V. | 249 U.V. | 266 U.V. | 18-20 | 0 % / 0 % | 0 % |
 | Carrefour | profil | 300 U.V. | 300 U.V. | 300 U.V. | 15-15 | 0 % / 0 % | 0 % |
 
 **Vin** (prix de base 520 U.V.)
 
 | Ville | Profil | Prix moyen | Min | Max | Stock min-max | Plancher / plafond | Jours à stock 0 |
 |---|---|---:|---:|---:|---:|---:|---:|
-| Port-Brume | profil | 672 U.V. | 672 U.V. | 672 U.V. | 8-8 | 0 % / 0 % | 0 % |
 | Aubeterre | profil | 436 U.V. | 416 U.V. | 478 U.V. | 24-30 | 0 % / 0 % | 0 % |
-| Hautmont | profil | 624 U.V. | 565 U.V. | 739 U.V. | 6-12 | 0 % / 0 % | 0 % |
 | Bourg-Val | profil | 613 U.V. | 613 U.V. | 613 U.V. | 10-10 | 0 % / 0 % | 0 % |
+| Port-Brume | profil | 672 U.V. | 672 U.V. | 672 U.V. | 8-8 | 0 % / 0 % | 0 % |
+| Hautmont | profil | 624 U.V. | 565 U.V. | 739 U.V. | 6-12 | 0 % / 0 % | 0 % |
 | Carrefour | profil | 520 U.V. | 520 U.V. | 520 U.V. | 14-14 | 0 % / 0 % | 0 % |
 
 **Huile d'olive** (prix de base 2 400 U.V.)
 
 | Ville | Profil | Prix moyen | Min | Max | Stock min-max | Plancher / plafond | Jours à stock 0 |
 |---|---|---:|---:|---:|---:|---:|---:|
-| Port-Brume | profil | 1 920 U.V. | 1 920 U.V. | 1 920 U.V. | 24-24 | 0 % / 0 % | 0 % |
 | Aubeterre | hors profil (n'achète pas) | 4 800 U.V. | 4 800 U.V. | 4 800 U.V. | 0-0 | 0 % / 100 % | 100 % |
-| Hautmont | profil | 2 937 U.V. | 2 920 U.V. | 3 640 U.V. | 4-8 | 0 % / 0 % | 0 % |
 | Bourg-Val | profil | 2 640 U.V. | 2 640 U.V. | 2 640 U.V. | 10-10 | 0 % / 0 % | 0 % |
+| Port-Brume | profil | 1 920 U.V. | 1 920 U.V. | 1 920 U.V. | 24-24 | 0 % / 0 % | 0 % |
+| Hautmont | profil | 2 937 U.V. | 2 920 U.V. | 3 640 U.V. | 4-8 | 0 % / 0 % | 0 % |
 | Carrefour | profil | 2 400 U.V. | 2 400 U.V. | 2 400 U.V. | 10-10 | 0 % / 0 % | 0 % |
 
 **Tissu de laine** (prix de base 2 400 U.V.)
 
 | Ville | Profil | Prix moyen | Min | Max | Stock min-max | Plancher / plafond | Jours à stock 0 |
 |---|---|---:|---:|---:|---:|---:|---:|
-| Port-Brume | profil | 2 400 U.V. | 2 400 U.V. | 2 400 U.V. | 10-10 | 0 % / 0 % | 0 % |
 | Aubeterre | profil | 2 461 U.V. | 2 400 U.V. | 3 540 U.V. | 3-8 | 0 % / 0 % | 0 % |
-| Hautmont | profil | 2 553 U.V. | 2 400 U.V. | 3 720 U.V. | 3-10 | 0 % / 0 % | 0 % |
 | Bourg-Val | profil | 2 084 U.V. | 1 848 U.V. | 2 208 U.V. | 30-40 | 0 % / 0 % | 0 % |
+| Port-Brume | profil | 2 400 U.V. | 2 400 U.V. | 2 400 U.V. | 10-10 | 0 % / 0 % | 0 % |
+| Hautmont | profil | 2 553 U.V. | 2 400 U.V. | 3 720 U.V. | 3-10 | 0 % / 0 % | 0 % |
 | Carrefour | profil | 2 400 U.V. | 2 400 U.V. | 2 400 U.V. | 12-12 | 0 % / 0 % | 0 % |
 
 **Cuir** (prix de base 1 500 U.V.)
 
 | Ville | Profil | Prix moyen | Min | Max | Stock min-max | Plancher / plafond | Jours à stock 0 |
 |---|---|---:|---:|---:|---:|---:|---:|
-| Port-Brume | profil | 1 776 U.V. | 1 768 U.V. | 2 132 U.V. | 6-10 | 0 % / 0 % | 0 % |
 | Aubeterre | profil | 1 208 U.V. | 1 200 U.V. | 1 350 U.V. | 20-24 | 0 % / 0 % | 0 % |
-| Hautmont | profil | 1 535 U.V. | 1 500 U.V. | 2 175 U.V. | 4-10 | 0 % / 0 % | 0 % |
 | Bourg-Val | profil | 1 704 U.V. | 1 550 U.V. | 2 108 U.V. | 8-17 | 0 % / 0 % | 0 % |
+| Port-Brume | profil | 1 776 U.V. | 1 768 U.V. | 2 132 U.V. | 6-10 | 0 % / 0 % | 0 % |
+| Hautmont | profil | 1 535 U.V. | 1 500 U.V. | 2 175 U.V. | 4-10 | 0 % / 0 % | 0 % |
 | Carrefour | profil | 1 500 U.V. | 1 500 U.V. | 1 500 U.V. | 10-10 | 0 % / 0 % | 0 % |
 
 **Fer** (prix de base 700 U.V.)
 
 | Ville | Profil | Prix moyen | Min | Max | Stock min-max | Plancher / plafond | Jours à stock 0 |
 |---|---|---:|---:|---:|---:|---:|---:|
-| Port-Brume | profil | 742 U.V. | 700 U.V. | 1 003 U.V. | 5-12 | 0 % / 0 % | 0 % |
 | Aubeterre | profil | 718 U.V. | 700 U.V. | 1 015 U.V. | 4-10 | 0 % / 0 % | 0 % |
-| Hautmont | profil | 592 U.V. | 539 U.V. | 625 U.V. | 38-48 | 0 % / 0 % | 0 % |
 | Bourg-Val | profil | 842 U.V. | 753 U.V. | 1 076 U.V. | 5-14 | 0 % / 0 % | 0 % |
+| Port-Brume | profil | 742 U.V. | 700 U.V. | 1 003 U.V. | 5-12 | 0 % / 0 % | 0 % |
+| Hautmont | profil | 592 U.V. | 539 U.V. | 625 U.V. | 38-48 | 0 % / 0 % | 0 % |
 | Carrefour | profil | 700 U.V. | 700 U.V. | 700 U.V. | 10-10 | 0 % / 0 % | 0 % |
 
 **Outils** (prix de base 3 000 U.V.)
 
 | Ville | Profil | Prix moyen | Min | Max | Stock min-max | Plancher / plafond | Jours à stock 0 |
 |---|---|---:|---:|---:|---:|---:|---:|
-| Port-Brume | profil | 3 111 U.V. | 3 000 U.V. | 4 350 U.V. | 4-10 | 0 % / 0 % | 0 % |
 | Aubeterre | profil | 3 130 U.V. | 3 000 U.V. | 4 650 U.V. | 3-10 | 0 % / 0 % | 0 % |
-| Hautmont | profil | 3 521 U.V. | 3 150 U.V. | 4 550 U.V. | 4-11 | 0 % / 0 % | 0 % |
 | Bourg-Val | profil | 2 647 U.V. | 2 400 U.V. | 2 820 U.V. | 23-30 | 0 % / 0 % | 0 % |
+| Port-Brume | profil | 3 111 U.V. | 3 000 U.V. | 4 350 U.V. | 4-10 | 0 % / 0 % | 0 % |
+| Hautmont | profil | 3 521 U.V. | 3 150 U.V. | 4 550 U.V. | 4-11 | 0 % / 0 % | 0 % |
 | Carrefour | profil | 3 000 U.V. | 3 000 U.V. | 3 000 U.V. | 8-8 | 0 % / 0 % | 0 % |
 
 **Épices** (prix de base 15 000 U.V.)
 
 | Ville | Profil | Prix moyen | Min | Max | Stock min-max | Plancher / plafond | Jours à stock 0 |
 |---|---|---:|---:|---:|---:|---:|---:|
-| Port-Brume | profil | 13 388 U.V. | 11 250 U.V. | 14 000 U.V. | 7-10 | 0 % / 0 % | 0 % |
 | Aubeterre | hors profil (n'achète pas) | 30 000 U.V. | 30 000 U.V. | 30 000 U.V. | 0-0 | 0 % / 100 % | 100 % |
-| Hautmont | hors profil (n'achète pas) | 30 000 U.V. | 30 000 U.V. | 30 000 U.V. | 0-0 | 0 % / 100 % | 100 % |
 | Bourg-Val | profil | 17 849 U.V. | 16 500 U.V. | 22 750 U.V. | 2-5 | 0 % / 0 % | 0 % |
+| Port-Brume | profil | 13 388 U.V. | 11 250 U.V. | 14 000 U.V. | 7-10 | 0 % / 0 % | 0 % |
+| Hautmont | hors profil (n'achète pas) | 30 000 U.V. | 30 000 U.V. | 30 000 U.V. | 0-0 | 0 % / 100 % | 100 % |
 | Carrefour | profil | 15 000 U.V. | 15 000 U.V. | 15 000 U.V. | 4-4 | 0 % / 0 % | 0 % |
 
 **Argent** (prix de base 23 000 U.V., cours fixe)
 
 | Ville | Profil | Prix moyen | Min | Max | Stock min-max | Plancher / plafond | Jours à stock 0 |
 |---|---|---:|---:|---:|---:|---:|---:|
-| Port-Brume | profil | 23 000 U.V. | 23 000 U.V. | 23 000 U.V. | 5-6 | 0 % / 0 % | 0 % |
 | Aubeterre | profil | 23 000 U.V. | 23 000 U.V. | 23 000 U.V. | 6-6 | 0 % / 0 % | 0 % |
-| Hautmont | profil | 23 000 U.V. | 23 000 U.V. | 23 000 U.V. | 12-20 | 0 % / 0 % | 0 % |
 | Bourg-Val | profil | 23 000 U.V. | 23 000 U.V. | 23 000 U.V. | 3-3 | 0 % / 0 % | 0 % |
+| Port-Brume | profil | 23 000 U.V. | 23 000 U.V. | 23 000 U.V. | 5-6 | 0 % / 0 % | 0 % |
+| Hautmont | profil | 23 000 U.V. | 23 000 U.V. | 23 000 U.V. | 12-20 | 0 % / 0 % | 0 % |
 | Carrefour | profil | 23 000 U.V. | 23 000 U.V. | 23 000 U.V. | 6-6 | 0 % / 0 % | 0 % |
 
 ## 4 bis. Combats mesurés (banc d'essai)
@@ -240,89 +240,89 @@ D'où vient et où va l'argent (graine 1) :
 
 | Poste | C | B (sans combat) |
 |---|---:|---:|
-| Marge du commerce (ventes - achats, butin vendu compris) | 99 860 U.V. | 83 408 U.V. |
-| Butin en U.V. | 33 996 U.V. | 0 U.V. |
-| Salaires payés | -15 430 U.V. | -8 930 U.V. |
-| Hôpital | -5 075 U.V. | -0 U.V. |
-| Recrues | -12 000 U.V. | -0 U.V. |
+| Marge du commerce (ventes - achats, butin vendu compris) | 135 676 U.V. | 83 408 U.V. |
+| Butin en U.V. | 23 927 U.V. | 0 U.V. |
+| Salaires payés | -15 040 U.V. | -8 930 U.V. |
+| Hôpital | -10 550 U.V. | -0 U.V. |
+| Recrues | -9 000 U.V. | -0 U.V. |
 | Dette restante | -0 U.V. | -0 U.V. |
-| **Profit net** | **101 351 U.V.** | **74 478 U.V.** |
-| Profit net par jour | 1 013 U.V. | 744 U.V. |
-| Profit par jour avant salaires | 1 167 U.V. | 834 U.V. |
-| Salaires en part de la marge du commerce | 15 % | 11 % |
+| **Profit net** | **125 013 U.V.** | **74 478 U.V.** |
+| Profit net par jour | 1 250 U.V. | 744 U.V. |
+| Profit par jour avant salaires | 1 400 U.V. | 834 U.V. |
+| Salaires en part de la marge du commerce | 11 % | 11 % |
 
 - Rencontres : 17 ; combats choisis : 17 ; bandes contournées : 0 ; combats forcés (contournement raté) : 0 ; combats résolus par la mesure : 17.
-- Combats : 17 victoire(s), 0 défaite(s) ; unités perdues : 2 ; butin ramassé : 55 536 U.V. (perdu faute de place : 0 U.V.), soit 41 % des recettes.
-- Soins : 191 PV rendus par la régénération, 203 PV à l'hôpital (5 visite(s), 5 075 U.V.).
-- Recrues : 4 (12 000 U.V.) ; recrutement refusé pour dette : 0 fois ; plus grosse dette : 0 U.V..
-- Marchandises restées en cargaison à la fin (au prix de base) : 0 U.V. ; moyenne sur les 10 graines : 0 U.V. (butin qu'aucune ville du chemin n'achetait, ou cargaison du trajet perdu).
-- Groupe à la fin : Def_Fantassin 40/40, Def_Fantassin 32/40, Def_Fantassin 33/40, Def_Fantassin 32/40. Fin : Terminé : 100 jours écoulés.
+- Combats : 17 victoire(s), 0 défaite(s) ; unités perdues : 1 ; butin ramassé : 72 487 U.V. (perdu faute de place : 0 U.V.), soit 45 % des recettes.
+- Soins : 144 PV rendus par la régénération, 422 PV à l'hôpital (6 visite(s), 10 550 U.V.).
+- Recrues : 3 (9 000 U.V.) ; recrutement refusé pour dette : 0 fois ; plus grosse dette : 0 U.V..
+- Marchandises restées en cargaison à la fin (au prix de base) : 0 U.V. ; moyenne sur les 10 graines : 1 610 U.V. (butin qu'aucune ville du chemin n'achetait, ou cargaison du trajet perdu).
+- Groupe à la fin : Def_Fantassin 40/40, Def_Fantassin 40/40, Def_Fantassin 40/40, Def_Fantassin 40/40. Fin : Terminé : 100 jours écoulés.
 
 Trajets avec un combat (graine 1) :
 
 | Jour | Trajet | Résultat | Valeur du butin | Profit (vente du butin comprise) |
 |---:|---|---|---:|---:|
-| 16 | Aubeterre > Bourg-Val (Cuir) | Victoire | 3 625 U.V. | 4 137 U.V. |
-| 17 | Bourg-Val > Hautmont (Tissu de laine) | Victoire | 4 374 U.V. | 3 745 U.V. |
-| 24 | Bourg-Val > Aubeterre (Tissu de laine) | Victoire | 1 948 U.V. | 1 644 U.V. |
-| 29 | Hautmont > Bourg-Val (Fer) | Victoire | 2 601 U.V. | 1 085 U.V. |
-| 30 | Bourg-Val > Hautmont (Outils) | Victoire, 1 unité(s) perdue(s) | 2 760 U.V. | 1 481 U.V. |
-| 34 | Bourg-Val > Hautmont (Outils) | Victoire | 4 613 U.V. | 2 239 U.V. |
-| 36 | Hautmont > Bourg-Val (Fer) | Victoire | 2 041 U.V. | 1 407 U.V. |
-| 42 | Bourg-Val > Hautmont (Outils) | Victoire | 3 218 U.V. | 4 507 U.V. |
-| 54 | Bourg-Val > Hautmont (Outils) | Victoire | 2 644 U.V. | 1 088 U.V. |
-| 59 | Hautmont > Bourg-Val (Fer) | Victoire | 1 889 U.V. | 2 028 U.V. |
-| 63 | Hautmont > Bourg-Val (Fer) | Victoire | 3 343 U.V. | 3 758 U.V. |
-| 69 | Bourg-Val > Hautmont (Outils) | Victoire | 2 715 U.V. | 1 657 U.V. |
-| 73 | Bourg-Val > Hautmont (Outils) | Victoire, 1 unité(s) perdue(s) | 9 480 U.V. | 4 507 U.V. |
-| 79 | Hautmont > Bourg-Val (Fer) | Victoire | 2 818 U.V. | 576 U.V. |
-| 82 | Hautmont > Bourg-Val (Fer) | Victoire | 2 253 U.V. | 2 001 U.V. |
-| 84 | Bourg-Val > Hautmont (Outils) | Victoire | 2 703 U.V. | 1 909 U.V. |
-| 94 | Hautmont > Bourg-Val (Fer) | Victoire | 2 511 U.V. | 2 765 U.V. |
+| 3 | Hautmont > Bourg-Val (Fer) | Victoire, 1 unité(s) perdue(s) | 6 670 U.V. | 6 558 U.V. |
+| 14 | Aubeterre > Bourg-Val (Cuir) | Victoire | 2 147 U.V. | 951 U.V. |
+| 22 | Port-Brume > Bourg-Val (Épices) | Victoire | 3 246 U.V. | 11 314 U.V. |
+| 22 | Bourg-Val > Hautmont (Outils) | Victoire | 3 365 U.V. | 3 685 U.V. |
+| 26 | Bourg-Val > Hautmont (Outils) | Victoire | 2 734 U.V. | 3 380 U.V. |
+| 28 | Hautmont > Bourg-Val (Fer) | Victoire | 7 002 U.V. | 5 587 U.V. |
+| 36 | Hautmont > Bourg-Val (Fer) | Victoire | 1 706 U.V. | 2 357 U.V. |
+| 40 | Hautmont > Bourg-Val (Fer) | Victoire | 2 095 U.V. | 742 U.V. |
+| 57 | Hautmont > Bourg-Val (Fer) | Victoire | 4 870 U.V. | 3 775 U.V. |
+| 73 | Hautmont > Bourg-Val (Fer) | Victoire | 6 132 U.V. | 5 124 U.V. |
+| 77 | Hautmont > Bourg-Val (Fer) | Victoire | 3 282 U.V. | 2 357 U.V. |
+| 80 | Hautmont > Bourg-Val (Fer) | Victoire | 4 736 U.V. | 2 799 U.V. |
+| 82 | Bourg-Val > Hautmont (Outils) | Victoire | 3 217 U.V. | 3 254 U.V. |
+| 86 | Bourg-Val > Hautmont (Outils) | Victoire | 9 470 U.V. | 9 333 U.V. |
+| 88 | Hautmont > Bourg-Val (Fer) | Victoire | 3 679 U.V. | 3 497 U.V. |
+| 90 | Bourg-Val > Hautmont (Outils) | Victoire | 2 036 U.V. | 2 197 U.V. |
+| 94 | Bourg-Val > Hautmont (Outils) | Victoire | 6 100 U.V. | 4 507 U.V. |
 
 Effet de la chance (même scénario, 10 graines) :
 
 | Graine | Profit net | Par jour | Jours | V / D | Unités perdues | Butin (part) | Salaires | Hôpital | Recrues | Groupe final | Fin |
 |---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|
-| 1 | 101 351 U.V. | 1 013 U.V. | 100 | 17 / 0 | 2 | 55 536 U.V. (41 %) | 15 430 U.V. | 5 075 U.V. | 12 000 U.V. | Def_Fantassin 40/40, Def_Fantassin 32/40, Def_Fantassin 33/40, Def_Fantassin 32/40 | Terminé : 100 jours écoulés. |
-| 2 | 94 997 U.V. | 940 U.V. | 101 | 10 / 0 | 2 | 42 040 U.V. (33 %) | 15 670 U.V. | 6 350 U.V. | 12 000 U.V. | Def_Fantassin 40/40, Def_Fantassin 40/40, Def_Fantassin 40/40, Def_Fantassin 40/40 | Terminé : 100 jours écoulés. |
-| 3 | 101 263 U.V. | 1 012 U.V. | 100 | 12 / 0 | 1 | 45 994 U.V. (35 %) | 16 450 U.V. | 4 175 U.V. | 9 000 U.V. | Def_Fantassin 40/40, Def_Archer 25/25, Def_Fantassin 40/40, Def_Fantassin 40/40 | Terminé : 100 jours écoulés. |
-| 4 | 82 525 U.V. | 817 U.V. | 101 | 8 / 0 | 0 | 25 315 U.V. (24 %) | 16 450 U.V. | 1 225 U.V. | 6 000 U.V. | Def_Fantassin 32/40, Def_Archer 20/25, Def_Fantassin 32/40, Def_Fantassin 32/40 | Terminé : 100 jours écoulés. |
-| 5 | 107 731 U.V. | 1 066 U.V. | 101 | 14 / 0 | 1 | 49 912 U.V. (36 %) | 15 235 U.V. | 5 375 U.V. | 9 000 U.V. | Def_Fantassin 32/40, Def_Fantassin 32/40, Def_Fantassin 40/40, Def_Fantassin 32/40 | Terminé : 100 jours écoulés. |
-| 6 | 122 424 U.V. | 1 224 U.V. | 100 | 16 / 0 | 1 | 72 461 U.V. (46 %) | 16 450 U.V. | 8 000 U.V. | 9 000 U.V. | Def_Fantassin 33/40, Def_Archer 20/25, Def_Fantassin 32/40, Def_Fantassin 33/40 | Terminé : 100 jours écoulés. |
-| 7 | 102 369 U.V. | 1 023 U.V. | 100 | 15 / 0 | 0 | 53 140 U.V. (41 %) | 16 450 U.V. | 6 150 U.V. | 6 000 U.V. | Def_Fantassin 29/40, Def_Archer 19/25, Def_Fantassin 28/40, Def_Fantassin 28/40 | Terminé : 100 jours écoulés. |
-| 8 | 95 515 U.V. | 955 U.V. | 100 | 11 / 0 | 0 | 37 305 U.V. (31 %) | 16 450 U.V. | 3 125 U.V. | 6 000 U.V. | Def_Fantassin 32/40, Def_Archer 19/25, Def_Fantassin 40/40, Def_Fantassin 32/40 | Terminé : 100 jours écoulés. |
-| 9 | 109 489 U.V. | 1 084 U.V. | 101 | 16 / 0 | 1 | 58 861 U.V. (41 %) | 16 420 U.V. | 9 800 U.V. | 9 000 U.V. | Def_Fantassin 32/40, Def_Fantassin 40/40, Def_Fantassin 40/40, Def_Fantassin 40/40 | Terminé : 100 jours écoulés. |
-| 10 | 115 413 U.V. | 1 154 U.V. | 100 | 17 / 0 | 1 | 61 282 U.V. (42 %) | 15 550 U.V. | 5 050 U.V. | 9 000 U.V. | Def_Fantassin 32/40, Def_Fantassin 32/40, Def_Fantassin 32/40, Def_Fantassin 32/40 | Terminé : 100 jours écoulés. |
+| 1 | 125 013 U.V. | 1 250 U.V. | 100 | 17 / 0 | 1 | 72 487 U.V. (45 %) | 15 040 U.V. | 10 550 U.V. | 9 000 U.V. | Def_Fantassin 40/40, Def_Fantassin 40/40, Def_Fantassin 40/40, Def_Fantassin 40/40 | Terminé : 100 jours écoulés. |
+| 2 | 112 152 U.V. | 1 110 U.V. | 101 | 13 / 0 | 1 | 55 167 U.V. (39 %) | 15 760 U.V. | 5 900 U.V. | 9 000 U.V. | Def_Fantassin 37/40, Def_Fantassin 32/40, Def_Fantassin 38/40, Def_Fantassin 32/40 | Terminé : 100 jours écoulés. |
+| 3 | 82 962 U.V. | 976 U.V. | 85 | 12 / 1 | 1 | 44 086 U.V. (40 %) | 12 750 U.V. | 4 450 U.V. | 9 000 U.V. | Def_Fantassin 32/40, Def_Fantassin 32/40, Def_Fantassin 32/40, Def_Fantassin 32/40 | Défaite en combat sur la route Hautmont > Bourg-Val (fin de la campagne). |
+| 4 | 93 142 U.V. | 931 U.V. | 100 | 9 / 0 | 1 | 33 447 U.V. (28 %) | 15 805 U.V. | 2 250 U.V. | 9 000 U.V. | Def_Fantassin 37/40, Def_Fantassin 38/40, Def_Fantassin 37/40, Def_Fantassin 38/40 | Terminé : 100 jours écoulés. |
+| 5 | 120 513 U.V. | 1 205 U.V. | 100 | 16 / 0 | 3 | 71 808 U.V. (46 %) | 15 235 U.V. | 6 575 U.V. | 15 000 U.V. | Def_Fantassin 29/40, Def_Fantassin 30/40, Def_Fantassin 34/40, Def_Fantassin 29/40 | Terminé : 100 jours écoulés. |
+| 6 | 70 818 U.V. | 1 361 U.V. | 52 | 10 / 1 | 1 | 42 752 U.V. (47 %) | 7 555 U.V. | 3 425 U.V. | 9 000 U.V. | Def_Fantassin 32/40, Def_Fantassin 32/40, Def_Fantassin 35/40, Def_Fantassin 32/40 | Défaite en combat sur la route Aubeterre > Bourg-Val (fin de la campagne). |
+| 7 | 115 961 U.V. | 1 159 U.V. | 100 | 15 / 0 | 2 | 80 993 U.V. (52 %) | 16 045 U.V. | 10 300 U.V. | 12 000 U.V. | Def_Fantassin 36/40, Def_Fantassin 32/40, Def_Fantassin 32/40, Def_Fantassin 34/40 | Terminé : 100 jours écoulés. |
+| 8 | 134 437 U.V. | 1 344 U.V. | 100 | 18 / 0 | 1 | 82 620 U.V. (49 %) | 15 310 U.V. | 9 850 U.V. | 9 000 U.V. | Def_Fantassin 28/40, Def_Fantassin 18/40, Def_Fantassin 25/40, Def_Fantassin 22/40 | Terminé : 100 jours écoulés. |
+| 9 | 90 082 U.V. | 900 U.V. | 100 | 11 / 0 | 3 | 36 598 U.V. (29 %) | 15 040 U.V. | 4 475 U.V. | 15 000 U.V. | Def_Fantassin 18/40, Def_Fantassin 25/40, Def_Fantassin 22/40, Def_Fantassin 22/40 | Terminé : 100 jours écoulés. |
+| 10 | 67 078 U.V. | 1 719 U.V. | 39 | 9 / 1 | 0 | 35 788 U.V. (44 %) | 5 600 U.V. | 3 025 U.V. | 6 000 U.V. | Def_Fantassin 32/40, Def_Archer 20/25, Def_Fantassin 32/40, Def_Fantassin 32/40 | Défaite en combat sur la route Hautmont > Bourg-Val (fin de la campagne). |
 
-Parties perdues en combat : 0 sur 10. Profit net : minimum 82 525 U.V., moyenne 103 307 U.V., maximum 122 424 U.V.. Part du butin : de 24 % à 46 %.
+Parties perdues en combat : 3 sur 10. Profit net : minimum 67 078 U.V., moyenne 101 215 U.V., maximum 134 437 U.V.. Part du butin : de 28 % à 52 %.
 
-Parties menées au bout seulement (10) : profit net moyen 103 307 U.V. (1 029 U.V. par jour), part du butin moyenne 37 %.
+Parties menées au bout seulement (7) : profit net moyen 113 042 U.V. (1 128 U.V. par jour), part du butin moyenne 41 %.
 
 ## 5 bis. Le départ de la partie manuelle
 
-La caravane démarre avec **0 U.V.** : sans argent on ne peut rien acheter, la première somme vient du butin d'une bande (une partie en U.V., le reste en marchandises à revendre). Butin des bandes de la carte (valeur totale tirée dans la table de la bande, U.V. et marchandises au prix de base) : 1 625 U.V. à 2 925 U.V., 1 950 U.V. à 3 900 U.V., 2 500 U.V. à 3 500 U.V., 2 600 U.V. à 5 200 U.V., 2 925 U.V. à 5 525 U.V., 5 200 U.V. à 10 400 U.V.. La recrue la moins chère coûte 3 000 U.V.. Les salaires du groupe de départ courent dès la fin des jours offerts.
+La caravane démarre avec **0 U.V.** : sans argent on ne peut rien acheter, la première somme vient du butin d'une bande (une partie en U.V., le reste en marchandises à revendre). Butin des bandes de la carte (valeur totale tirée dans la table de la bande, U.V. et marchandises au prix de base) : 1 950 U.V. à 3 900 U.V., 2 500 U.V. à 3 500 U.V., 2 600 U.V. à 5 200 U.V., 2 925 U.V. à 5 525 U.V., 5 200 U.V. à 10 400 U.V.. La recrue la moins chère coûte 3 000 U.V.. Les salaires du groupe de départ courent dès la fin des jours offerts.
 
 Scénario E : un marchand prévoyant qui part avec la seule part en U.V. du plus petit butin (585 U.V.) finit à 1 013 U.V. en 16 jours (5 trajets, 855 U.V. de salaires payés, plus grosse dette 0 U.V.) ; il double son capital au jour 6. Bloqué : aucun trajet rentable pendant 10 jours (ville Bourg-Val).
 
-Scénario E2 : le même, en comptant aussi les marchandises de ce butin comme de l'argent (1 625 U.V.) finit à 76 793 U.V. en 101 jours (61 trajets, 8 930 U.V. de salaires payés, plus grosse dette 0 U.V.) ; il double son capital au jour 12. Terminé : 100 jours écoulés.
+Scénario E2 : le même, en comptant aussi les marchandises de ce butin comme de l'argent (1 950 U.V.) finit à 63 359 U.V. en 101 jours (58 trajets, 8 930 U.V. de salaires payés, plus grosse dette 0 U.V.) ; il double son capital au jour 10. Terminé : 100 jours écoulés.
 
 **Départ réel** : 0 U.V., puis le butin de la première bande que le jeu désigne (ses U.V. en caisse, ses marchandises en cargaison), avec toute la boucle (combats choisis, soins, recrues, salaires), sur 10 graines :
 
 | Graine | Butin de départ | Profit net | Capital doublé au jour | Trajets | Recrues | V / D | Fin |
 |---:|---|---:|---:|---:|---:|---:|---|
-| 1 | 314 U.V. + 3 Blé (3 194 U.V.) | 114 385 U.V. | 16 | 60 | 4 | 18 / 0 | Terminé : 100 jours écoulés. |
-| 2 | 2580 U.V. + 1 Fer (3 280 U.V.) | 93 948 U.V. | 14 | 59 | 4 | 10 / 0 | Terminé : 100 jours écoulés. |
-| 3 | 1266 U.V. + 3 Fer (3 366 U.V.) | 119 034 U.V. | 12 | 59 | 4 | 14 / 0 | Terminé : 100 jours écoulés. |
-| 4 | 832 U.V. + 2 Blé + 1 Fer (3 452 U.V.) | 87 140 U.V. | 15 | 59 | 2 | 8 / 0 | Terminé : 100 jours écoulés. |
-| 5 | 1837 U.V. + 1 Fer (2 537 U.V.) | 113 252 U.V. | 16 | 59 | 3 | 19 / 0 | Terminé : 100 jours écoulés. |
-| 6 | 1223 U.V. + 2 Fer (2 623 U.V.) | 118 688 U.V. | 8 | 59 | 4 | 15 / 0 | Terminé : 100 jours écoulés. |
-| 7 | 350 U.V. + 2 Fer + 1 Blé (2 710 U.V.) | 100 165 U.V. | 16 | 60 | 2 | 13 / 0 | Terminé : 100 jours écoulés. |
-| 8 | 876 U.V. + 2 Blé (2 796 U.V.) | 96 039 U.V. | 12 | 58 | 3 | 11 / 0 | Terminé : 100 jours écoulés. |
-| 9 | 522 U.V. + 2 Fer + 1 Blé (2 882 U.V.) | 105 522 U.V. | 16 | 59 | 2 | 13 / 0 | Terminé : 100 jours écoulés. |
-| 10 | 608 U.V. + 2 Fer + 1 Blé (2 968 U.V.) | 115 110 U.V. | 10 | 58 | 3 | 16 / 0 | Terminé : 100 jours écoulés. |
+| 1 | 314 U.V. + 3 Blé (3 194 U.V.) | 105 390 U.V. | 16 | 60 | 4 | 15 / 0 | Terminé : 100 jours écoulés. |
+| 2 | 2580 U.V. + 1 Fer (3 280 U.V.) | 88 714 U.V. | 16 | 59 | 4 | 12 / 0 | Terminé : 100 jours écoulés. |
+| 3 | 1266 U.V. + 3 Fer (3 366 U.V.) | 80 636 U.V. | 12 | 48 | 3 | 12 / 1 | Défaite en combat sur la route Bourg-Val > Hautmont (fin de la campagne). |
+| 4 | 832 U.V. + 2 Blé + 1 Fer (3 452 U.V.) | 88 228 U.V. | 15 | 59 | 3 | 8 / 0 | Terminé : 100 jours écoulés. |
+| 5 | 1837 U.V. + 1 Fer (2 537 U.V.) | 114 737 U.V. | 12 | 58 | 4 | 15 / 0 | Terminé : 100 jours écoulés. |
+| 6 | 1223 U.V. + 2 Fer (2 623 U.V.) | 69 535 U.V. | 17 | 43 | 2 | 9 / 1 | Défaite en combat sur la route Bourg-Val > Hautmont (fin de la campagne). |
+| 7 | 350 U.V. + 2 Fer + 1 Blé (2 710 U.V.) | 125 916 U.V. | 16 | 60 | 2 | 17 / 0 | Terminé : 100 jours écoulés. |
+| 8 | 876 U.V. + 2 Blé (2 796 U.V.) | 137 352 U.V. | 8 | 57 | 2 | 18 / 0 | Terminé : 100 jours écoulés. |
+| 9 | 522 U.V. + 2 Fer + 1 Blé (2 882 U.V.) | 92 644 U.V. | 6 | 58 | 4 | 12 / 0 | Terminé : 100 jours écoulés. |
+| 10 | 608 U.V. + 2 Fer + 1 Blé (2 968 U.V.) | 126 822 U.V. | 6 | 57 | 3 | 17 / 0 | Terminé : 100 jours écoulés. |
 
-Départs bloqués : 0 sur 10 ; perdus en combat : 0 ; profit net moyen 106 328 U.V..
+Départs bloqués : 0 sur 10 ; perdus en combat : 2 ; profit net moyen 102 997 U.V..
 
 ## 5 ter. Effet de chaque mécanique (une seule enlevée à la fois, même graine)
 
@@ -330,10 +330,10 @@ Enlever une mécanique change aussi les décisions et les tirages qui suivent (u
 
 | Comparaison | Profit net | Écart | Salaires | Hôpital | Recrues | V / D | Groupe final | Fin |
 |---|---:|---:|---:|---:|---:|---:|---|---|
-| C. Boucle complète (combats, butin, soin, recrues, salaires) | 101 351 U.V. | référence | 15 430 U.V. | 5 075 U.V. | 12 000 U.V. | 17 / 0 | Def_Fantassin 40/40, Def_Fantassin 32/40, Def_Fantassin 33/40, Def_Fantassin 32/40 | Terminé : 100 jours écoulés. |
-| C sans hôpital | 106 553 U.V. | 5 202 U.V. | 15 590 U.V. | 0 U.V. | 12 000 U.V. | 17 / 0 | Def_Fantassin 32/40, Def_Fantassin 32/40, Def_Fantassin 32/40, Def_Fantassin 32/40 | Terminé : 100 jours écoulés. |
-| C sans recrutement | 96 097 U.V. | -5 254 U.V. | 9 025 U.V. | 1 575 U.V. | 0 U.V. | 7 / 0 | Def_Fantassin 32/40, Def_Archer 20/25 | Terminé : 100 jours écoulés. |
-| C sans salaires | 133 201 U.V. | 31 850 U.V. | 0 U.V. | 8 725 U.V. | 9 000 U.V. | 17 / 0 | Def_Fantassin 40/40, Def_Archer 20/25, Def_Fantassin 33/40, Def_Fantassin 32/40 | Terminé : 100 jours écoulés. |
+| C. Boucle complète (combats, butin, soin, recrues, salaires) | 125 013 U.V. | référence | 15 040 U.V. | 10 550 U.V. | 9 000 U.V. | 17 / 0 | Def_Fantassin 40/40, Def_Fantassin 40/40, Def_Fantassin 40/40, Def_Fantassin 40/40 | Terminé : 100 jours écoulés. |
+| C sans hôpital | 57 200 U.V. | -67 813 U.V. | 6 240 U.V. | 0 U.V. | 9 000 U.V. | 7 / 1 | Def_Fantassin 32/40, Def_Fantassin 32/40, Def_Fantassin 32/40, Def_Fantassin 32/40 | Défaite en combat sur la route Bourg-Val > Hautmont (fin de la campagne). |
+| C sans recrutement | 87 742 U.V. | -37 271 U.V. | 9 025 U.V. | 1 875 U.V. | 0 U.V. | 4 / 0 | Def_Fantassin 32/40, Def_Archer 21/25 | Terminé : 100 jours écoulés. |
+| C sans salaires | 127 883 U.V. | 2 870 U.V. | 0 U.V. | 6 075 U.V. | 9 000 U.V. | 17 / 0 | Def_Fantassin 32/40, Def_Fantassin 32/40, Def_Fantassin 32/40, Def_Fantassin 32/40 | Terminé : 100 jours écoulés. |
 | B. Marchand prévoyant, sans combat | 74 478 U.V. | référence | 8 930 U.V. | 0 U.V. | 0 U.V. | 0 / 0 | Def_Fantassin 40/40, Def_Archer 25/25 | Terminé : 100 jours écoulés. |
 | B sans salaires | 83 439 U.V. | 8 961 U.V. | 0 U.V. | 0 U.V. | 0 U.V. | 0 / 0 | Def_Fantassin 40/40, Def_Archer 25/25 | Terminé : 100 jours écoulés. |
 
@@ -345,14 +345,14 @@ Les chances de victoire viennent maintenant de la mesure ; l'inconnue est la par
 
 | Contournement raté | Parties menées au bout | Profit net moyen | Profit net médian | Profit par jour moyen | Part du butin moyenne | Combats gagnés par partie |
 |---:|---:|---:|---:|---:|---:|---:|
-| 5 % (réglage actuel) | 10 / 10 | 103 307 U.V. | 102 369 U.V. | 1 029 U.V. | 37 % | 13.6 |
-| 15 % | 10 / 10 | 103 307 U.V. | 102 369 U.V. | 1 029 U.V. | 37 % | 13.6 |
-| 30 % | 10 / 10 | 103 307 U.V. | 102 369 U.V. | 1 029 U.V. | 37 % | 13.6 |
+| 5 % (réglage actuel) | 7 / 10 | 101 215 U.V. | 112 152 U.V. | 1 195 U.V. | 42 % | 13.0 |
+| 15 % | 7 / 10 | 101 215 U.V. | 112 152 U.V. | 1 195 U.V. | 42 % | 13.0 |
+| 30 % | 7 / 10 | 101 215 U.V. | 112 152 U.V. | 1 195 U.V. | 42 % | 13.0 |
 
 ## 5 quater. Parties de 300 jours : le profit s'arrête-t-il de croître ?
 
 - B sur 300 jours : profit net 157 742 U.V. en 301 jours (524 U.V. par jour). Profit par tranche de 30 jours : 38 779 U.V., 14 896 U.V., 4 118 U.V., 13 135 U.V., 19 924 U.V., 12 995 U.V., 3 978 U.V., 12 276 U.V., 13 135 U.V., 20 064 U.V.. Rapport dernier tiers / tiers du milieu : × 1.01. Terminé : 300 jours écoulés.
-- C sur 300 jours : profit net 300 169 U.V. en 301 jours (997 U.V. par jour). Profit par tranche de 30 jours : 34 553 U.V., 27 553 U.V., 20 947 U.V., 26 643 U.V., 40 680 U.V., 29 637 U.V., 26 977 U.V., 16 018 U.V., 42 522 U.V., 30 428 U.V.. Rapport dernier tiers / tiers du milieu : × 0.92. Terminé : 300 jours écoulés.
+- C sur 300 jours : profit net 264 453 U.V. en 301 jours (878 U.V. par jour). Profit par tranche de 30 jours : 47 210 U.V., 18 905 U.V., 41 652 U.V., 38 927 U.V., 12 430 U.V., 17 302 U.V., 37 231 U.V., 14 975 U.V., 11 655 U.V., 11 455 U.V.. Rapport dernier tiers / tiers du milieu : × 0.74. Terminé : 300 jours écoulés.
 
 ## 6. Anomalies
 
@@ -374,10 +374,10 @@ Les chances de victoire viennent maintenant de la mesure ; l'inconnue est la par
 | T5. Sans recrutement : aucune recrue | réussi | 0 recrue(s) |
 | T5. Les salaires coûtent (B sans salaires gagne plus que B) | réussi | 83 439 U.V. contre 74 478 U.V. |
 | T5. Recrutement jamais avec une dette (règle du jeu) | réussi | 0 refus pour dette au total |
-| Le marchand ne combat que par choix (chance ≥ seuil) ou contournement raté ; chaque rencontre est soit un combat, soit un détour | réussi | 390 rencontres : 379 combats choisis, 0 forcés, 11 contournées |
-| Combats résolus par la table mesurée (aucun repli sur le modèle simple) | réussi | 379 sur 379 combats |
-| Aucune vente à une ville hors de son profil (une ville n'achète que ce qu'elle produit ou consomme) | réussi | 0 trajet(s) hors profil sur 2024 |
-| T6. Pas de dépassement (soldes bien sous la limite des entiers) | réussi | solde le plus haut : 310 169 U.V. |
+| Le marchand ne combat que par choix (chance ≥ seuil) ou contournement raté ; chaque rencontre est soit un combat, soit un détour | réussi | 374 rencontres : 353 combats choisis, 1 forcés, 20 contournées |
+| Combats résolus par la table mesurée (aucun repli sur le modèle simple) | réussi | 354 sur 354 combats |
+| Aucune vente à une ville hors de son profil (une ville n'achète que ce qu'elle produit ou consomme) | réussi | 0 trajet(s) hors profil sur 1890 |
+| T6. Pas de dépassement (soldes bien sous la limite des entiers) | réussi | solde le plus haut : 274 453 U.V. |
 
 Les tests des règles pures (T1), de non-régression du jeu (T7) et la relecture des chiffres (T8) sont faits à part, en Play Mode : voir `PROJECT_LOG.md`.
 
@@ -387,6 +387,7 @@ Valeurs actuelles : écart acheteur/vendeur 10 %, facteur de prix de ×0.5 à ×
 
 Suggestions tirées des mesures :
 
+- **Butin** : 42 % des recettes en moyenne (au-dessus de 40 %) : baisser la valeur des tables de butin ou allonger le délai de retour des bandes.
 - **Départ** : partir de 585 U.V. ne suffit pas au marchand simulé, avec les salaires (855 U.V. payés, dette maximale 0 U.V.) : un petit capital de départ, ou plus de jours offerts.
 - Rapprocher les profils des villes concernées (une ville qui produit ce que l'autre consomme) ou réduire l'écart acheteur/vendeur.
 - **Marges** : resserrer les bornes de prix (`minFactor` plus haut, `maxFactor` plus bas) ou élargir l'écart acheteur/vendeur, pour réduire la marge maximale d'un trajet.

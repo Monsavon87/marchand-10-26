@@ -4,13 +4,14 @@ Ce fichier regroupe les décisions de conception **prises et validées**, pour n
 Il ne décrit pas le code (voir `PROJECT_LOG.md` pour l'historique des étapes, `CLAUDE.md` pour les règles de travail).
 Quand une décision change, on modifie la ligne concernée et on note la date. Les points non tranchés sont à la fin.
 
-Dernière mise à jour : 2026-10-29 (direction artistique « plateau et figurines », première passe graphique).
+Dernière mise à jour : 2026-10-29 (direction artistique « plateau et figurines » ; relief de la carte, zones aux formes naturelles, les collines cachent).
 
 ## 1. Le jeu
 
 - « Marchand » : RPG où le joueur incarne un marchand qui voyage, fait du commerce et se bat. Prototype Unity 6, URP.
 - Visuels : uniquement des primitives et du texte. Aucun asset externe.
 - **Direction artistique (décision du 2026-10-29)** : « plateau et figurines ». La carte est un plateau de jeu posé sur une table en bois (rebord, décors low-poly : forêts, pics enneigés, roseaux, villes à remparts et tours) ; les unités sont des figurines peintes sur un socle aux couleurs du camp (bleu le joueur, rouge l'ennemi), l'équipement montre le type (fantassin : casque, bouclier, épée ; archer : capuche, arc, carquois) ; la caravane est un chariot bâché, chaque bande porte une bannière rouge. Lumière chaude avec ombres douces, couleurs mates, léger post-traitement. Moyens : rien d'externe (formes d'Unity et formes simples générées). Les aides de jeu (traits, portée, zones, sélection) gardent leurs couleurs vives pour rester lisibles. Première passe faite ; la suite (interface, menu, effets) est à décider.
+- **Relief et formes (décisions du 2026-10-29)** : la carte a du relief : plaines vallonnées (jusqu'à ~3 m), vraies montagnes (jusqu'à ~11 m, franchissables mais lentes), lac en creux ; terrain plat autour des villes, relief très atténué le long des routes. Les zones (forêt, marais, montagne, lac) ont des **formes naturelles** (contours arrondis et irréguliers, même place et surface proche) et le jeu suit ces formes (vitesse, coût des chemins). Les **routes restent droites** (distances et économie inchangées). Les villes sont **rondes** (même taille, même entrée). **Les collines cachent** : la vue des bandes est coupée par le relief (choix B), une colline entre une bande et la caravane empêche la détection. Variété : villes à remparts ronds, maisons orientées et formes variées, champs autour ; plusieurs espèces d'arbres, teintes et tailles ; rochers variés ; arènes aux murs irréguliers (le terrain de combat ne change pas).
 - Langue : le jeu (messages, interface) est en français ; le code et ses commentaires sont en anglais.
 - Les données de jeu (stats, règles, réglages) vivent dans des ScriptableObjects, jamais en dur dans le code.
 
@@ -38,6 +39,7 @@ Dernière mise à jour : 2026-10-29 (direction artistique « plateau et figurine
 
 - Clic gauche : sélectionner une unité (Maj = ajouter/retirer) ou donner un ordre sur le sol ; glisser = rectangle de sélection ; Échap = tout désélectionner. Un rectangle vide ne change pas la sélection ; il faut bouger de plus de 16 px pour qu'un clic devienne un rectangle.
 - Caméra : déplacement ZQSD (positions physiques) et bords d'écran, clic droit maintenu = glisser la vue (icône main), bouton du milieu maintenu = rotation (icône dédiée), molette = zoom, F = centrer.
+- **Inclinaison selon le zoom (carte, décision du 2026-10-29)** : plus on zoome, plus la vue devient horizontale (25° au plus près, 75° au plus loin, environ 55° à la distance de départ) ; la caméra reste contrainte par le relief (elle se relève plutôt que d'entrer dans une colline). Pas de réglage manuel de l'inclinaison. Les arènes gardent un angle fixe.
 - Espace = pause (en combat et sur la carte).
 
 ## 6. Combat tactique
