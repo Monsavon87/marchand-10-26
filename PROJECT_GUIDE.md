@@ -46,8 +46,7 @@ Les noms de classes, de fichiers et de dossiers cités ici existent tels quels d
 | `Combat_Arena`, `Arena_Foret`, `Arena_Fort`                                                                | Arènes de combat chargées par-dessus la carte (tirées au hasard)                                 |
 | `Tests/Test_Campaign`, `Test_Movement`, `Test_Terrain`, `Test_Combat`, `Test_Combat_2v2`, `Test_Combat_AI` | Bancs d'essai d'un système à la fois. À ne rejouer que si l'on touche au système qu'ils couvrent |
 
-Les scènes de la liste de build sont dans `ProjectSettings/EditorBuildSettings.asset` (`MainMenu`, `Demo_Campaign`, arènes, `Test_Campaign`). La liste garde une ligne désactivée vers `SampleScene`, supprimée en G0 (ligne laissée pour ne pas toucher à `ProjectSettings`) ; Unity l'affiche « Deleted ».
-
+Les scènes de la liste de build sont dans `ProjectSettings/EditorBuildSettings.asset` (`MainMenu`, `Demo_Campaign`, arènes, `Test_Campaign`).
 ### Touches de debug (jeu en éditeur)
 
 | Touche                  | Effet                                                             | Script                |
