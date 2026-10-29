@@ -97,6 +97,7 @@ Un script = une responsabilité, rangé par fonctionnalité. Chaque classe a un 
 | `Actions/ShotSpotFinder`, `LineOfSight`, `Projectile`, `ShotPassThrough`         | Tir à distance : place de tir, ligne de vue, flèche, décors qui ne bloquent pas                                                                      |
 | `Rules/ICombatRules`, `CombatRules`, `CombatRulesProvider`, `AttackZone`         | Règles de résolution (dé + bonus contre défense, zones face / flanc / dos). Pour changer de système de règles, changer ce que le fournisseur renvoie |
 | `UnitStats`, `Health`, `UnitDeath`                                               | Chiffres de combat copiés de `UnitDefinition`, points de vie, mort                                                                                   |
+| `UnitFigurine`                                                                   | Figurine affichée à la place de la capsule (enfant `Figure` du prefab `Unit`) ; `CombatSpawner` y pose l'équipement du type (`UnitDefinition.FigurineGear`) |
 | `Feedback/*`                                                                     | Journal de combat, cible visée, zones, portée de l'arme, textes flottants                                                                            |
 
 ### Campagne (`Campaign/`)
@@ -222,10 +223,14 @@ Tout se règle dans des ScriptableObjects (`Assets/ScriptableObjects/`) :
 | Les réglages du simulateur                                 | `Economy/SimulationSettings_Default`                                         |
 | Le butin d'une bande (valeur totale, ressources et poids), les mots de richesse | `Loot/Loot_*.asset` (une table par bande, assignée sur le `PartyRoster` de l'objet `Enemy_*`) ; `Loot/LootWealthScale_Default` ; la graine : composant `BandLoot` de la scène |
 | Les minutes de jeu par mètre                               | Le composant `CampaignClock`, objet `Campaign`                               |
+| Le post-traitement (tons, contraste, halo, vignette)       | `Assets/Settings/Volume_Plateau.asset` (volume global `PostProcessVolume` de chaque scène de jeu) |
+| La distance des ombres                                     | `Assets/Settings/PC_RPAsset.asset` (150 m, pour le zoom maximum de la carte) |
+| Les couleurs (terrains, camps, décors)                     | Les matériaux `Assets/Materials/Mat_*` (mats, `Smoothness` basse) ; les aides de jeu (`Mat_Path*`, `Mat_Range*`, `Mat_Zone*`, `Mat_Selection`) restent vives |
+| L'équipement d'un type d'unité                             | Les prefabs `Assets/Prefabs/Figurines/Gear_*`, assignés dans `UnitDefinition.figurineGear` |
 
 ### Structure de `Demo_Campaign`
 
-Objets racine principaux : `Ground` (NavMesh), `Main Camera`, `Caravan` (le joueur : mouvement, groupe, `Wallet`, `Inventory`, `TradeService`), `Enemy_1` à `Enemy_6` (bandes patrouillantes), `Towns` (5 villes avec leur `Market`), `Campaign` (horloge, déplacement, rencontres, repos, recrutement, pause), `Economy` (`EconomyTicker`), `EncounterFlow`, `CampaignCanvas` (toute l'interface de la carte et des villes), `TerrainZones`, `PatrolRoutes`, `EconomySimulator` et les vues de debug.
+Objets racine principaux : `Ground` (NavMesh), `Main Camera`, `Caravan` (le joueur : mouvement, groupe, `Wallet`, `Inventory`, `TradeService`), `Enemy_1` à `Enemy_6` (bandes patrouillantes), `Towns` (5 villes avec leur `Market`), `Campaign` (horloge, déplacement, rencontres, repos, recrutement, pause), `Economy` (`EconomyTicker`), `EncounterFlow`, `CampaignCanvas` (toute l'interface de la carte et des villes), `TerrainZones`, `PatrolRoutes`, `EconomySimulator` et les vues de debug. Décor seulement, sans collider : `Board` (table et rebord du plateau), `Decor` (forêts, montagnes, marais, plaines, maisons et tours des villes, placés par graine fixe), `PostProcessVolume`. La caravane porte un enfant `Wagon` (sa figurine est masquée) et chaque `Enemy_*` un enfant `Banner` : ce sont des ajouts sur les copies de la scène, pas dans le prefab. Les arènes ont de même un `ArenaDecor` (table, créneaux, palissade, arbres extérieurs…).
 
 ---
 
@@ -273,6 +278,10 @@ Lancer : entrer en Play Mode dans `Demo_Campaign` (session neuve), puis appeler 
 - **`timeScale` enregistré à 0** : après des tests de pause, Unity a déjà enregistré `ProjectSettings/TimeManager.asset` avec `timeScale` 0 (la carte paraît « gelée », les unités « ne bougent pas »). En fin de test, `git status ProjectSettings` ; restaurer `TimeManager.asset` (`git checkout`) et remettre `runInBackground` à `false`. En cas de doute sur une unité immobile, lire `Time.timeScale` d'abord.
 - **Les builds réécrivent des réglages** : un build (même raté) modifie `ProjectSettings/` et des assets de rendu (`PC_RPAsset.asset`, `UniversalRenderPipelineGlobalSettings.asset`…). Les restaurer ensuite sauf décision contraire. `BuildPipeline.BuildPlayer` ne tourne pas dans une commande MCP : le lancer par `EditorApplication.delayCall` et écrire le compte rendu dans un fichier.
 - **Build depuis le MCP** : `BuildPipeline.BuildPlayer` est refusé dans une commande MCP ; passer par un `[MenuItem]` dans un script temporaire de `Assets/Editor/TemporaryGeneratedScripts/`, l'exécuter avec `Unity_ManageMenuItem`, différer le build par `EditorApplication.delayCall` et écrire le rapport dans un fichier ; supprimer le script ensuite. `AssetDatabase.DeleteAsset` est refusé aussi : pour supprimer un asset, l'appeler depuis un menu du même script temporaire ; supprimer le dossier `TemporaryGeneratedScripts` par le système de fichiers, mais **jamais `Assets/Editor` ni `Assets/Editor.meta`** (suivis par git).
+- **Abonnements à un ScriptableObject** : l'éditeur a le rechargement du domaine désactivé (*Enter Play Mode Options*), donc un asset comme `EncounterChannel` garde ses abonnés d'une session de Play à l'autre et d'une scène à l'autre. Se désabonner dans `OnDisable` **sans condition sur d'autres références** (chaque désabonnement dans son propre `if`) : sinon un objet détruit reste abonné et lève une `MissingReferenceException` à l'appel suivant (cas corrigé le 2026-10-29 dans `CampaignEncounterFlow`).
+- **Décors et NavMesh** : la NavMesh des scènes est construite à partir des meshes affichés. Tout décor ajouté va sous une racine portant un `NavMeshModifier` « Ignore From Build » (`Board`, `Decor`, `ArenaDecor`) et n'a **aucun collider** (sinon il bloquerait les clics, les lignes de vue et les déplacements). La NavMesh actuelle n'a pas été recalculée.
+- **Lumière et ambiance d'une arène** : l'arène se charge par-dessus la carte et devient la scène active ; c'est donc **sa** lumière ambiante et **son** brouillard qui comptent (la carte a du brouillard, les arènes non), et le volume de la carte s'endort avec ses autres objets. Une nouvelle arène doit avoir sa propre lumière, son `PostProcessVolume` et le post-traitement activé sur sa caméra.
+- **Formes générées** : `Assets/Models/Generated/Mesh_*` (cône, pyramide, toit en prisme, rochers) ont été créées par script ; l'ordre des sommets d'un triangle décide de sa face visible (un toit vu « de l'intérieur » = triangles à inverser).
 - **Matériaux aux noms trompeurs** : `Mat_PathOutOfRange` sert au trait d'un tir bloqué (`CombatTargeting.blockedShotMaterial`, dans les scènes de combat) et `Mat_PathPlan` au trait des ordres en file (`QueuedPathLine` du prefab `Unit`) : ne pas les prendre pour des restes.
 - **Versions de démo** : toujours au format x.y.z (`PlayerSettings.bundleVersion`), zip nommé `Marchand_Demo_Windows_vX.Y.Z.zip`, version et commit notés dans `PROJECT_LOG.md`.
 - **Tests au clavier simulé** : dans une longue session de Play, les touches simulées finissent par ne plus être vues ; relancer le Play. Les touches I et Échap n'ont été testées qu'indirectement.
@@ -290,7 +299,7 @@ Lancer : entrer en Play Mode dans `Demo_Campaign` (session neuve), puis appeler 
 
 ## 10. Où en est-on, et la suite
 
-Fait : démo jouable (v0.2.0), ménage technique du code débranché (G0), économie E1 à E9, butin en marchandises (F1), marché à onglets et profit (F2), retour des bandes et nouveau but de la démo (F3), soin naturel et hôpital (F4), salaires du groupe et dette (F5), file d'ordres sur la carte, comportement des bandes (route ou errance).
+Fait : démo jouable (v0.2.0), ménage technique du code débranché (G0), première passe graphique « plateau et figurines », économie E1 à E9, butin en marchandises (F1), marché à onglets et profit (F2), retour des bandes et nouveau but de la démo (F3), soin naturel et hôpital (F4), salaires du groupe et dette (F5), file d'ordres sur la carte, comportement des bandes (route ou errance).
 
 À décider avec le responsable du jeu :
 

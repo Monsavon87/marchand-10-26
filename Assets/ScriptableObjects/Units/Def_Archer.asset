@@ -24,3 +24,4 @@ MonoBehaviour:
   attackTime: 2
   dailyWage: 55
   moveSpeed: 1.4
+  figurineGear: {fileID: 5945258287151522942, guid: 5d892aaa397446149b08478433167c5c, type: 3}

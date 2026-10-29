@@ -96,6 +96,16 @@ public class CombatSpawner : MonoBehaviour
             GameObject unit = Instantiate(prefab, position, start.rotation, holder);
             unit.name = member.name;
             unit.GetComponent<UnitStats>().SetDefinition(member.definition);
+            UnitFigurine figurine = unit.GetComponent<UnitFigurine>();
+            if (figurine != null)
+            {
+                figurine.ShowGear(member.definition);
+            }
+            else
+            {
+                Debug.LogError("CombatSpawner: the unit prefab has no UnitFigurine.", this);
+            }
+
             Health health = unit.GetComponent<Health>();
             health.SetStartingHealth(member.StartingHealth);
             ActionController actions = unit.GetComponent<ActionController>();

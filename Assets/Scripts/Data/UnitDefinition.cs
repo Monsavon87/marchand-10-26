@@ -39,6 +39,10 @@ public class UnitDefinition : ScriptableObject
     [Tooltip("Walking speed, in meters per second.")]
     [Min(0.1f)] [SerializeField] private float moveSpeed = 1.4f;
 
+    [Header("Look")]
+    [Tooltip("Optional: the type's equipment (helmet, shield, bow...) put on the unit's figurine when it is spawned in an arena. Visual only, without colliders.")]
+    [SerializeField] private GameObject figurineGear;
+
     public string DisplayName => displayName;
     public int MaxHealth => maxHealth;
     public int Armor => armor;
@@ -51,6 +55,7 @@ public class UnitDefinition : ScriptableObject
     public float AttackTime => attackTime;
     public float MoveSpeed => moveSpeed;
     public int DailyWage => dailyWage;
+    public GameObject FigurineGear => figurineGear;
 
     /// <summary>True for a ranged unit (it has a maximum range).</summary>
     public bool IsRanged => maxRange > 0f;

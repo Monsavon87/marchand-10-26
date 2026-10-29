@@ -4,12 +4,13 @@ Ce fichier regroupe les décisions de conception **prises et validées**, pour n
 Il ne décrit pas le code (voir `PROJECT_LOG.md` pour l'historique des étapes, `CLAUDE.md` pour les règles de travail).
 Quand une décision change, on modifie la ligne concernée et on note la date. Les points non tranchés sont à la fin.
 
-Dernière mise à jour : 2026-10-25 (comportement des bandes, simulateur et rééquilibrage, achats selon le profil des villes, recherche de l'ennemi par l'IA de combat, butin −35 % et Voleur).
+Dernière mise à jour : 2026-10-29 (direction artistique « plateau et figurines », première passe graphique).
 
 ## 1. Le jeu
 
 - « Marchand » : RPG où le joueur incarne un marchand qui voyage, fait du commerce et se bat. Prototype Unity 6, URP.
 - Visuels : uniquement des primitives et du texte. Aucun asset externe.
+- **Direction artistique (décision du 2026-10-29)** : « plateau et figurines ». La carte est un plateau de jeu posé sur une table en bois (rebord, décors low-poly : forêts, pics enneigés, roseaux, villes à remparts et tours) ; les unités sont des figurines peintes sur un socle aux couleurs du camp (bleu le joueur, rouge l'ennemi), l'équipement montre le type (fantassin : casque, bouclier, épée ; archer : capuche, arc, carquois) ; la caravane est un chariot bâché, chaque bande porte une bannière rouge. Lumière chaude avec ombres douces, couleurs mates, léger post-traitement. Moyens : rien d'externe (formes d'Unity et formes simples générées). Les aides de jeu (traits, portée, zones, sélection) gardent leurs couleurs vives pour rester lisibles. Première passe faite ; la suite (interface, menu, effets) est à décider.
 - Langue : le jeu (messages, interface) est en français ; le code et ses commentaires sont en anglais.
 - Les données de jeu (stats, règles, réglages) vivent dans des ScriptableObjects, jamais en dur dans le code.
 
