@@ -62,18 +62,28 @@ public class CampaignEncounterFlow : MonoBehaviour
 
     private void OnEnable()
     {
-        if (encounters != null && channel != null)
+        if (encounters != null)
         {
             encounters.EncounterStarted += OnEncounterStarted;
+        }
+
+        if (channel != null)
+        {
             channel.ReturnRequested += OnReturnRequested;
         }
     }
 
+    // Each unsubscription stands on its own: the channel is an asset that outlives the scene (and, with domain
+    // reload off, the play session), so it must be left even when the encounters component is already destroyed.
     private void OnDisable()
     {
-        if (encounters != null && channel != null)
+        if (encounters != null)
         {
             encounters.EncounterStarted -= OnEncounterStarted;
+        }
+
+        if (channel != null)
+        {
             channel.ReturnRequested -= OnReturnRequested;
         }
     }
